@@ -1,0 +1,585 @@
+/* Indiana School Dashboard - Public */
+
+/* * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  } */
+
+html, html a {
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.004);
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+body {
+  color: steelblue;
+  font-family: 'Inter', sans-serif;
+  min-width: fit-content;
+  /* width: 100%; */
+/*  overflow-y: scroll; /* always show scrollbar to prevent pixel shift when changing tabs */
+  margin: 5px;
+  background-color: #F2F2F2;
+}
+
+header {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    min-height: 2vh;
+    width: 100%;
+}
+
+h3 {
+  text-align: center;
+  width: 100%;
+  margin-top: 10px;
+}
+/* TODO */
+svg {
+  overflow: visible;
+}
+
+.key-colour {
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+.key-key {
+  margin-right: 6px;
+  font-weight: 600;
+}
+.points text {
+  font-size: .75rem;
+  position: absolute;
+  min-width: 80px;
+  height: auto;
+  background-color: #fff;
+  text-align: left;
+  padding: 6px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.tooltip h4 {
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+}
+.tooltip ul {
+  padding-left: 7px;
+  list-style: none;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  font-size: 14px;
+}
+.tooltip ul li {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+.tick {
+  padding-top: 10px;
+}
+/* TODO */
+
+.stack-title {
+  height: auto;
+  background-color: #6783a9;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  text-align: center;
+  margin: auto;
+  font-weight: 700;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  width: 80%;
+  border-radius: 5px;
+  margin-bottom: -10px;
+}
+
+.label__header {
+  /* height: auto; */
+  /* margin: auto; */
+  background-color: #6783a9;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  text-align: center;
+  font-weight: 700;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  width: 80%;
+  border-radius: 5px;
+  /* margin-bottom: 10px; */
+}
+
+label {
+  margin: 10px;
+  font-size: .75rem;
+  font-weight: 600;
+  color:  steelblue;
+}
+
+#comparisonLabel {
+  font-size: .7rem;
+  font-weight: 400;
+  color:  steelblue;
+}
+
+/* turns off pointer events to prevent tooltip flicker (as mouse
+  moves from rect to text and back - not ideal */
+.bartext {
+  pointer-events: none;
+}
+
+/* Navigation */
+button {
+  border-radius: 0;
+}
+
+button:focus:not(:focus-visible) {
+  outline: 0;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+[role="button"] {
+  cursor: pointer;
+}
+
+button {
+  -webkit-appearance: button;
+  appearance: button;
+}
+
+[type="button"]:not(:disabled),
+[type="reset"]:not(:disabled),
+[type="submit"]:not(:disabled),
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* button[data-tab].active { font-weight: bold; } */
+div[data-tab]           { display: none;     }
+div[data-tab].active    { display: block;    }
+
+.row {
+  display: flex;
+}
+
+.column, .columns {
+  float: left;
+}
+
+.twelve.columns {
+  width: 100%;
+  margin-left: 0;
+}
+
+.nav-container {
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  display: flex;
+  margin-bottom: 15px;
+  width: 100%;
+  line-height: 1.3 !important;
+}
+
+#nav-tabs {
+  z-index: 99;
+  margin: 0;
+  padding: 0;
+  float: left;
+  position: relative;
+  display:inline;
+  width: 60%;
+}
+
+.tab {
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+  color: steelblue;
+  background-color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(192, 193, 199, .5);
+  border-radius: .5rem;
+  padding: 6px;
+  text-align: center;
+  box-sizing: border-box;
+  float:left;
+  display:inline;
+  width: 30%;
+}
+
+.tab:hover {
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  background-color: #c0c1c7;
+  font-size: 11px;
+  font-weight: 600;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(70, 130, 180, .5);
+  border-radius: .5rem;
+  padding: 6px;
+  text-align: center;
+  box-sizing: border-box;
+  float:left;
+  display:inline;
+  width: 30%;
+}
+
+.tab.active {
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  background-color: #c0c1c7;
+  font-size: 11px;
+  font-weight: 600;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(70, 130, 180, .5);
+  border-radius: .5rem;
+  padding: 6px;
+  text-align: center;
+  box-sizing: border-box;
+  float:left;
+  display:inline;
+  width: 30%;
+}
+
+.panel-container  {
+  border: solid #c0c1c7 1px;
+  padding: 10px;
+  border-radius: .5em;
+  -moz-border-radius: .5em;
+  -webkit-border-radius: .5em;
+}
+
+/* Dropdown Menu */
+#dropdown {
+ width: 80%;
+ background: none;
+ font-size: .75rem;
+ border: 1px solid rgba(192,193,199, .5);
+ border-radius: .5rem;
+ margin: 25px;
+ padding: .2em;
+}
+
+#corpSelect {
+  width: 45%
+}
+
+select {
+  background: none;
+  border: 0;
+  border-radius: .5rem;
+  box-sizing: border-box;
+  color: steelblue;
+  font-size: .75rem;
+  padding: .5rem .5rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#corpSelect > select {
+  width: 45%
+}
+select option {
+  color: steelblue;
+}
+
+select:hover {
+  background-color: #c0c1c7;
+}
+
+select:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+/* Tooltip line */
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.hover-line {
+  stroke: #444;
+  stroke-width: 1.5px;
+  stroke-dasharray: 3,3;
+}
+
+.hover-back-line {
+  stroke: #fff;
+  stroke-width: 3.5px;
+}
+
+/* Grid */
+/* https://cssgrid-generator.netlify.app/ */
+/* "grid-area: a / b / c / d" -> where "a" is starting row, "b" is starting column",
+   "c" is rows spanned, and "d" is columns spanned */
+section {
+  margin-top: -0.6em;
+}
+
+/* Demographic Tables and Charts */
+section#tab-one .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto 1fr auto 1fr auto;
+  margin: 1em;
+  grid-gap: 1em;
+}
+.tab1-a-label { grid-area: 1 / 1 / 2 / 3; }
+.tab1-a1-table { grid-area: 2 / 1 / 3 / 2; }
+.tab1-a2-lines { grid-area: 2 / 2 / 3 / 3; }
+.tab1-b-label { grid-area: 3 / 1 / 4 / 3; }
+.tab1-b1-table { grid-area: 4 / 1 / 5 / 2; }
+.tab1-b2-lines { grid-area: 4 / 2 / 5 / 3; }
+.tab1-c1-stack { grid-area: 5 / 1 / 6 / 2; }
+.tab1-c2-stack { grid-area: 5 / 2 / 6 / 3; }
+
+/* Academic Information Tables and Charts */
+section#tab-two .grid  {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto 1fr auto auto 1fr auto auto 1fr auto auto 1fr auto auto 1fr auto auto 1fr auto auto;
+  margin: 1em;
+  grid-gap: 1em;
+}
+.tab2-a-label { grid-area: 1 / 1 / 2 / 3; }
+.tab2-a1-table { grid-area: 2 / 1 / 3 / 2; }
+.tab2-a2-lines { grid-area: 2 / 2 / 3 / 3; }
+.tab2-a-stack { grid-area: 3 / 1 / 4 / 3; }
+
+.tab2-b-label { grid-area: 4 / 1 / 5 / 3; }
+.tab2-b1-table { grid-area: 5 / 1 / 6 / 2; }
+.tab2-b2-lines { grid-area: 5 / 2 / 6 / 3; }
+.tab2-b-stack { grid-area: 6 / 1 / 7 / 3; }
+
+.tab2-c-label { grid-area: 7 / 1 / 8 / 3; }
+.tab2-c1-table{ grid-area: 8 / 1 / 9 / 2; }
+.tab2-c2-lines { grid-area: 8 / 2 / 9 / 3; }
+.tab2-c-stack { grid-area: 9 / 1 / 10 / 3; }
+
+.tab2-d-label { grid-area: 10 / 1 / 11 / 3; }
+.tab2-d1-table { grid-area: 11 / 1 / 12 / 2; }
+.tab2-d2-lines { grid-area: 11 / 2 / 12 / 3; }
+.tab2-d-stack { grid-area: 12 / 1 / 13 / 3; }
+
+.tab2-e-label { grid-area: 13 / 1 / 14 / 3; }
+.tab2-e1-table { grid-area: 14 / 1 / 15 / 2; }
+.tab2-e2-lines { grid-area: 14 / 2 / 15 / 3; }
+.tab2-e-stack { grid-area: 15 / 1 / 16 / 3; }
+
+.tab2-f-label { grid-area: 16 / 1 / 17 / 3; }
+.tab2-f1-table { grid-area: 17 / 1 / 18 / 2; }
+.tab2-f2-lines { grid-area: 17 / 2 / 18 / 3; }
+.tab2-f-stack { grid-area: 18 / 1 / 19 / 3; }
+
+/* Academic Analysis Tables and Charts */
+section#tab-three .grid  {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(5, 1fr);
+  margin: 1em;
+  grid-gap: 1em;
+}
+.tab3-a-label { grid-area: 1 / 1 / 2 / 2; }
+.tab3-a-group { grid-area: 2 / 1 / 3 / 2; }
+.tab3-a-table { grid-area: 3 / 1 / 4 / 2; }
+.tab3-b-label { grid-area: 4 / 1 / 5 / 2; }
+.tab3-b-group { grid-area: 5 / 1 / 6 / 2; }
+
+/* .tipbox {
+  background-color: red
+} */
+
+/* Containers */
+.box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  box-shadow: 2px 2px 2px lightgrey;
+  align-items: center;
+  border-radius: .5em;
+  background-color: #fff;
+  padding: 35px;
+  max-width: fit-content;
+}
+
+.table-box {
+  display: -webkit-box;
+  min-width: 290px;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  box-shadow: 2px 2px 2px lightgrey;
+  padding: 15px;
+  /* margin: 15px; */
+  align-items: center;
+  border-radius: .5em;
+  background-color: #fff;
+}
+
+.stack-box {
+  /* display: -webkit-box;
+  display: -ms-flexbox; */
+  /* display: flex; */
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  box-shadow: 2px 2px 2px lightgrey;
+  align-items: center;
+  border-radius: .5em;
+  background-color: #fff;
+  /* width: 60%; */
+  max-width: fit-content;
+  padding: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.group-box {
+  /* display: -webkit-box;
+  display: -ms-flexbox; */
+  /* display: flex; */
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  box-shadow: 2px 2px 2px lightgrey;
+  align-items: center;
+  border-radius: .5em;
+  background-color: #fff;
+  /* width: 60%; */
+  max-width: fit-content;
+  padding: 35px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* .center {
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+} */
+/* .box .title {
+  font-size: .9em;
+} */
+
+.empty-box {
+  height: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  align-items: center;
+}
+
+/* .cellClassRules { 
+  --ag-cell-no-border: true; 
+}  */
+
+/* Ag Grid */
+/* https://www.ag-grid.com/javascript-data-grid/global-style-customisation-variables/ */
+/* https://www.ag-grid.com/javascript-data-grid/global-style-customisation-css/ */
+
+.ag-theme-quartz {
+  --ag-font-family: 'Inter', sans-serif;
+  --ag-font-size: 12px;
+  /* --ag-font-weight: bold; */
+  --ag-borders: none;
+  --ag-borders-critical: solid 1px;
+  --ag-border-color: steelblue;
+  --ag-header-foreground-color:steelblue;
+  --ag-data-color:steelblue;
+  --ag-header-column-separator-display: none;
+  --ag-header-column-resize-handle-display: none;
+  --ag-row-border-color: transparent;
+  --ag-header-background-color: #fff;
+  --ag-odd-row-background-color: rgb(238, 238, 238);
+}
+.ag-theme-quartz .ag-cell-value {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px !important;
+  word-break: normal; /* prevent words from breaking */
+  /* padding (line-height+padding = 23*/
+  /* padding-top: 8px;  */
+  /* padding-bottom: 5px; */
+}
+
+.ag-theme-quartz .ag-row-odd {
+  background-color: var(--ag-odd-row-background-color);
+}
+
+.ag-center-aligned-cell-with-border {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid steelblue !important;
+}
+
+.ag-center-aligned-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ag-left-aligned-cell {
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  text-align: left;
+}
+
+/* adjusts font size for ag-grid header once it hits
+  a certain size */
+@media (max-width: 940px) 
+ {
+  .ag-header-cell {
+    /* writing-mode: vertical-lr;
+    text-orientation: upright; */
+    font-size: 11px;
+    padding: 8px;
+  }
+ }
+
+#enrollmentTable
+{
+  padding-top: 40px;
+}
+
+#enrollmentTable .ag-header {
+  display:none;
+}
+
+.text-center * {
+  justify-content: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
