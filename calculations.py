@@ -6,7 +6,6 @@
 # version:  0.9
 # date:     02/21/24
 
-# NOTE: having mypy typing issues with numpy.
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
@@ -46,6 +45,52 @@ def conditional_fillna(data: pd.DataFrame) -> pd.DataFrame:
     data[fill_with_no_data] = data[fill_with_no_data].fillna(value="No Data")
 
     return data
+
+
+def calculate_ahs_average(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Takes raw dataframe of adult high school graduation data and produces
+    an average graduation rate for all adult high schools.
+
+    Args:
+        df (pd.DataFrame): raw adult hish school graduation data
+
+    Returns:
+        final_data (pd.DataFrame): processed dataframe with statewide AHS grad averages
+    """
+    data = df.copy()
+
+    drop_cols = ["School Name", "School Type", "Lat", "Lon"]
+    data = data.drop(drop_cols, axis=1)
+
+    non_sum_cols = [
+        "Year",
+        "School ID",
+        "Corporation ID",
+        "Corporation Name",
+        "Low Grade",
+        "High Grade",
+    ]
+    sum_cols = [c for c in data.columns if c not in non_sum_cols]
+
+    for col in sum_cols:
+        data[col] = pd.to_numeric(data[col], errors="coerce")
+
+    # create a dict for agg()
+    column_map = {col: "first" for col in non_sum_cols}
+    column_map2 = {col: "sum" for col in sum_cols}
+    column_map3 = {"Attendance Rate": "mean"}
+    group_cols = {**column_map, **column_map2, **column_map3}
+
+    final_data = data.groupby(["Year"], as_index=False).agg(group_cols)
+
+    final_data["Corporation Name"] = "AHS State Average"
+    final_data["Corporation ID"] = 9999
+    final_data["School ID"] = 9999
+
+    final_data = final_data.sort_values(by="Year")
+
+    return final_data
 
 
 def calculate_percentage(numerator: str, denominator: str) -> npt.NDArray:
@@ -672,8 +717,9 @@ def find_nearest(
     data["y"] = R * np.cos(phi) * np.sin(theta)
     data["z"] = R * np.sin(phi)
 
-    filename99 = "kdtree_data.csv"
-    data.to_csv(filename99, index=False)
+    # filename99 = "kdtree_data.csv"
+    # data.to_csv(filename99, index=False)
+
     tree = spatial.KDTree(data[["x", "y", "z"]])
 
     # gets a list of the indexes and distances in the data tree that

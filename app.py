@@ -29,9 +29,10 @@ from load_data import (
     get_academic_data,
     get_demographic_data,
     get_school_coordinates,
+    get_academic_data_basic,
 )
 from calculations import calculate_comparison_school_list, check_for_gradespan_overlap
-
+from process_data import clean_academic_data
 
 # basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -147,13 +148,44 @@ def load_demographic_data():
 def load_academic_data():
     data = request.get_json()
 
+    print("Academic Proficiency Data")
     proficiency_data = get_academic_data(
         data["school_id"], data["school_type"], data["year"], data["comparison_schools"]
     )
+    # print("ORIGINAL")
+    # print(proficiency_data)
+    filename98 = "original_data.csv"
+    proficiency_data.to_csv(filename98, index=False)
 
-    # TODO: Add HS data and fetch accordingly
-    print("Academic Proficiency Data")
-    print(proficiency_data)
+    schools = [data["school_id"]] + data["comparison_schools"]
+
+    new_data = get_academic_data_basic(schools, data["school_type"])
+
+    # filename99 = "new_data.csv"
+    # new_data.to_csv(filename99, index=False)
+
+    # TODO: DIFFERENCES for Academic Info between original and New
+    #   1) delete cols with nan/blank/zero
+    #   2) delete ELA and Math
+    #   3) run all proficiency calculations
+
+    # TODO: Difference for Analysis
+    #   1) same as above
+    #   2) original does not have school data?
+    #   3) new version does not have corp data
+    clean_proficiency_data = clean_academic_data(
+        new_data,
+        schools,
+        # data["comparison_schools"],
+        data["school_type"],
+        data["year"],
+    )
+
+    # print("UPDATED")
+    # print(clean_proficiency_data)
+    if len(clean_proficiency_data.index) > 0:
+        filename99 = "clean_proficiency_data.csv"
+        clean_proficiency_data.to_csv(filename99, index=False)
 
     proficiency_data = proficiency_data.sort_values(by="Year")
 
