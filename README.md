@@ -1,0 +1,1 @@
+This project is for an academic data dashboard for Indiana Public Schools (including charter schools). The primary utility of the tool is the ability to compare the academic performance of similar schools (similar in geographic location and gradespan). All data is public (no PII). Early in production, estimate approximately 60% functional at this point.
