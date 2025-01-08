@@ -636,11 +636,9 @@ function academicInfoPage(data, select) {
 
       // Proficiency Breakdowns display current year only
       const proficiencydata = data.filter((ele) => ele.Year === Number(Year))[0];
-      console.log("PROFICIENCYDATA")
-      console.log(proficiencydata)
-
+      
       elaEthnicityChart = multiLine()
-         .data(getLineData(data, ethnicityCategory, subject[0]))
+         .data(getK8LineData(data, ethnicityCategory, subject[0]))
          .id('elaEthnicityChart');
       d3.select('#elaEthnicityChart')
          .call(elaEthnicityChart);
@@ -652,7 +650,7 @@ function academicInfoPage(data, select) {
          .call(elaEthnicityStack);
 
       mathEthnicityChart = multiLine()
-         .data(getLineData(data, ethnicityCategory, subject[1]))
+         .data(getK8LineData(data, ethnicityCategory, subject[1]))
          .id('mathEthnicityChart');
       d3.select('#mathEthnicityChart')
          .call(mathEthnicityChart);
@@ -664,7 +662,7 @@ function academicInfoPage(data, select) {
          .call(mathEthnicityStack);
 
       elaStatusChart = multiLine()
-         .data(getLineData(data, statusCategory, subject[0]))
+         .data(getK8LineData(data, statusCategory, subject[0]))
          .id('elaStatusChart');
       d3.select('#elaStatusChart')
          .call(elaStatusChart);
@@ -676,7 +674,7 @@ function academicInfoPage(data, select) {
          .call(elaStatusStack);
 
       mathStatusChart = multiLine()
-         .data(getLineData(data, statusCategory, subject[1]))
+         .data(getK8LineData(data, statusCategory, subject[1]))
          .id('mathStatusChart');
       d3.select('#mathStatusChart')
          .call(mathStatusChart);
@@ -688,7 +686,7 @@ function academicInfoPage(data, select) {
          .call(mathStatusStack);
 
       elaChart = multiLine()
-         .data(getLineData(data, grade, subject[0]))
+         .data(getK8LineData(data, grade, subject[0]))
          .id('elaChart');
       d3.select('#elaChart')
          .call(elaChart);
@@ -700,7 +698,7 @@ function academicInfoPage(data, select) {
          .call(elaStack);
 
       mathChart = multiLine()
-         .data(getLineData(data, grade, subject[1]))
+         .data(getK8LineData(data, grade, subject[1]))
          .id('mathChart');
       d3.select('#mathChart')
          .call(mathChart);
@@ -751,12 +749,20 @@ function academicInfoPage(data, select) {
 
    else {
       /* Update Charts */
-      elaEthnicityChart.data(getLineData(data, ethnicityCategory, subject[0])).id("elaEthnicityChart")
-      mathEthnicityChart.data(getLineData(data, ethnicityCategory, subject[1])).id("mathEthnicityChart")
-      elaStatusChart.data(getLineData(data, statusCategory, subject[0])).id("elaStatusChart")
-      mathStatusChart.data(getLineData(data, statusCategory, subject[1])).id("mathStatusChart")
-      elaChart.data(getLineData(data, grade, subject[0])).id("elaChart")
-      mathChart.data(getLineData(data, grade, subject[1])).id("mathChart")
+      console.log(select)
+      school_type = select.school_type
+      console.log("UPDATE PROFICIENCYDATA")
+      /* TODO: ADD HS CHARTS AND TABLES*/
+      console.log(data)
+      console.log(school_type)
+
+      elaEthnicityChart.data(getK8LineData(data, ethnicityCategory, subject[0])).id("elaEthnicityChart")
+
+      mathEthnicityChart.data(getK8LineData(data, ethnicityCategory, subject[1])).id("mathEthnicityChart")
+      elaStatusChart.data(getK8LineData(data, statusCategory, subject[0])).id("elaStatusChart")
+      mathStatusChart.data(getK8LineData(data, statusCategory, subject[1])).id("mathStatusChart")
+      elaChart.data(getK8LineData(data, grade, subject[0])).id("elaChart")
+      mathChart.data(getK8LineData(data, grade, subject[1])).id("mathChart")
 
       if ((Year > curAcademicYear) || (Year == "")) { Year = curAcademicYear }
       if ((Year == 2020)) { Year = 2019 }
@@ -833,13 +839,13 @@ function academicAnalysisPage(data) {
    console.log(" ACADEMIC ANALYSIS Comparison Year Data")
    let yearData = data.filter(o => o.Year == Number(Year));
 
-   let ecbeData = getLineData(yearData, ethnicityCategory, subject[0])
+   let ecbeData = getK8LineData(yearData, ethnicityCategory, subject[0])
    let elaComparisonByEthnicityTransposed = transposeData(ecbeData, "School Name");
    
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonByEthnicityChartData = processBarData(elaComparisonByEthnicityTransposed);
 
-   let ecbsData = getLineData(yearData, statusCategory, subject[0])
+   let ecbsData = getK8LineData(yearData, statusCategory, subject[0])
    let elaComparisonBySubGroupTransposed = transposeData(ecbsData, "School Name");
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonBySubgroupChartData = processBarData(elaComparisonBySubGroupTransposed);

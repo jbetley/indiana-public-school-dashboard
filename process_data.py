@@ -11,14 +11,7 @@ import pandas as pd
 import numpy as np
 import itertools
 
-# from global_variables import (
-#     grades,
-#     ethnicity,
-#     subgroup,
-# )
-
 from load_data import (
-    # get_school_index,
     get_adm_data,
     get_ahs_averages,
     get_corporation_academic_data,
@@ -445,27 +438,29 @@ def clean_academic_data(
 
     school_data = school_data.reset_index(drop=True)
 
-    # drop ELA and Math columns
-    school_data = school_data.drop(
-        list(school_data.filter(regex="ELA and Math")), axis=1
-    )
-    print("PRE TOTAL TESTED")
-    print(school_data)
+    # drop ELA and Math/EBRW and Math columns
+    if school_type == "HS" or school_type == "AHS":
+        school_data = school_data.drop(
+            list(school_data.filter(regex="EBRW and Math")), axis=1
+        )
+    else:
+        school_data = school_data.drop(
+            list(school_data.filter(regex="ELA and Math")), axis=1
+        )
 
-    # TODO: ISSUE IS HERE. LOSING over 300 cols
     data = check_total_tested(school_data, school_id, school_type)
 
-    print("POST TOTAL TESTED")
-    print(data)
+    # print("POST TOTAL TESTED")
+    # print(data)
 
     # HS/AHS data
     if school_type == "HS" or school_type == "AHS":
         processed_data = data.copy()
 
-        # remove "EBRW and Math" columns
-        processed_data = processed_data.drop(
-            list(processed_data.filter(regex="EBRW and Math")), axis=1
-        )
+        # # remove "EBRW and Math" columns
+        # processed_data = processed_data.drop(
+        #     list(processed_data.filter(regex="EBRW and Math")), axis=1
+        # )
 
         # In Cohort Grad Rate
         if "Total|Cohort Count" in processed_data.columns:
@@ -587,10 +582,10 @@ def clean_academic_data(
     elif school_type == "K8":
         processed_data = data.copy()
 
-        # remove "ELA and Math" columns
-        processed_data = processed_data.drop(
-            list(processed_data.filter(regex="ELA and Math")), axis=1
-        )
+        # # remove "ELA and Math" columns
+        # processed_data = processed_data.drop(
+        #     list(processed_data.filter(regex="ELA and Math")), axis=1
+        # )
 
         processed_data = calculate_proficiency(processed_data)
 
@@ -614,11 +609,14 @@ def clean_academic_data(
         # this is school, school corporation, and comparable school data
         processed_data = processed_data.reset_index()
 
+    # print("Func Process Data")
+    # print(processed_data)
+
     # the dataframe can be empty if all columns other than the 1st
     # Year are null or if the dataframe has no school_id
     if (
         processed_data.iloc[:, 1:].isna().all().all()
-        or school_id not in processed_data["School ID"].values
+        or str(school_id) not in processed_data["School ID"].values
     ):
         return pd.DataFrame()
 
@@ -630,8 +628,10 @@ def clean_academic_data(
             keep_years = years[:5]
             processed_data = processed_data[processed_data["Year"].isin(keep_years)]
 
-        # TODO add multipage analysis data processing here (currently in get_multiyear_data)
-        # if page == "analysis":
+        # TODO add multipage analysis data processing here
+        # TODO: (currently in get_multiyear_data)
+
+        # analysis page (single?)
         if is_analysis == True:
             ## HS/AHS academic_analysis_single
             if school_type == "HS" or school_type == "AHS":
@@ -727,7 +727,7 @@ def clean_academic_data(
         else:
 
             final_school_data = processed_data[
-                processed_data["School ID"] == school_id
+                processed_data["School ID"] == str(school_id)
             ].copy()
 
             # final_school_data = transpose_data(school_data, school_type)

@@ -25,13 +25,13 @@ import re
 from sqlalchemy import create_engine, text
 
 from calculations import (
-    calculate_percentage,
-    conditional_fillna,
-    get_distance,
-    calculate_proficiency,
-    recalculate_total_proficiency,
-    calculate_graduation_rate,
-    calculate_sat_rate,
+    calculate_percentage,  # TODO: Move this as well
+    # conditional_fillna,
+    # get_distance,
+    # calculate_proficiency,
+    # recalculate_total_proficiency,
+    # calculate_graduation_rate,
+    # calculate_sat_rate,
 )
 
 # from process_data import transpose_data
@@ -152,29 +152,6 @@ def get_excluded_years(year: str, category: str) -> list:
     return excluded_years
 
 
-# def get_school_index(school_id):
-#     """
-#     returns school index information
-
-#     Args:
-#         school_id (string): a 4 digit number in string format
-
-#     Returns:
-#         pd.DataFrame: df of basic school information
-#     """
-#     params = dict(id=school_id)
-
-#     q = text(
-#         """
-#         SELECT *
-#             FROM school_index
-#             WHERE school_index.SchoolID = :id
-#         """
-#     )
-
-#     return run_query(q, params)
-
-
 def get_geo_corp(*args):
     keys = ["id", "type"]
     params = dict(zip(keys, args))
@@ -217,89 +194,97 @@ def get_geo_corp(*args):
     return result
 
 
-def get_ahs_averages():
-    """
-    Calculates State graduation average for all ahs for
-    all years (as a substitute for state or corp avg)
+def get_school_coordinates(*args):
+    keys = ["year", "type"]
+    params = dict(zip(keys, args))
 
-    Args:
+    if params["type"] == "HS":
+        q = text(
+            """
+            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade
+                FROM academic_data_hs
+                WHERE Year = :year
+        """
+        )
+    else:
+        q = text(
+            """
+            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, "Total|ELATotalTested"
+                FROM academic_data_k8
+                WHERE Year = :year
+        """
+        )
 
-    Returns:
-        pd.DataFrame: ahs grad averages
-    """
+    return run_query(q, params)
+
+
+def get_public_dropdown():
     params = dict(id="")
     q = text(
         """
         SELECT *
-            FROM academic_data_hs
-            WHERE SchoolType = "AHS"
+            FROM demographic_data_school
         """
     )
 
     results = run_query(q, params)
 
-    return results
+    # TODO: THis next bit should probably be a function - it takes demographic
+    # TODO: data and calculates Low and High grade and then uses those values
+    # TODO: to return a school Type
+    grades = results[
+        [
+            "Grade 3",
+            "Grade 4",
+            "Grade 5",
+            "Grade 6",
+            "Grade 7",
+            "Grade 8",
+            "Grade 9",
+            "Grade 10",
+            "Grade 11",
+            "Grade 12",
+        ]
+    ]
+    grades = grades.replace(0, np.nan)
+    grades = grades.replace("0", np.nan)
 
+    low_high = pd.DataFrame()
+    low_high["Low Grade"] = (
+        grades.dropna(how="all").notna().idxmax(axis=1).astype("string")
+    )
+    low_high["High Grade"] = grades.apply(
+        pd.Series.last_valid_index, axis=1
+    ).reset_index(drop=True)
 
-# def get_excluded_years(year: str) -> list:
-#     """
-#     "excluded years" is a list of year strings (format YYYY) of all years
-#     that are more recent than the selected year. it is used to filter data
+    low_high["Low Grade"] = low_high["Low Grade"].str.replace("Grade ", "")
+    low_high["High Grade"] = low_high["High Grade"].str.replace("Grade ", "")
 
-#     Args:
-#         year (str): a year string in format YYYY
+    low_high["Type"] = np.where(
+        (low_high["Low Grade"].astype(int) < 9)
+        & (low_high["Low Grade"].astype(int) < 9),
+        "K8",
+        np.where(
+            low_high["Low Grade"].astype(int) >= 9,
+            "HS",
+            np.where(
+                (low_high["Low Grade"].astype(int) < 9)
+                & (low_high["Low Grade"].astype(int)),
+                "K8",
+                "K8",
+            ),
+        ),
+    )  # TODO: Change last K8 to K12 when have K8/HS functionality
 
-#     Returns:
-#         list: a list of year strings - all years more recent than selected year
-#     """
-#     excluded_years = []
+    filtered = results[
+        ["Year", "Corporation ID", "Corporation Name", "School ID", "School Name"]
+    ]
 
-#     excluded_academic_years = int(current_academic_year) - int(year)
-
-#     for i in range(excluded_academic_years):
-#         excluded_year = int(current_academic_year) - i
-#         excluded_years.append(excluded_year)
-
-#     return excluded_years
-
-
-def get_corporation_academic_data(*args: str) -> pd.DataFrame:
-    """
-    returns a dataframe of k8 academic data for a single school
-    corporation
-
-    Args:
-        school_id (str): 4 digit school id in string format
-        school_type (str): k8, hs, ahs, k12
-
-    Returns:
-        pd.DataFrame: ilearn proficiency data for corporation
-    """
-    keys = ["id", "type"]
-    params = dict(zip(keys, args))
-
-    if params["type"] == "hs" or params["type"] == "ahs":
-        table = "corporation_data_hs"
-    else:
-        table = "corporation_data_k8"
-
-    q = text(
-        """
-        SELECT *
-            FROM {}
-            WHERE CorporationID = (
-                SELECT GEOCorp
-                    FROM school_index
-                    WHERE SchoolID = :id)""".format(
-            table
-        )
+    dropdown_list = pd.merge(
+        filtered, low_high["Type"], left_index=True, right_index=True
     )
 
-    results = run_query(q, params)
-
-    results = results.sort_values(by="Year")
-
-    return results
+    return dropdown_list
 
 
 def get_academic_dropdown_years(*args):
@@ -338,123 +323,6 @@ def get_academic_dropdown_years(*args):
     years.sort(reverse=True)
 
     return years
-
-
-def get_adm_data(corp_id: str) -> pd.DataFrame:
-    """
-    gets a dataframe of detailed ADM data from IDOE's official ADM
-    release (most accurate for previous years, but not very timely).
-
-    Args:
-        corp_id (string): a 4 digit number in string format
-
-    Returns:
-        pd.DataFrame: detailed adm data
-    """
-    params = dict(id=corp_id)
-
-    q = text(
-        """
-        SELECT * 
-        FROM adm_all
-        WHERE CorporationID = :id
-    """
-    )
-
-    results = run_query(q, params)
-
-    return results
-
-
-# def get_adm(corp_id):
-#     # financial data will almost always be more accurate, but
-#     # some schools (Guests) don't have financial data and this
-#     # is an adequate substitute.
-
-#     params = dict(id=corp_id)
-
-#     q = text(
-#         """
-#         SELECT *
-#         FROM adm_all
-#         WHERE CorporationID = :id
-#     """
-#     )
-
-#     results = run_query(q, params)
-
-#     # NOTE: From 2016 - 2019  "SpringADM" & "FallADM"; beginning with
-#     # 2019-20SY: "2019Fall Non Virtual ADM" & "2020Spring Non Virtual ADM"
-
-#     # drop "Virtual ADM"
-#     results = results.drop(
-#         list(
-#             results.filter(
-#                 regex="Fall Virtual ADM|Spring Virtual ADM|Corporation ID|Name"
-#             )
-#         ),
-#         axis=1,
-#     )
-
-#     # Each adm average requires 2 columns (Fall and Spring). If there are an
-#     # odd number of columns after the above drop, that means that the last
-#     # column is a Fall without a Spring, so we store that column, drop it,
-#     # and add it back later
-#     if (len(results.columns) % 2) != 0:
-#         last_col = pd.DataFrame()
-#         last_col_name = str(int(results.columns[-1][:4]) + 1)
-#         last_col[last_col_name] = results[results.columns[-1]]
-#         results = results.drop(results.columns[-1], axis=1)
-
-#     adm_columns = [c[:4] for c in results.columns if "Spring" in c]
-
-#     # make numbers
-#     for col in results:
-#         results[col] = pd.to_numeric(results[col], errors="coerce")
-
-#     # Average each group of 2 columns and use name of 2nd column (Spring) for result
-#     final = results.groupby(np.arange(len(results.columns)) // 2, axis=1).mean()
-#     final.columns = adm_columns
-
-#     if not last_col.empty:
-#         final[last_col_name] = last_col[last_col_name]
-
-#     return final
-
-
-def get_graduation_data():
-    params = dict(id="")
-
-    q = text(
-        """
-        SELECT
-            Year,
-            SUM("Total|Graduates") / SUM("Total|CohortCount") AS "State Graduation Average"
-        FROM academic_data_hs
-        WHERE SchoolType != "AHS"
-        GROUP BY
-            Year
-        """
-    )
-
-    results = run_query(q, params)
-
-    results = results.loc[::-1].reset_index(drop=True)
-
-    # merge state_grad_average with corp_data
-    results = (
-        results.set_index("Year")
-        .T.rename_axis("Category")
-        .rename_axis(None, axis=1)
-        .reset_index()
-    )
-
-    # rename columns and add state_grad average to corp df
-    results = results.rename(
-        columns={c: str(c) + "Corp" for c in results.columns if c not in ["Category"]}
-    )
-
-    return results
 
 
 def get_gradespan(school_id, selected_year, all_years):
@@ -660,77 +528,6 @@ def get_subgroup(
     return result
 
 
-# Calculates AHS State Graduation Average for all Years as
-# a substitute for corp_data
-def get_public_dropdown():
-    params = dict(id="")
-    q = text(
-        """
-        SELECT *
-            FROM demographic_data_school
-        """
-    )
-
-    results = run_query(q, params)
-
-    # TODO: THis next bit should probably be a function - it takes demographic
-    # TODO: data and calculates Low and High grade and then uses those values
-    # TODO: to return a school Type
-    grades = results[
-        [
-            "Grade 3",
-            "Grade 4",
-            "Grade 5",
-            "Grade 6",
-            "Grade 7",
-            "Grade 8",
-            "Grade 9",
-            "Grade 10",
-            "Grade 11",
-            "Grade 12",
-        ]
-    ]
-    grades = grades.replace(0, np.nan)
-    grades = grades.replace("0", np.nan)
-
-    low_high = pd.DataFrame()
-    low_high["Low Grade"] = (
-        grades.dropna(how="all").notna().idxmax(axis=1).astype("string")
-    )
-    low_high["High Grade"] = grades.apply(
-        pd.Series.last_valid_index, axis=1
-    ).reset_index(drop=True)
-
-    low_high["Low Grade"] = low_high["Low Grade"].str.replace("Grade ", "")
-    low_high["High Grade"] = low_high["High Grade"].str.replace("Grade ", "")
-
-    low_high["Type"] = np.where(
-        (low_high["Low Grade"].astype(int) < 9)
-        & (low_high["Low Grade"].astype(int) < 9),
-        "K8",
-        np.where(
-            low_high["Low Grade"].astype(int) >= 9,
-            "HS",
-            np.where(
-                (low_high["Low Grade"].astype(int) < 9)
-                & (low_high["Low Grade"].astype(int)),
-                "K8",
-                "K8",
-            ),
-        ),
-    )  # TODO: Change last K8 to K12 when have K8/HS functionality
-
-    filtered = results[
-        ["Year", "Corporation ID", "Corporation Name", "School ID", "School Name"]
-    ]
-
-    dropdown_list = pd.merge(
-        filtered, low_high["Type"], left_index=True, right_index=True
-    )
-
-    return dropdown_list
-
-
 # Gets demographic data, attendance rate, and chronic absenteeism
 # data for selected school and GEO Corp
 def get_demographic_data(params):
@@ -864,31 +661,7 @@ def get_demographic_data(params):
     return all_demographics
 
 
-def get_school_coordinates(*args):
-    keys = ["year", "type"]
-    params = dict(zip(keys, args))
-
-    if params["type"] == "HS":
-        q = text(
-            """
-            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade
-                FROM academic_data_hs
-                WHERE Year = :year
-        """
-        )
-    else:
-        q = text(
-            """
-            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, "Total|ELATotalTested"
-                FROM academic_data_k8
-                WHERE Year = :year
-        """
-        )
-
-    return run_query(q, params)
-
-
-def get_academic_data_basic(*args):
+def get_academic_data(*args):
     """Where the magic happens. Gets academic data for school, geo school corporation,
     and comparable schools, if relevant, and formats it for tables and figs depending
     on the requesting page.
@@ -937,11 +710,23 @@ def get_academic_data_basic(*args):
     return results
 
 
-def get_corporation_academic_data(*args):
+def get_corporation_academic_data(*args: str) -> pd.DataFrame:
+    """
+    returns a dataframe of k8 academic data for a single school
+    corporation
+
+    Args:
+        school_id (str): 4 digit school id in string format
+        school_type (str): k8, hs, ahs, k12
+
+    Returns:
+        pd.DataFrame: ilearn proficiency data for corporation
+    """
     keys = ["id", "type"]
     params = dict(zip(keys, args))
 
-    if params["type"] == "HS":
+    # TODO: What if AHS?
+    if params["type"] == "HS":  # or params["type"] == "AHS":
         table = "corporation_data_hs"
     else:
         table = "corporation_data_k8"
@@ -956,6 +741,18 @@ def get_corporation_academic_data(*args):
         )
     )
 
+    # q = text(
+    #     """
+    #     SELECT *
+    #         FROM {}
+    #         WHERE CorporationID = (
+    #             SELECT GEOCorp
+    #                 FROM school_index
+    #                 WHERE SchoolID = :id)""".format(
+    #         table
+    #     )
+    # )
+
     results = run_query(q, params)
 
     results = results.sort_values(by="Year")
@@ -963,303 +760,89 @@ def get_corporation_academic_data(*args):
     return results
 
 
-# Where all the magic happens
-# Gets all the academic data and formats it for display
-def get_academic_data(*args):
-    """Where the magic happens. Gets academic data for school, geo school corporation,
-    and comparable schools, if relevant, and formats it for tables and figs depending
-    on the requesting page.
+def get_graduation_data():
+    params = dict(id="")
 
-    Args:
-    schools (list): list of school IDs
-    type (str): school type ("K8","K12","HS")
-    year (str): selected year
-    comparison_schools (list): school ids of comparison schools
-
-    Returns:
-        data: pd.DataFrame
-    """
-    keys = ["school_id", "type", "year", "comparison_schools"]
-
-    params = dict(zip(keys, args))
-
-    # if params["comparison_schools"] is a list, we are getting data for comparable
-    # schools (academic analysis). if not, we are getting data for one school
-    # (academic info)
-    is_list = False
-
-    if params["comparison_schools"]:  # isinstance(params["school_id"], list):
-        is_list = True
-
-    if is_list == True:
-        school_id = str(params["comparison_schools"][0])
-        school_str = ", ".join([str(int(v)) for v in params["comparison_schools"]])
-        # school_id = str(params["school_id"][0])
-        # school_str = ", ".join([str(int(v)) for v in params["school_id"]])
-    else:
-        school_id = str(params["school_id"])
-        school_str = params["school_id"]
-
-    # Get data for academic_information and academic_metrics
-    # all data / all years for school(s) and school corporation
-    if params["type"] == "K8":
-        school_table = "academic_data_k8"
-    else:
-        school_table = "academic_data_hs"
-
-    query_string = """
-        SELECT *
-            FROM {}
-            WHERE SchoolID IN ({})""".format(
-        school_table, school_str
+    q = text(
+        """
+        SELECT
+            Year,
+            SUM("Total|Graduates") / SUM("Total|CohortCount") AS "State Graduation Average"
+        FROM academic_data_hs
+        WHERE SchoolType != "AHS"
+        GROUP BY
+            Year
+        """
     )
 
-    q = text(query_string)
+    results = run_query(q, params)
 
-    school_data = run_query(q, params)
+    results = results.loc[::-1].reset_index(drop=True)
 
-    # do not add corp data to single school (academic info)
-    if is_list == True:
-        # get corp data and add to dataframe (selected school will always
-        # be at index[0] due to distance sort)
-        corp_id = str(school_data["Corporation ID"][0])
+    # merge state_grad_average with corp_data
+    results = (
+        results.set_index("Year")
+        .T.rename_axis("Category")
+        .rename_axis(None, axis=1)
+        .reset_index()
+    )
 
-        corp_data = get_corporation_academic_data(corp_id, params["type"])
+    # rename columns and add state_grad average to corp df
+    results = results.rename(
+        columns={c: str(c) + "Corp" for c in results.columns if c not in ["Category"]}
+    )
 
-        # add columns not in corp database
-        corp_data["School ID"] = corp_data["Corporation ID"]
-        corp_data["School Name"] = corp_data["Corporation Name"]
-
-        # merge - result includes school, school corp, and comparable schools if
-        # multiple school ids in the schools variable
-        school_data = pd.concat([school_data, corp_data], axis=0)
-
-    # Drop years of data that have been excluded by the
-    # selected year (are later than)
-    excluded_years = get_excluded_years(params["year"], "academic")
-
-    if excluded_years:
-        school_data = school_data[~school_data["Year"].isin(excluded_years)]
-
-    school_data = school_data.sort_values(by="Year", ascending=False)
-
-    school_data = school_data.reset_index(drop=True)
-
-    # Drop all columns for a Category if the value of "Total Tested" for
-    # the Category for the school is null or 0 for the "school"
-    drop_columns = []
-
-    data = school_data.copy()
-
-    # convert from float to str while dropping the decimal
-    data["School ID"] = data["School ID"].astype("Int64").astype("str")
-    data["Corporation ID"] = data["Corporation ID"].astype("Int64").astype("str")
-
-    if params["type"] == "K8":
-        tested_cols = [
-            col
-            for col in data.columns.to_list()
-            if "Total Tested" in col or "Test N" in col
-        ]
-    else:
-        tested_cols = [
-            col
-            for col in data.columns.to_list()
-            if "Total Tested" in col or "Cohort Count" in col
-        ]
-
-    for col in tested_cols:
-        if (
-            pd.to_numeric(
-                data[data["School ID"] == school_id][col], errors="coerce"
-            ).sum()
-            == 0
-            or data[data["School ID"] == school_id][col].isnull().all()
-        ):
-            if "Total Tested" in col:
-                match_string = " Total Tested"
-            else:
-                if params["type"] == "K8":
-                    match_string = " Test N"
-                else:
-                    match_string = "|Cohort Count"
-
-            matching_cols = data.columns[
-                pd.Series(data.columns).str.startswith(col.split(match_string)[0])
-            ]
-
-            drop_columns.append(matching_cols.tolist())
-
-    drop_all = [i for sub_list in drop_columns for i in sub_list]
-
-    data = data.drop(drop_all, axis=1).copy()
-
-    # k8 or hs data with excluded years and non-tested categories dropped
-    data = data.reset_index(drop=True)
-
-    # process HS data
-    if params["type"] == "HS":
-        processed_data = data.copy()
-
-        # remove "EBRW and Math" columns
-        processed_data = processed_data.drop(
-            list(processed_data.filter(regex="EBRW and Math")), axis=1
-        )
-
-        # Calculate Grad Rate
-        if "Total|Cohort Count" in processed_data.columns:
-            processed_data = calculate_graduation_rate(processed_data)
-
-        # Calculate SAT Rates #
-        if "Total|EBRW Total Tested" in processed_data.columns:
-            processed_data = calculate_sat_rate(processed_data)
-
-    # process K8 data
-    elif params["type"] == "K8":
-        processed_data = data.copy()
-
-        # remove "ELA and Math" columns
-        processed_data = processed_data.drop(
-            list(processed_data.filter(regex="ELA and Math")), axis=1
-        )
-
-        processed_data = calculate_proficiency(processed_data)
-
-        # In order for an apples to apples comparison between School Total Proficiency,
-        # we need to recalculate it for the comparison schools using the same grade span
-        # as the selected school. E.g., school is k-5, comparison school is k-8, we
-        # recalculate comparison school totals using only grade k-5 data.
-        comparison_data = processed_data.loc[
-            processed_data["School ID"] != school_id
-        ].copy()
-
-        school_data = processed_data.loc[
-            processed_data["School ID"] == school_id
-        ].copy()
-
-        # TODO: Testing - Change school ID to 0 for school corporation to prevent
-        # TODO: School corp and School ID overlap - REAL ISSUE - WHY IS THE
-        # TODO: OLD SCHOOL CORPORATION STAYING?
-        comparison_data.loc[comparison_data["GEO Corp"].isna(), "School ID"] = "0"
-
-        revised_totals = recalculate_total_proficiency(comparison_data, school_data)
-
-        processed_data = processed_data.set_index(["School ID", "Year"])
-        processed_data.update(revised_totals.set_index(["School ID", "Year"]))
-
-        # this is school, school corporation, and comparable school data
-        processed_data = processed_data.reset_index()
-
-    # if all columns in data other than the 1st (Year) are null
-    # then return empty df
-    if processed_data.iloc[:, 1:].isna().all().all():
-        return pd.DataFrame()
-
-    else:
-        if params["type"] == "HS":
-            hs_data = processed_data.copy()
-
-            analysis_data = hs_data.filter(
-                regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name|Graduation Rate$|Benchmark \%|^Year$",
-                axis=1,
-            ).copy()
-
-            analysis_data = analysis_data.drop(
-                list(analysis_data.filter(regex="EBRW and Math")), axis=1
-            )
-
-            hs_cols = [
-                c
-                for c in analysis_data.columns
-                if c not in ["School Name", "Corporation Name"]
-            ]
-
-            # get index of rows where school_id matches selected school
-            school_idx = analysis_data.index[
-                analysis_data["School ID"] == school_id
-            ].tolist()[0]
-
-            # force all to numeric (this removes "***" strings) - we
-            # later use NaN as a proxy
-            for col in hs_cols:
-                analysis_data[col] = pd.to_numeric(analysis_data[col], errors="coerce")
-
-            # drop all columns where the row at school_name_idx has a NaN value
-            analysis_data = analysis_data.loc[:, ~hs_data.iloc[school_idx].isna()]
-
-            return analysis_data
-
-        else:
-            analysis_data = processed_data.copy()
-
-            # TODO: Testing removing this - need all rows for stacked bars
-            # analysis_data = k8_data.filter(
-            #     regex=r"\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
-            #     axis=1,
-            # )
-            analysis_data = analysis_data.sort_values("Year").reset_index(drop=True)
-
-            analysis_data = analysis_data[
-                analysis_data.columns[
-                    ~analysis_data.columns.str.contains(r"Female|Male")
-                ]
-            ]
-
-            # We don't want to get rid of "***" yet, but we also don't
-            # want to pass through a dataframe that that is all "***" - so
-            # we convert create a copy, coerce all of the academic columns
-            # to numeric and check to see if the entire dataframe for NaN
-            check_for_unchartable_data = analysis_data.copy()
-
-            check_for_unchartable_data.drop(
-                ["School Name", "School ID", "Low Grade", "High Grade", "Year"],
-                axis=1,
-                inplace=True,
-            )
-
-            for col in check_for_unchartable_data.columns:
-                check_for_unchartable_data[col] = pd.to_numeric(
-                    check_for_unchartable_data[col], errors="coerce"
-                )
-
-            # one last check
-            if (
-                (params["type"] == "K8" or params["type"] == "K12")
-                and len(analysis_data.index) > 0
-            ) and check_for_unchartable_data.isnull().all().all() == True:
-
-                analysis_data = pd.DataFrame()
-
-                return analysis_data
-
-            else:
-                # add distance to dataframe - got too complicated to figure
-                # out how to get the distance data from get school coordinates
-                # through index.html and then back here to add, so instead, we
-                # just rerun the distance analysis on the analysis data (which
-                # should be only a couple dozen rows)
-
-                # for distance calculation purposes just use one year of data
-                # max_year = str(analysis_data["Year"].max())
-                # distance_data = analysis_data[
-                #     analysis_data["Year"].astype(str) == max_year
-                # ].copy()
-
-                # distance_data = distance_data.reset_index(drop=True)
-
-                # school_idx = distance_data[
-                #     distance_data["School ID"] == school_id
-                # ].index
-
-                # distances = get_distance(school_idx, distance_data)
-
-                # TODO: merge distances with analysis data
-
-                return analysis_data
+    return results
 
 
-# TODO: Do we need a default on error?
-# return data
+def get_ahs_averages():
+    """
+    Calculates State graduation average for all ahs for
+    all years (as a substitute for state or corp avg)
+
+    Args:
+
+    Returns:
+        pd.DataFrame: ahs grad averages
+    """
+    params = dict(id="")
+    q = text(
+        """
+        SELECT *
+            FROM academic_data_hs
+            WHERE SchoolType = "AHS"
+        """
+    )
+
+    results = run_query(q, params)
+
+    return results
+
+
+def get_adm_data(corp_id: str) -> pd.DataFrame:
+    """
+    gets a dataframe of detailed ADM data from IDOE's official ADM
+    release (most accurate for previous years, but not very timely).
+
+    Args:
+        corp_id (string): a 4 digit number in string format
+
+    Returns:
+        pd.DataFrame: detailed adm data
+    """
+    params = dict(id=corp_id)
+
+    q = text(
+        """
+        SELECT * 
+        FROM adm_all
+        WHERE CorporationID = :id
+    """
+    )
+
+    results = run_query(q, params)
+
+    return results
 
 
 # TODO: Eventually merge into get_academic_data()

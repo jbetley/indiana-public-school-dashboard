@@ -26,10 +26,10 @@ from load_data import (
     current_academic_year,
     current_demographic_year,
     get_public_dropdown,
-    get_academic_data,
+    # get_academic_data,
     get_demographic_data,
     get_school_coordinates,
-    get_academic_data_basic,
+    get_academic_data,
 )
 from calculations import calculate_comparison_school_list, check_for_gradespan_overlap
 from process_data import clean_academic_data
@@ -148,21 +148,18 @@ def load_demographic_data():
 def load_academic_data():
     data = request.get_json()
 
-    print("Academic Proficiency Data")
-    proficiency_data = get_academic_data(
-        data["school_id"], data["school_type"], data["year"], data["comparison_schools"]
-    )
     # print("ORIGINAL")
+    # proficiency_data = get_academic_data(
+    #     data["school_id"], data["school_type"], data["year"], data["comparison_schools"]
+    # )
+
     # print(proficiency_data)
-    filename98 = "original_data.csv"
-    proficiency_data.to_csv(filename98, index=False)
+    # filename98 = "original_data.csv"
+    # proficiency_data.to_csv(filename98, index=False)
 
     schools = [data["school_id"]] + data["comparison_schools"]
 
-    new_data = get_academic_data_basic(schools, data["school_type"])
-
-    # filename99 = "new_data.csv"
-    # new_data.to_csv(filename99, index=False)
+    raw_proficiency_data = get_academic_data(schools, data["school_type"])
 
     # TODO: DIFFERENCES for Academic Info between original and New
     #   1) delete cols with nan/blank/zero
@@ -173,8 +170,9 @@ def load_academic_data():
     #   1) same as above
     #   2) original does not have school data?
     #   3) new version does not have corp data
-    clean_proficiency_data = clean_academic_data(
-        new_data,
+
+    proficiency_data = clean_academic_data(
+        raw_proficiency_data,
         schools,
         # data["comparison_schools"],
         data["school_type"],
@@ -182,11 +180,12 @@ def load_academic_data():
     )
 
     # print("UPDATED")
-    # print(clean_proficiency_data)
-    if len(clean_proficiency_data.index) > 0:
-        filename99 = "clean_proficiency_data.csv"
-        clean_proficiency_data.to_csv(filename99, index=False)
+    # if len(proficiency_data.index) > 0:
+    #     filename99 = "clean_proficiency_data.csv"
+    #     proficiency_data.to_csv(filename99, index=False)
 
+    # TODO: Add Check Here
+    # if proficiency_data.empty:
     proficiency_data = proficiency_data.sort_values(by="Year")
 
     school_proficiency = [
@@ -195,6 +194,9 @@ def load_academic_data():
     ]
 
     return_values = [school_proficiency]
+
+    # print("FINAL ACAD DATA")
+    # print(return_values)
 
     return return_values
 

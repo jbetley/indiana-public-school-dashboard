@@ -309,17 +309,65 @@ function getTableData(data, category, subject) {
 
 
 // process data for multi-line information chart
-function getLineData(data, category, subject) {
-  // create array of Category names + Year
-  const categoryProficient = [];
-  const categoryTested = [];
-  const categoryProficiency = [];
+function getK8LineData(data, category, subject) {
+  
+  // // create array of Category names + Year
+  // const categoryProficient = [];
+  // const categoryTested = [];
+  // const categoryProficiency = [];
 
-  for (let a = 0; a < category.length; a++) {
-    categoryProficient.push(category[a] + "|" + subject + "Total Proficient");
-    categoryTested.push(category[a] + "|" + subject + "Total Tested");
-    categoryProficiency.push(category[a] + " Proficiency");
+  // for (let a = 0; a < category.length; a++) {
+  //   categoryProficient.push(category[a] + "|" + subject + "Total Proficient");
+  //   categoryTested.push(category[a] + "|" + subject + "Total Tested");
+  //   categoryProficiency.push(category[a] + " Proficiency");
+  // }
+  console.log("GETTING THESE")
+  console.log(category)
+  console.log(subject)
+
+  // TODO: This filters the array to be identical to original function
+  // TODO: Run tests and then adapt to do HS and AHS as well
+  category = category.concat(["Year", "School Name"])
+    /**
+   * Find any given number of keys and remove them
+   * @param {array<object>} array - An array of objects
+   * @param {string} path - Name of the key if the target object is one
+   *        level down. (todo: recursive algorithm to dig deeper)
+   * @param {string/array<string>} keys - List of keys to filter out
+   * @return {array<object>} The array sans filtered keys
+   */
+  function filterData(array, keys) {
+    let clone = structuredClone(array);
+    for (let obj of clone) {
+      Object.keys(obj).flatMap(key => {
+        if (keys.some(function(v) {
+          if ((v == "Year") || (v == "School Name")) {
+            str = v
+          }
+          else {
+            str = v + "|" + subject + " Proficient %"
+          }
+          if (obj[str] != "***") {
+            return key.indexOf(str) >= 0; 
+        }
+        })) {
+        // if (![...keys].includes(key)) {
+          return [];
+        }
+        return delete obj[key];
+      });
+    }
+    return clone;
   }
+
+  let x = filterData(data, category);
+
+  console.log("XXXXXXX")
+  console.log(x);
+
+  // Grade 8|ELA Proficient %
+  // should have subject, one of category, and "Proficienct %"
+  // also "SchoolName" and "Year"
 
   let finalData = []
 
@@ -365,6 +413,64 @@ function getLineData(data, category, subject) {
   // add Column Names to data array
   finalData['columns'] = remainingCategories
 
+  console.log("DATA IN")
+  console.log(data)
+  console.log("DATA OUT")
+  console.log(finalData)
+  
+  return finalData
+}
+
+
+// process data for multi-line information chart
+function getHSLineData(data, category, subject) {
+
+  let finalData = []
+
+  for (let i = 0; i < data.length; ++i) {
+
+    let eachYear = {}
+    // TODO: Make sure that adding the School Name here doesn;t cause unforseen
+    eachYear["School Name"] = data[i]["School Name"]
+    if (data[i] != undefined) {
+
+      for (let a = 0; a < category.length; a++) {
+
+        let proficient = category[a] + "|" + subject + " Total Proficient";
+        let tested = category[a] + "|" + subject + " Total Tested";
+        let proficiency = category[a]
+
+        // if tested value is greater than 0 and not NaN - calculate Proficiency
+        if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
+
+          result = calcProficiency(data[i], proficient, tested)
+
+          // only keep non NaN result values
+          if (result == result) {
+            eachYear[proficiency] = result
+          }
+        }
+      };
+    }
+    else {
+      console.log("ERROR")
+    }
+
+    // add relevant year to obj and then push to array
+    eachYear["Year"] = data[i]["Year"]
+
+    finalData.push(eachYear);
+  };
+
+  // get categories remaining after results are calculated
+  let remainingCategories = getKeys(finalData);
+  remainingCategories = remainingCategories.filter(elem => elem !== "Year");
+
+  // add Column Names to data array
+  finalData['columns'] = remainingCategories
+
+  console.log("FINAL LINE DATA")
+  console.log(finalData)
   return finalData
 }
 
