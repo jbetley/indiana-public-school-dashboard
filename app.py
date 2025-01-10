@@ -26,6 +26,7 @@ from load_data import (
     current_academic_year,
     current_demographic_year,
     get_public_dropdown,
+    # get_gradespan,
     # get_academic_data,
     get_demographic_data,
     get_school_coordinates,
@@ -146,57 +147,40 @@ def load_demographic_data():
 # academic data
 @app.route("/academic", methods=["POST"])
 def load_academic_data():
+
     data = request.get_json()
-
-    # print("ORIGINAL")
-    # proficiency_data = get_academic_data(
-    #     data["school_id"], data["school_type"], data["year"], data["comparison_schools"]
-    # )
-
-    # print(proficiency_data)
-    # filename98 = "original_data.csv"
-    # proficiency_data.to_csv(filename98, index=False)
 
     schools = [data["school_id"]] + data["comparison_schools"]
 
     raw_proficiency_data = get_academic_data(schools, data["school_type"])
 
-    # TODO: DIFFERENCES for Academic Info between original and New
-    #   1) delete cols with nan/blank/zero
-    #   2) delete ELA and Math
-    #   3) run all proficiency calculations
-
-    # TODO: Difference for Analysis
-    #   1) same as above
-    #   2) original does not have school data?
-    #   3) new version does not have corp data
-
     proficiency_data = clean_academic_data(
         raw_proficiency_data,
         schools,
-        # data["comparison_schools"],
         data["school_type"],
         data["year"],
+        data["location"],
     )
 
-    # print("UPDATED")
-    # if len(proficiency_data.index) > 0:
-    #     filename99 = "clean_proficiency_data.csv"
-    #     proficiency_data.to_csv(filename99, index=False)
+    # filename99 = "proficiency_data.csv"
+    # proficiency_data.to_csv(filename99, index=False)
 
-    # TODO: Add Check Here
-    # if proficiency_data.empty:
-    proficiency_data = proficiency_data.sort_values(by="Year")
+    # df is empty or only has information cols (e.g., MS for IREAD data)
+    if len(proficiency_data.columns) <= 6:
+        return_values = []
 
-    school_proficiency = [
-        {k: v for k, v in m.items() if v == v and v is not None}
-        for m in proficiency_data.to_dict(orient="records")
-    ]
+    else:
+        # # clarify school type (NOTE: Bake this in to clean_data?)
+        # gradespan = get_gradespan(data["school_id"], data["school_type"], data["year"])
 
-    return_values = [school_proficiency]
+        proficiency_data = proficiency_data.sort_values(by="Year")
 
-    # print("FINAL ACAD DATA")
-    # print(return_values)
+        school_proficiency = [
+            {k: v for k, v in m.items() if v == v and v is not None}
+            for m in proficiency_data.to_dict(orient="records")
+        ]
+
+        return_values = [school_proficiency]
 
     return return_values
 

@@ -229,9 +229,6 @@ def get_public_dropdown():
 
     results = run_query(q, params)
 
-    # TODO: THis next bit should probably be a function - it takes demographic
-    # TODO: data and calculates Low and High grade and then uses those values
-    # TODO: to return a school Type
     grades = results[
         [
             "Grade 3",
@@ -260,29 +257,72 @@ def get_public_dropdown():
     low_high["Low Grade"] = low_high["Low Grade"].str.replace("Grade ", "")
     low_high["High Grade"] = low_high["High Grade"].str.replace("Grade ", "")
 
-    low_high["Type"] = np.where(
+    low_high["School Type"] = np.where(
         (low_high["Low Grade"].astype(int) < 9)
-        & (low_high["Low Grade"].astype(int) < 9),
+        & (low_high["High Grade"].astype(int) < 9),
         "K8",
         np.where(
             low_high["Low Grade"].astype(int) >= 9,
             "HS",
             np.where(
-                (low_high["Low Grade"].astype(int) < 9)
-                & (low_high["Low Grade"].astype(int)),
-                "K8",
+                (low_high["Low Grade"].astype(int) <= 3)
+                & (low_high["High Grade"].astype(int) >= 9),
+                "K12",
                 "K8",
             ),
         ),
-    )  # TODO: Change last K8 to K12 when have K8/HS functionality
+    )
+
+    low_high["Sub Type"] = np.where(
+        (low_high["Low Grade"].astype(int) < 5)
+        & (low_high["High Grade"].astype(int) <= 5),
+        "ES",
+        np.where(
+            (low_high["Low Grade"].astype(int) >= 5)
+            & (low_high["High Grade"].astype(int) < 9),
+            "MS",
+            np.where(
+                low_high["Low Grade"].astype(int) >= 9,
+                "HS",
+                np.where(
+                    (low_high["Low Grade"].astype(int) <= 3)
+                    & (low_high["High Grade"].astype(int) >= 9),
+                    "K12",
+                    "K8",
+                ),
+            ),
+        ),
+    )
 
     filtered = results[
         ["Year", "Corporation ID", "Corporation Name", "School ID", "School Name"]
     ]
 
     dropdown_list = pd.merge(
-        filtered, low_high["Type"], left_index=True, right_index=True
+        filtered,
+        low_high[["School Type", "Sub Type"]],
+        left_index=True,
+        right_index=True,
     )
+
+    # identify AHS' lsewhere because their grade levels are not reliably
+    # stored in demographics file (usually as 11 & 12, rarely "Adult")
+    ahs_data = get_ahs_averages()
+
+    ahs_data = ahs_data[["School ID", "School Type"]]
+    ahs_data["Sub Type"] = ahs_data["School Type"]
+
+    # ahs_data = ahs_data.rename(columns={"School Type": "Type"})
+    ahs_data = ahs_data.drop_duplicates(subset=["School ID"])
+
+    ahs_data = ahs_data.set_index(["School ID"])
+    dropdown_list = dropdown_list.set_index(["School ID"])
+
+    dropdown_list.update(ahs_data)
+    dropdown_list = dropdown_list.reset_index()
+
+    # filename99 = "dropdown_list.csv"
+    # dropdown_list.to_csv(filename99, index=False)
 
     return dropdown_list
 
@@ -325,11 +365,13 @@ def get_academic_dropdown_years(*args):
     return years
 
 
-def get_gradespan(school_id, selected_year, all_years):
+def get_gradespan(school_id, school_type, selected_year):
     # returns a list of grades for for which a school has numbers for both Tested
     # and Proficient students for the selected year (and all earlier years)
     # if no grades are found - returns an empty list
     params = dict(id=school_id)
+
+    all_years = get_academic_dropdown_years(school_id, school_type)
 
     idx = all_years.index(int(selected_year))
     available_years = all_years[idx:]
@@ -797,13 +839,12 @@ def get_graduation_data():
 
 def get_ahs_averages():
     """
-    Calculates State graduation average for all ahs for
-    all years (as a substitute for state or corp avg)
+    Gets data for all AHS for all years
 
     Args:
 
     Returns:
-        pd.DataFrame: ahs grad averages
+        pd.DataFrame: AHS Data
     """
     params = dict(id="")
     q = text(

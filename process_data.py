@@ -359,7 +359,7 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
 
 
 def clean_academic_data(
-    df: pd.DataFrame, school_list: list, school_type: str, year: str
+    df: pd.DataFrame, school_list: list, school_type: str, year: str, location: str
 ) -> pd.DataFrame:
     """
     A big chonky function that takes raw academic data and processes it in
@@ -378,14 +378,6 @@ def clean_academic_data(
 
     corp_id = raw_data["GEO Corp"].unique()[0]
     school_id = school_list[0]
-
-    # NOTE: Could not get this working with infer_objects,
-    # so just suppressing error for now
-    # school_data.replace({None: np.nan}).infer_objects(copy=False)
-
-    # TODO: Testing without this
-    # with pd.option_context("future.no_silent_downcasting", True):
-    #     school_data = school_data.fillna(value=np.nan)
 
     is_analysis = False
 
@@ -450,17 +442,9 @@ def clean_academic_data(
 
     data = check_total_tested(school_data, school_id, school_type)
 
-    # print("POST TOTAL TESTED")
-    # print(data)
-
     # HS/AHS data
     if school_type == "HS" or school_type == "AHS":
         processed_data = data.copy()
-
-        # # remove "EBRW and Math" columns
-        # processed_data = processed_data.drop(
-        #     list(processed_data.filter(regex="EBRW and Math")), axis=1
-        # )
 
         # In Cohort Grad Rate
         if "Total|Cohort Count" in processed_data.columns:
@@ -582,11 +566,6 @@ def clean_academic_data(
     elif school_type == "K8":
         processed_data = data.copy()
 
-        # # remove "ELA and Math" columns
-        # processed_data = processed_data.drop(
-        #     list(processed_data.filter(regex="ELA and Math")), axis=1
-        # )
-
         processed_data = calculate_proficiency(processed_data)
 
         # In order for an apples to apples comparison between School Total Proficiency,
@@ -608,9 +587,6 @@ def clean_academic_data(
 
         # this is school, school corporation, and comparable school data
         processed_data = processed_data.reset_index()
-
-    # print("Func Process Data")
-    # print(processed_data)
 
     # the dataframe can be empty if all columns other than the 1st
     # Year are null or if the dataframe has no school_id
@@ -729,6 +705,17 @@ def clean_academic_data(
             final_school_data = processed_data[
                 processed_data["School ID"] == str(school_id)
             ].copy()
+
+            if location == "ireadTab":
+                final_school_data = final_school_data.filter(
+                    regex=r"\|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
+                    axis=1,
+                )
+            # else:
+            #     final_school_data = final_school_data.filter(
+            #         regex=r"\|ELA Proficient %$|\|Math Proficient %$|^Year$|Low|High|School Name|School ID|Corporation ID",
+            #         axis=1,
+            #     )
 
             # final_school_data = transpose_data(school_data, school_type)
 
