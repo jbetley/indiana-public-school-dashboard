@@ -2,7 +2,7 @@
 // d3.js charting functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     01.06.25
+// date:     01.11.25
 
 // https://datawanderings.com/2019/10/28/tutorial-making-a-line-chart-in-d3-js-v-5/
 // https://observablehq.com/@greenafrican/grouped-bar-chart
@@ -34,7 +34,7 @@ function multiLine() {
     colors,
     data = [],
     y = d3.scaleLinear().range([height, 0]),
-    x = d3.scaleTime().range([0, width]);
+    x = d3.scalePoint().range([0, width]);
 
   var line = d3.line()
     .x(function(d) { return x(d.year); })
@@ -81,12 +81,13 @@ function multiLine() {
             })
         ]);
 
-      var yearRange = [parseInt(years[0]),parseInt(years[years.length-1])]
-
-      x.domain(yearRange);
+      // using scalePoint seems to work better than scaleTime
+      // var yearRange = [parseInt(years[0]),parseInt(years[years.length-1])]
+      // x.domain(yearRange);
+      
+      x.domain(years);
 
       var dom = d3.select(this);
-      let id = dom._groups[0][0].id
 
       var svg = dom.append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -99,6 +100,7 @@ function multiLine() {
       //   .attr("width", width + margin.left + margin.right)
       //   .attr("height", height + margin.top + margin.bottom)
 
+      // let id = dom._groups[0][0].id
       // var linechart = svg.append("g")
       //   .attr('class', 'linechart-g')
       //   .attr('id', id)
@@ -181,9 +183,10 @@ function multiLine() {
                 })
             ]);
 
-          yearRange = [parseInt(years[0]),parseInt(years[years.length-1])]
+          // yearRange = [parseInt(years[0]),parseInt(years[years.length-1])]
+          // x.domain(yearRange);
 
-          x.domain(yearRange);
+          x.domain(years);
 
           svg.select("g.x.axis")
             .transition()
@@ -301,7 +304,7 @@ function multiLine() {
                 row+=1
               }
               else {
-                // First row is at yPosition 0
+                // First row
                 if (row == 1) {
                     y_pos = 0
                 }
@@ -403,6 +406,7 @@ function multiLine() {
             .style("font-weight", "500")
             .style("font-family", "font-family: 'Open Sans', verdana, arial, sans-serif")
             .attr("z-index", 99)
+            .attr("dy", "0.35em")   // anchor text close to middle vertically
             .attr('class', 'text');
 
           svg.selectAll("rect.overlay").remove()
@@ -413,19 +417,11 @@ function multiLine() {
           const svgWidth = svgAttributes.getNamedItem("width").value
           const svgHeight = svgAttributes.getNamedItem("height").value
 
-          // NOTE: Old way was to manually generate an offset to expand and
-          // shift overlay (using commented out code below)
-          // overlay_offset = 20
-          // translate_left = margin.left + overlay_offset
-
           var overlay = svg.append('rect')
-            // .attr("transform", "translate(-" + translate_left + "," + margin.top + ")")
             .attr("transform", "translate(-" + margin.left + ",-" + margin.top + ")")
             .attr("class", "overlay")
             .attr("width", svgWidth)
             .attr("height", svgHeight)            
-            // .attr("width", width + overlay_offset)
-            // .attr("height", height)
             .on("mouseover", mouseOver)
             .on("mouseout", mouseOut)
             .on("mousemove", mouseMove)
@@ -433,6 +429,7 @@ function multiLine() {
         } // end updateData
 
         updateWidth = function() {
+
           // width is passed in as window.innerWidth/2
           widthScale = width - margin.left - margin.right;
   
@@ -488,7 +485,10 @@ function multiLine() {
 
   function mouseMove() {
 
-    // "that" is the svg; "those" is the svg html element
+    // used later for tipBox positioning
+    var boxPosition = []
+
+    // "that" is the svg; "those" is the transformed "g" element
     that = d3.select(this.parentNode)
     those = d3.select(this.parentNode)._groups[0][0]
 
@@ -503,39 +503,24 @@ function multiLine() {
 
     dataByYear['columns'] = columns
 
+    // uses scaleQuantize() to create an inverse scale of an ordinal
+    // scale (scalePoint in this case) - returns the element from the
+    // scale that is closest to the mouse's x-position, even if the value
+    // is out of bounds.
+    // https://stackoverflow.com/questions/20758373/inversion-with-ordinal-scale
+    var inverseModeScale = d3.scaleQuantize()
+      .domain(x.range())
+      .range(x.domain())
+
+    var year = inverseModeScale(d3.mouse(those)[0]);
     var years = dataByYear.map(function(d) { return d.Year; });
 
-    // get mouse position
-    // NOTE: mouse location is shifted by ~.30 - possibly due to translate,
-    // until I figure it out, just subtract .3
-    const x0 = x.invert(d3.mouse(those)[0]) -.30;
-
-    //bisect the data
-    const j = (d3.bisect(years, x0, 1)) - 1;
-
-    //get the two closest elements to the mouse
-    const d0 = dataByYear[j];
-    const d1 = dataByYear[j+1];
-
-    //check which one is actually the closest
-    distance = x0 - d0.Year
-
-    // tweak position on account of no data in 2020
-    if (d0.Year === "2019") { center = .9 } else (center = .5)
-
-    if (distance < center) {
-      yearData = d0
-      year = d0.Year
-    }
-    else {
-      yearData = d1
-      year = d1.Year
-    }
-
+    // data for the targeted year
+    var yearData = dataByYear.find(obj => obj.Year === year)
+    
     focus.attr("transform", "translate(" + x(year) + ",0)");
-
-    /// tipbox with connecting arrow using svg path ///
-    // https://yqnn.github.io/svg-path-editor/
+    
+    /// tipbox with connecting arrow using svg path
     that.selectAll('.tipbox path')
       .style("opacity", 1)
       .attr( 'd', function(d) {
@@ -546,9 +531,14 @@ function multiLine() {
         // YearData is "year, categories..." for all years
         dataByCategory = d.values.filter(d => d.year == year)[0];
 
-        let offset = 0;
-        let path = [];
-        let yStart, xStart;
+        let offset = 0,
+            path = [],
+            yStart,
+            xStart;
+
+        // changing these values shouldn't break anything
+        var boxHeight = 26;
+        var boxWidth = 36;
 
         // dataByYear does not have an ID field. DataCategory does except
         // when undefined, so we need to check.
@@ -557,28 +547,26 @@ function multiLine() {
           yStart = y(dataByCategory.proficiency);
           xStart = x(dataByCategory.year);
 
-          // get x value of selected tipbox
-          const tipboxPath = d3.select(this.parentNode).select("path.path");
-          var tipboxLeftEdge = tipboxPath.node().getBBox().x;
+          // TODO: console.log("GETTING WEIRD FREEZING WHERE RIGHTMOST YEAR ISNT WORKING")
+          // console.log(year)
+          // console.log(years)
 
-          // get adjusted width of the selected linechart
-          const chartWidth = that.select(".linechart").node().getBBox().width;
-          var transformedChartWidth = chartWidth - (margin.left + margin.right);
-
-          // if the x position of the tipbox is larger than the
-          // width of the linechart as adjusted by the margin -
-          // flip the tipbox to the left
-          if (tipboxLeftEdge > transformedChartWidth) {
+          // if the closest "year" to mouse position is equal to the
+          // rightmost year (the closest to the right edge), flip the
+          // tipbox to the left
+          
+          if (year == years[years.length-1]) {
+            // https://yqnn.github.io/svg-path-editor/
             // left-> M xStart yStart l -8 3 l 0 10 l -36 0 l -0 -26 l 36 -0 l 0 10 l 8 3
             var topArrowH = -8
             var topArrowV = 3
             var topFrontH = 0
             var topFrontV = 10
-            var topH = -36
+            var topH = -boxWidth
             var topV = 0
             var rightH = 0
-            var rightV = -26
-            var bottomH = 36
+            var rightV = -boxHeight
+            var bottomH = boxWidth
             var bottomV = 0
             var bottomFrontH = 0
             var bottomFrontV = 10
@@ -591,11 +579,11 @@ function multiLine() {
             var topArrowV = -3
             var topFrontH = 0
             var topFrontV = -10
-            var topH = 36
+            var topH = boxWidth
             var topV = 0
             var rightH = 0
-            var rightV = 26
-            var bottomH = -36
+            var rightV = boxHeight
+            var bottomH = -boxWidth
             var bottomV = 0
             var bottomFrontH = 0
             var bottomFrontV = -10
@@ -603,90 +591,42 @@ function multiLine() {
             var bottomArrowV = -3
           }
 
-          yPosition = []
-
-          // create object with position information
-          Object.keys(yearData).forEach(k => {
+          // we don't want tipboxes to overlap, so we need to check the y position
+          // of each point and determine if an offset is necessary given the height
+          // of the tipbox (26px) and desired spacing (3px).
+          boxPosition = []
+          
+          Object.keys(yearData).forEach((k, i) => {
             if (k != "Year") {
               positionInfo = {}
               positionInfo.id = k
+              positionInfo.i = i
               positionInfo.y = y(yearData[k])
               positionInfo.shift = 0
-              yPosition.push(positionInfo)
+              boxPosition.push(positionInfo)
               }
           });
 
-          // the next shift tooltips up or down based on position to
-          // prevent overlap and get even spacing
-          yPosition.sort(function(a,b) {return a.y - b.y; });
+          boxPosition.sort(function(a,b) {return a.y - b.y; });
 
-          const tipsize = 29;
-          const distance = 25;
+          // https://stackoverflow.com/questions/35757899/how-to-avoid-overlapping-tooltips-of-multi-series-line-chart-d3-js
+          // NOTE: this shifts everything down. It would take a more complicated algorithm
+          // to shift the boxes either up or down depending on their vertical position
+          const tipboxSpacing = 3;
 
-          num = yPosition.length
+          const tipboxTotalHeight = boxHeight + tipboxSpacing;
 
-          if  (num % 2 == 0) { isEven = true};
-
-          mid = Math.floor(num/2)
-
-          // 'yPosition' is an object with position information for all
-          // tooltips. The next two loops use the y position of the 'point'
-          // of the tooltip to determine whether a shift is needed to prevent
-          // overlap, and, if so, to shift the y value. the svg is divided
-          // in half - so we are shifting top half tooltips up and bottom
-          // half tooltips down to separate them.
-
-          // top half
-          for (let j = 0; j < mid; j++) {
-
-            // distance in pixels of y point
-            let proximity = Math.abs(yPosition[j].y - yPosition[j+1].y)
-
-            if (proximity < distance) {
-              // distance in pixels to shift the y value
-              let shift = tipsize - proximity;
-
-              // add negative shift value (to shift up)
-              yPosition[j].shift = -shift
-
-              // adjust the y position to account for the shift
-              yPosition[j].y = yPosition[j].y - shift
-
-              if (j > 0) {
-                let proximity = Math.abs(yPosition[j].y - yPosition[j-1].y);
-                if (proximity < distance) {
-                  let shift = tipsize - proximity;
-                  yPosition[j-1].y = yPosition[j-1].y - shift
-                  yPosition[j-1].shift = yPosition[j-1].shift - shift
-                }
-              }
+          boxPosition.forEach (function(p,i) {
+            if (i > 0) {
+              var last = boxPosition[i-1].y;
+              boxPosition[i].shift = Math.max (0, (last + tipboxTotalHeight) - boxPosition[i].y);
+              boxPosition[i].y += boxPosition[i].shift;
             }
-          }
+          })
 
-          // bottom half
-          for (let k = mid; k < num - 1; k++) {
+          boxPosition.sort(function(a,b) { return a.i - b.i; })
 
-            let proximity = Math.abs(yPosition[k].y - yPosition[k+1].y)
-
-            if (proximity < distance) {
-              let shift = tipsize - proximity;
-              yPosition[k+1].shift = shift
-              yPosition[k+1].y = yPosition[k+1].y + shift
-
-              // Not sure if we need the bottom bit. Test.
-              if (k > 0) {
-                let proximity = Math.abs(yPosition[k].y - yPosition[k-1]);
-
-                if (proximity < 16) {
-                  let shift = tipsize - proximity;
-                  yPosition[k-1].y = yPosition[k-1].y + shift
-                  yPosition[k-1].shift = yPosition[k-1].shift + shift
-                }
-              }
-            }
-          }
-
-          offset = yPosition.filter(d => d.id == dataByCategory.id)[0].shift
+          offset = boxPosition.filter(d => d.id == dataByCategory.id)[0].shift
 
           // build tooltip path shifting the y position of the tooltip up
           // or down based on the topArrow vertical position
@@ -709,8 +649,10 @@ function multiLine() {
       })
       .style("left", function(d) {
         if (dataByCategory) {
-          if (x(dataByCategory.year) > 350) {
-            console.log("WAT IS DIS")
+        // TODO: What is this doing? How did we settle on 350?
+          if (x(dataByCategory.year) > 350) { 
+            console.log("Random over 350 thing")
+            console.log(x(dataByCategory.year))
             return -50 + "px"
           }
           else
@@ -728,28 +670,27 @@ function multiLine() {
           if (data != undefined) {
             
             // determine x position of the text based on the x position
-            // of the left side of the tipbox path, the width of the
-            // tipbox (44 pixels), and whether the value is 2 (4.5%)
-            // or 3 (14.5%) digits.
-
+            // of the left side of the tipbox path (the arrow), the width
+            // of the tipbox (44 pixels), and the length of the str value
+            // in pixels
             const tipboxPath = d3.select(this.parentNode).select("path.path");
             var tipboxLeftEdge = tipboxPath.node().getBBox().x
-
-            // get adjusted width of the selected linechart
-            const chartWidth = that.select(".linechart").node().getBBox().width;
-            var transformedChartWidth = chartWidth - (margin.left + margin.right);
-
-            // 3px difference between 2 and 3 digits
-            if (data.proficiency < .1) {
-              var offset = 15.5;
-            }
-            else {
-              var offset = 12.5;
-            }            
             
+            // add 8 pixels to the width calculation to account for the
+            // length of the connecting arrow (leftEdge is measured from
+            // the tip of the arrow, not the edge of the first horizontal)
+            var tipboxWidth = tipboxPath.node().getBBox().width + 8
+
+            // get total pixel width of text string as it appears
+            // in the text box (e.g., "52.1%","25.0%"")
+            let num = (data.proficiency * 100).toFixed(1);
+            const txtWidth = BrowserText.getWidth(`${num}%`, 9, "Inter, sans-serif")
+
+            offset = (tipboxWidth - txtWidth) / 2
+
             // adjustment when tipbox has been flipped to left
-            if (tipboxLeftEdge > transformedChartWidth) {
-              var pathX = tipboxLeftEdge + offset - 7.5;
+            if (year == years[years.length-1]) {              
+              var pathX = tipboxLeftEdge + offset - 8;
             }
             // normal right-side tipbox
             else {
@@ -759,9 +700,7 @@ function multiLine() {
             return pathX
 
           } else {
-
             return null
-          
           }
         })
         .attr("y", function(d) {
@@ -770,17 +709,17 @@ function multiLine() {
           // shift the y position of the text
           if (data != undefined) {
 
-            const tipboxPath = d3.select(this.parentNode).select("path.path");
-            var tipboxTopEdge = tipboxPath.node().getBBox().y;
-
-            var pathY = tipboxTopEdge + 16;
+            // boxPosition.y should give us the middle of the tipBox as adjusted
+            // by any shifting. note, this assumes that dy is shifted to ensure
+            // the text is middle anchored vertically
+            let pathY = boxPosition.filter(d => d.id == data.id)[0].y;
 
             return pathY
 
           } else {
-            
+
             return null
-          
+
           }
         })
         .text(function(d) {
@@ -835,7 +774,7 @@ function multiLine() {
   }; // end lineChart function
 
 
-/// single line chart with tooltip (enrollmentChart) ///
+/// single line chart with tooltip (e.g., enrollmentChart) ///
 function singleLine() {
 // viewbox: https://jsfiddle.net/cexLbfnk/1/
 
@@ -925,13 +864,10 @@ function singleLine() {
         .attr('class', 'tooltip')
         .style("position", "absolute")
         .style('display', 'none')
-        // .style("width", "130px")
-        // .style("height", "15px")
         .style("background-color", "white")
         .style("font-size", "10px")
         .style("font-weight", "500")
         .style("font-family", "Inter, sans-serif")
-        // .style("text-align", "left")
         .style("border", "solid")
         .style("border-width", "1px")
         .style("border-radius", "5px")
@@ -979,7 +915,6 @@ function singleLine() {
           })
           .attr('display', 'block');
 
-        // Set up transition.
         const dur = 200;
         const t = d3.transition().duration(dur);
 
@@ -1046,9 +981,10 @@ function singleLine() {
 
       } // end update Function
 
-// TODO: CHECK OVERLAY CHANGE HERE
+// TODO: Use Overlay Change from multi-line here as well
       updateWidth = function() {
-        // widht is passed in as window.innerWidth/2
+
+        // width is passed in as window.innerWidth/2
         widthScale = width - margin.left - margin.right;
 
         // TODO: the "svg" variable is actually "g" so parentnode is the svg
@@ -1095,7 +1031,6 @@ function singleLine() {
 
       tooltip
         .style("display", "block");
-        // .style("opacity", 1);
       d3.select(this)
         .style("opacity", .5);
       d3.select(this.parentNode).selectAll('.tooltip')
@@ -1104,8 +1039,6 @@ function singleLine() {
 
     function mouseOut() {
       focus.style("display", "none");
-      // tooltip
-      //   .style("opacity", 0);
       tooltip
         .style("display", "none");
     };
@@ -1127,7 +1060,8 @@ function singleLine() {
 
       data = data[0];
 
-      // get mouse position
+      // TODO: See if changes made in multiline work here as well
+      // mouse position
       const x0 = x.invert(d3.mouse(those)[0]);
 
       //bisect the data
@@ -1141,7 +1075,6 @@ function singleLine() {
       let distance = x0 - d0.Year;
 
       // don't need to shift demographic data because it has 2020 data
-      // if (d0.Year === 2019) { center = .9 } else { center = .5 };
       let center = .5
       let year;
 
@@ -1225,6 +1158,7 @@ function singleLine() {
 }; // end simpleLineChart function
 
 
+// Proficiency bar charts //
 function horizontalGroupBar() {
 
   let defaultWidth = window.innerWidth/2 - 125;
@@ -1275,8 +1209,6 @@ function horizontalGroupBar() {
       var dom = d3.select("#" + id);
 
       var svg = dom.append("svg")
-        // .attr("viewBox", "0 0 450 350")
-        // .attr("preserveAspectRatio", "xMinYMin")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
@@ -1476,7 +1408,7 @@ function horizontalGroupBar() {
               row+=1
             }
             else {
-              // First row is at yPosition 0
+              // First row
               if (row == 1) {
                   y_pos = 0
               }
@@ -1503,7 +1435,6 @@ function horizontalGroupBar() {
           .join("g")
             .attr("transform", function(d) { return `translate(0,${y0(d[0])})` })
           .selectAll("rect")
-          // .attr('class', 'bars')
           .data(function (d) { return d[1] })
           .join("rect")
             .attr('class', 'bars')
@@ -1518,7 +1449,6 @@ function horizontalGroupBar() {
           .data(chartData)
           .join("g")
           .selectAll("text")
-          // .attr('class', 'label')
           .data(function (d) { return d[1] })
           .join("text")
           .attr('class', 'label')
@@ -1556,7 +1486,7 @@ function horizontalGroupBar() {
               .call(wrap, width + margin.right);
         };
 
-          // uupdate title
+          // update title
           let selectedYear = document.getElementById("yearSelect").value
           let yearString = longYear(selectedYear);
 
@@ -1589,7 +1519,8 @@ function horizontalGroupBar() {
       }; // end update Function
 
       updateWidth = function() {
-        // widht is passed in as window.innerWidth/2
+
+        // width is passed in as window.innerWidth/2
         widthScale = width - margin.left - margin.right;
 
         let actualSvg = d3.select(svg._groups[0][0].parentNode)
@@ -1688,10 +1619,10 @@ function horizontalGroupBar() {
   return chart;
 }; // end simpleGroupBarChart
 
+
 // Analysis Grouped Bar //
 // https://dataviz.unhcr.org/tools/d3/d3_grouped_column_chart.html
 // https://nocommandline.com/blog/building-a-responsive-d3-js-chart/
-
 function verticalGroupBar() {
   var margin = {top: 45, right: 20, bottom: 25, left: 40},
     width = 800 - margin.left - margin.right,
@@ -1959,7 +1890,7 @@ function verticalGroupBar() {
               row+=1
             }
             else {
-              // First row is at yPosition 0
+              // First row is at boxPosition 0
               if (row == 1) {
                   y_pos = 0
               }

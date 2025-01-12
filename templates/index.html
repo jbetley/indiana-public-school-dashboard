@@ -25,7 +25,6 @@
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
 
    <!-- Imported Stylesheets (Local) -->
-   <!-- <link rel="stylesheet" media="all" href="{{ url_for('static', filename='inter.css')}}"> -->
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='slim-select.css')}}">
    <!-- <link rel="stylesheet" media="all" href="{{ url_for('static', filename='all.css')}}"> -->
 </head>
@@ -60,6 +59,23 @@
             </div>
          </div>
       </div>
+      <!-- <div class="row">
+         <div class="nav-container twelve columns">
+            <div id="subnav-tabs" class="subnav">
+               <button data-subtab="tab-sub2-1" id="k8Tab" class="tab type active">K8</button>
+               <button data-subtab="tab-sub2-2" id="hsTab" class="tab type">HS</button>
+            </div>
+         </div>
+      </div>
+      <div class="row">
+         <div class="nav-container twelve columns">
+            <div id="subnav-tabs" class="subnav">
+               <button data-subtab="tab-sub3-1" id="singleTab" class="tab info active">Selected Year</button>
+               <button data-subtab="tab-sub3-2" id="multiTab" class="tab info">Multi-Year</button>
+            </div>
+         </div>
+      </div>             
+      -->
    </div>
    <div class="row">
       <!-- <div class="nav-container twelve columns"> -->
@@ -85,54 +101,45 @@
                   <section id="tab-two">
                      <div class="grid">
                         <div class="empty-box tab2-a-label"><div class="label__header">ELA By Ethnicity</div></div>
-                        <div class="table-box tab2-a1-table"><div id="elaEthnicityTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-a2-lines"><div id="elaEthnicityChart"></div></div>
-                        <div class="stack-box tab2-a-stack"><div id="elaEthnicityStack"></div></div>
+                        <div class="table-box tab2-a1-table"><div id="ethnicityTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="box tab2-a2-lines"><div id="ethnicityChart1"></div></div>
+                        <div class="stack-box tab2-a-stack"><div id="ethnicityStack1"></div></div>
 
                         <div class="empty-box tab2-b-label"><div class="label__header">Math By Ethnicity</div></div>
-                        <div class="table-box tab2-b1-table"><div id="mathEthnicityTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-b2-lines"><div id="mathEthnicityChart"></div></div>
-                        <div class="stack-box tab2-b-stack"><div id="mathEthnicityStack"></div></div>
+                        <div class="table-box tab2-b1-table"><div id="ethnicityTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="box tab2-b2-lines"><div id="ethnicityChart2"></div></div>
+                        <div class="stack-box tab2-b-stack"><div id="ethnicityStack2"></div></div>
 
                         <div class="empty-box tab2-c-label"><div class="label__header">ELA By Status</div></div>
-                        <div class="table-box tab2-c1-table"><div id="elaStatusTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-c2-lines"><div id="elaStatusChart"></div></div>
-                        <div class="stack-box tab2-c-stack"><div id="elaStatusStack"></div></div>
+                        <div class="table-box tab2-c1-table"><div id="statusTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="box tab2-c2-lines"><div id="statusChart1"></div></div>
+                        <div class="stack-box tab2-c-stack"><div id="statusStack1"></div></div>
 
                         <div class="empty-box tab2-d-label"><div class="label__header">Math By Status</div></div>
-                        <div class="table-box tab2-d1-table"><div id="mathStatusTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-d2-lines"><div id="mathStatusChart"></div></div>
-                        <div class="stack-box tab2-d-stack"><div id="mathStatusStack"></div></div>
+                        <div class="table-box tab2-d1-table"><div id="statusTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="box tab2-d2-lines"><div id="statusChart2"></div></div>
+                        <div class="stack-box tab2-d-stack"><div id="statusStack2"></div></div>
 
                         <div class="empty-box tab2-e-label"><div class="label__header">ELA By Grade</div></div>
-                        <div class="table-box tab2-e1-table"><div id="elaTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-e2-lines"><div id="elaChart"></div></div>
-                        <div class="stack-box tab2-e-stack"><div id="elaStack"></div></div>
+                        <div class="table-box tab2-e1-table"><div id="totalTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="box tab2-e2-lines"><div id="totalChart1"></div></div>
+                        <div class="stack-box tab2-e-stack"><div id="totalStack1"></div></div>
 
                         <div class="empty-box tab2-f-label"><div class="label__header">Math By Grade</div></div>
-                        <div class="table-box tab2-f1-table"><div id="mathTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-f2-lines"><div id="mathChart"></div></div>
-                        <div class="stack-box tab2-f-stack"><div id="mathStack"></div></div>
+                        <div class="table-box tab2-f1-table"><div id="totalTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="box tab2-f2-lines"><div id="totalChart2"></div></div>
+                        <div class="stack-box tab2-f-stack"><div id="totalStack2"></div></div>
                      </div>
                   </section>
                </div>
                <div data-tab="tab-n-3">
                   <section id="tab-three">
-                     <!-- <div class="row">
-                        <div class="nav-container twelve columns">
-                           <div id="analysis-subnav-tabs">
-                              <button data-tab3="tab-n-3a" id="singleYearTab" class="analysis-subtab active">Selected Year</button>
-                              <button data-tab3="tab-n-3b" id="multiYearTab" class="analysis-subtab">MultiYear </button>
-                           </div>
-                        </div>
-                     </div> -->
                   <div class="row">
                      <div class="nav-container twelve columns">
                         <label id="comparisonLabel">Add or Remove Schools:</label>
                         <select id="comparisonSelect" multiple></select>
                      </div>
                   </div>
-                  <!-- </div> -->
                   <div class="row">
                      <div class="nav-container twelve columns">
                         <div class="grid">
@@ -155,7 +162,7 @@
 // Indiana Public School Academic Dashboard
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     01.06.25
+// date:     01.11.25
 
 // current max academic and demographic years
 const getMaxYears = `${window.origin}/config`;
@@ -214,18 +221,18 @@ var ethnicityDemoChart;
 var statusDemoChart;
 var enrollmentTableGridApi;
 var attendanceTableGridApi;
-var elaEthnicityChart;
-var mathEthnicityChart;
-var elaStatusChart;
-var mathStatusChart;
-var elaChart;
-var mathChart;
-var elaEthnicityStack;
-var mathEthnicityStack;
-var elaStatusStack;
-var mathStatusStack;
-var elaStack;
-var mathStack;
+var ethnicityChart1;
+var ethnicityChart2;
+var statusChart1;
+var statusChart2;
+var totalChart1;
+var totalChart2;
+var ethnicityStack1;
+var ethnicityStack2;
+var statusStack1;
+var statusStack2;
+var totalStack1;
+var totalStack2;
 var gridApi = [];
 var elaComparisonByEthnicity;
 var elaComparisonBySubgroup;
@@ -290,7 +297,8 @@ function getSelectedValues() {
 
    for (const aTab of activeTab) {
       // only main tab that is skipped is infoTab, so drops
-      // into below condition
+      // into second condition - will need to be adjusted when
+      // more subnavigation is added
       if (aTab.id == "demoTab" || aTab.id == "analysisTab") {
          location = aTab.id
          break;
@@ -375,6 +383,9 @@ function setCorpList (data) {
    // remove duplicates
    let corpDropdown = yearData.filter((v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i);
 
+   // sort alphabetically
+   corpDropdown.sort((a, b) => a["Corporation Name"].localeCompare(b["Corporation Name"]));
+
    corpDropdown.forEach(
       (corp) => corpSelection
       .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
@@ -397,6 +408,8 @@ function setSchoolList(data) {
 
    // clears school dropdown before rebuilding
    removeOptions(schoolSelection);
+
+   schoolDropdown.sort((a, b) => a["School Name"].localeCompare(b["School Name"]));
 
    schoolDropdown.forEach(
       (school) => schoolSelection
@@ -513,7 +526,7 @@ async function getMeatAndPotatoes(select) {
 }
 
 // Get Academic Analysis Data
-// TODO: Why is this different? data vs select??
+// TODO: Why is this function different? arg is data vs select??
 async function getFishAndChips(data) {
 
    const chips = await fetch(`${window.origin}/academic`, {
@@ -708,15 +721,14 @@ function academicInfoPage(data, select) {
       else if ((school_type == "HS") || (school_type == "AHS")) {
          var subject = subjectHS
       }
-   
+      
+// TODO: HANDLE BLANK TABLE
    if (!Array.isArray(data) || !data.length) {
       console.log("NO DATA")
       console.log(data)
+      // TODO: BLANK TABLE
    }
 
-   
-      // TODO: Catch Errors where there is no data - for tables and all
-   // charts (see line chart's blank chart for example)
    if (!academicInfoPage.initialize){
 
       // make sure year doesn't exceed max value
@@ -725,77 +737,77 @@ function academicInfoPage(data, select) {
       // Proficiency Breakdowns display current year only
       const proficiencydata = data.filter((ele) => ele.Year === Number(Year))[0];
 
-      elaEthnicityChart = multiLine()
+      ethnicityChart1 = multiLine()
          .data(getK8LineData(data, ethnicityCategory, subject[0], school_type))
-         .id("elaEthnicityChart");
-      d3.select("#elaEthnicityChart")
-         .call(elaEthnicityChart);
+         .id("ethnicityChart1");
+      d3.select("#ethnicityChart1")
+         .call(ethnicityChart1);
 
-      elaEthnicityStack = horizontalStackedBar()
+      ethnicityStack1 = horizontalStackedBar()
          .data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[0]))
-         .id("elaEthnicityStack");
-      d3.select("#elaEthnicityStack")
-         .call(elaEthnicityStack);
+         .id("ethnicityStack1");
+      d3.select("#ethnicityStack1")
+         .call(ethnicityStack1);
 
-      mathEthnicityChart = multiLine()
+      ethnicityChart2 = multiLine()
          .data(getK8LineData(data, ethnicityCategory, subject[1], school_type))
-         .id("mathEthnicityChart");
-      d3.select("#mathEthnicityChart")
-         .call(mathEthnicityChart);
+         .id("ethnicityChart2");
+      d3.select("#ethnicityChart2")
+         .call(ethnicityChart2);
 
-      mathEthnicityStack = horizontalStackedBar()
+      ethnicityStack2 = horizontalStackedBar()
          .data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[1]))
-         .id("mathEthnicityStack");
-      d3.select("#mathEthnicityStack")
-         .call(mathEthnicityStack);
+         .id("ethnicityStack2");
+      d3.select("#ethnicityStack2")
+         .call(ethnicityStack2);
 
-      elaStatusChart = multiLine()
+      statusChart1 = multiLine()
          .data(getK8LineData(data, statusCategory, subject[0], school_type))
-         .id("elaStatusChart");
-      d3.select("#elaStatusChart")
-         .call(elaStatusChart);
+         .id("statusChart1");
+      d3.select("#statusChart1")
+         .call(statusChart1);
 
-      elaStatusStack = horizontalStackedBar()
+      statusStack1 = horizontalStackedBar()
          .data(getProficiencyBreakdown(proficiencydata, statusCategory, subject[0]))
-         .id("elaStatusStack");
-      d3.select("#elaStatusStack")
-         .call(elaStatusStack);
+         .id("statusStack1");
+      d3.select("#statusStack1")
+         .call(statusStack1);
 
-      mathStatusChart = multiLine()
+      statusChart2 = multiLine()
          .data(getK8LineData(data, statusCategory, subject[1], school_type))
-         .id("mathStatusChart");
-      d3.select("#mathStatusChart")
-         .call(mathStatusChart);
+         .id("statusChart2");
+      d3.select("#statusChart2")
+         .call(statusChart2);
 
-      mathStatusStack = horizontalStackedBar()
+      statusStack2 = horizontalStackedBar()
          .data(getProficiencyBreakdown(proficiencydata, statusCategory, subject[1]))
-         .id("mathStatusStack");
-      d3.select("#mathStatusStack")
-         .call(mathStatusStack);
+         .id("statusStack2");
+      d3.select("#statusStack2")
+         .call(statusStack2);
 
-      elaChart = multiLine()
+      totalChart1 = multiLine()
          .data(getK8LineData(data, grade, subject[0], school_type))
-         .id("elaChart");
-      d3.select("#elaChart")
-         .call(elaChart);
+         .id("totalChart1");
+      d3.select("#totalChart1")
+         .call(totalChart1);
 
-      elaStack = horizontalStackedBar()
+      totalStack1 = horizontalStackedBar()
          .data(getProficiencyBreakdown(proficiencydata, grade, subject[0]))
-         .id("elaStack");
-      d3.select("#elaStack")
-         .call(elaStack);
+         .id("totalStack1");
+      d3.select("#totalStack1")
+         .call(totalStack1);
 
-      mathChart = multiLine()
+      totalChart2 = multiLine()
          .data(getK8LineData(data, grade, subject[1], school_type))
-         .id("mathChart");
-      d3.select("#mathChart")
-         .call(mathChart);
+         .id("totalChart2");
+      d3.select("#totalChart2")
+         .call(totalChart2);
 
-      mathStack = horizontalStackedBar()
+      totalStack2 = horizontalStackedBar()
          .data(getProficiencyBreakdown(proficiencydata, grade, subject[1]))
-         .id("mathStack");
-      d3.select("#mathStack")
-         .call(mathStack);
+         .id("totalStack2");
+      d3.select("#totalStack2")
+         .call(totalStack2);
 
 // Tables
 // https://www.ag-grid.com/javascript-data-grid/grid-api/
@@ -812,15 +824,28 @@ function academicInfoPage(data, select) {
 
             // assign tableDiv based on content
             let tableName ="Table";
+            let identifier;
+
+            if (subject[l] == "ELA" || subject[l] == "EBRW") {
+               identifier = "1"
+            }
+            else {
+               identifier = "2"
+            }
 
             if (categoryList[j].includes("Black")) {
-               tableName = "EthnicityTable";
+               tableName = "ethnicityTable" + identifier;
             }
             else if (categoryList[j].includes("Special Education")) {
-               tableName = "StatusTable";
+               tableName = "statusTable" + identifier;
+            }
+            else {
+               tableName = "totalTable" + identifier;
             }
 
-            let tableID = "#" + subject[l].toLowerCase() + tableName
+            let tableID = "#" + tableName // + subject[l].toLowerCase() 
+
+            console.log(tableID)
 
             let tableData = getTableData(data, categoryList[j], subject[l])
 
@@ -838,25 +863,24 @@ function academicInfoPage(data, select) {
    else {
       /* Update Charts */
 
-      elaEthnicityChart.data(getK8LineData(data, ethnicityCategory, subject[0], school_type)).id("elaEthnicityChart")
-
-      mathEthnicityChart.data(getK8LineData(data, ethnicityCategory, subject[1], school_type)).id("mathEthnicityChart")
-      elaStatusChart.data(getK8LineData(data, statusCategory, subject[0], school_type)).id("elaStatusChart")
-      mathStatusChart.data(getK8LineData(data, statusCategory, subject[1], school_type)).id("mathStatusChart")
-      elaChart.data(getK8LineData(data, grade, subject[0], school_type)).id("elaChart")
-      mathChart.data(getK8LineData(data, grade, subject[1], school_type)).id("mathChart")
+      ethnicityChart1.data(getK8LineData(data, ethnicityCategory, subject[0], school_type)).id("ethnicityChart1")
+      ethnicityChart2.data(getK8LineData(data, ethnicityCategory, subject[1], school_type)).id("ethnicityChart2")
+      statusChart1.data(getK8LineData(data, statusCategory, subject[0], school_type)).id("statusChart1")
+      statusChart2.data(getK8LineData(data, statusCategory, subject[1], school_type)).id("statusChart2")
+      totalChart1.data(getK8LineData(data, grade, subject[0], school_type)).id("totalChart1")
+      totalChart2.data(getK8LineData(data, grade, subject[1], school_type)).id("totalChart2")
 
       if ((Year > curAcademicYear) || (Year == "")) { Year = curAcademicYear }
       if ((Year == 2020)) { Year = 2019 }
 
       const proficiencydata = data.filter((ele) => ele.Year === Number(Year))[0];
 
-      elaEthnicityStack.data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[0])).id("elaEthnicityStack")
-      mathEthnicityStack.data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[1])).id("mathEthnicityStack")
-      elaStatusStack.data(getProficiencyBreakdown(proficiencydata, statusCategory, subject[0])).id("elaStatusStack")
-      mathStatusStack.data(getProficiencyBreakdown(proficiencydata, statusCategory, subject[1])).id("mathStatusStack")
-      elaStack.data(getProficiencyBreakdown(proficiencydata, grade, subject[0])).id("elaStack")
-      mathStack.data(getProficiencyBreakdown(proficiencydata, grade, subject[1])).id("mathStack")
+      ethnicityStack1.data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[0])).id("ethnicityStack1")
+      ethnicityStack2.data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[1])).id("ethnicityStack2")
+      statusStack1.data(getProficiencyBreakdown(proficiencydata, statusCategory, subject[0])).id("statusStack1")
+      statusStack2.data(getProficiencyBreakdown(proficiencydata, statusCategory, subject[1])).id("statusStack2")
+      totalStack1.data(getProficiencyBreakdown(proficiencydata, grade, subject[0])).id("totalStack1")
+      totalStack2.data(getProficiencyBreakdown(proficiencydata, grade, subject[1])).id("totalStack2")
 
       /* Update Tables */
       //https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
@@ -875,16 +899,16 @@ function academicInfoPage(data, select) {
 
          tableID = gridApi[y].getGridId()
 
-         if (tableID.includes("Ethnicity")) {
-            if (tableID.includes("ela")) {
+         if (tableID.includes("ethnicity")) {
+            if (tableID.includes("1")) {
                tableData = getTableData(tabledata, ethnicityCategory, subject[0])
             }
             else {
                tableData = getTableData(tabledata, ethnicityCategory, subject[1])
             }
          }
-         else if (tableID.includes("Status")) {
-            if (tableID.includes("ela")) {
+         else if (tableID.includes("status")) {
+            if (tableID.includes("2")) {
                tableData = getTableData(tabledata, statusCategory, subject[0])
             }
             else {
@@ -892,7 +916,7 @@ function academicInfoPage(data, select) {
             }
          }
          else {
-            if (tableID.includes("ela")) {
+            if (tableID.includes("1")) {
                tableData = getTableData(tabledata, grade, subject[0])
             }
             else {
@@ -1030,16 +1054,15 @@ function navigateHandler(e) {
 
       // adjust chart size based on browser window size
       let windowWidth = window.innerWidth/2 - 125;
-      elaEthnicityChart.width(windowWidth);
-      mathEthnicityChart.width(windowWidth);
-      elaStatusChart.width(windowWidth);
-      mathStatusChart.width(windowWidth);
-      elaChart.width(windowWidth);
-      mathChart.width(windowWidth);
+      ethnicityChart1.width(windowWidth);
+      ethnicityChart2.width(windowWidth);
+      statusChart1.width(windowWidth);
+      statusChart2.width(windowWidth);
+      totalChart1.width(windowWidth);
+      totalChart2.width(windowWidth);
 
     }
     else if (target.id.match("analysisTab")) {
-      console.log("Academic Analysis Page")
       activeMainTab = "Academic Analysis";
 
       let yearValue;
@@ -1083,7 +1106,6 @@ schoolSelection.addEventListener("change", function () {
       (mainSelection == "infoTab") && (selectedValues.school_type == "K8") &&
       (selectedValues.school_subtype != "MS")
    ) {
-   // if ((activeSubInfoTab== "ILEARN") && (selectedValues.school_type == "K8")) {
       subContent.classList.toggle("open");
    }
    else {
@@ -1160,16 +1182,15 @@ function resize() {
    if (windowWidth >= 290) {
 
       if (activeMainTab === "Academic Analysis") {
-         console.log("ACADEMIC ANALYSIS TAB")
       }
       else if (activeMainTab === "Academic Information") {
 
-         elaEthnicityChart.width(windowWidth);
-         mathEthnicityChart.width(windowWidth);
-         elaStatusChart.width(windowWidth);
-         mathStatusChart.width(windowWidth);
-         elaChart.width(windowWidth);
-         mathChart.width(windowWidth);
+         ethnicityChart1.width(windowWidth);
+         ethnicityChart2.width(windowWidth);
+         statusChart1.width(windowWidth);
+         statusChart2.width(windowWidth);
+         totalChart1.width(windowWidth);
+         totalChart2.width(windowWidth);
 
          // don't need to call stacks
          // elaEthnicityStack.width(windowWidth);

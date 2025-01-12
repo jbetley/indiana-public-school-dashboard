@@ -98,15 +98,11 @@ function isValid(obj) {
 // converts array of objects with nested arrays of objects
 // into a single array of objects with no nesting
 function flattenObject(data) {
-
   let arrays = [];
-
   for (let j = 0; j < data.length; j++) {
     arrays.push(data[j].values);
   }
-
   flatArray = arrays.flat()
-
   return flatArray
 }
 
