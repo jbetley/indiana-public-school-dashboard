@@ -53,6 +53,14 @@
       </div>        
       <div class="row">
          <div class="nav-container twelve columns">
+            <div id="subnav-tabs" class="typenav">
+               <button data-typetab="tab-s3-1" id="k8Tab" class="tab type active">K8</button>
+               <button data-typetab="tab-s3-2" id="hsTab" class="tab type">HS</button>
+            </div>
+         </div>
+      </div>
+      <div class="row">
+         <div class="nav-container twelve columns">
             <div id="subnav-tabs" class="subnav">
                <button data-subtab="tab-s-1" id="ilearnTab" class="tab info active">ILEARN</button>
                <button data-subtab="tab-s-2" id="ireadTab" class="tab info">IREAD</button>
@@ -62,98 +70,89 @@
       <!-- <div class="row">
          <div class="nav-container twelve columns">
             <div id="subnav-tabs" class="subnav">
-               <button data-subtab="tab-sub2-1" id="k8Tab" class="tab type active">K8</button>
-               <button data-subtab="tab-sub2-2" id="hsTab" class="tab type">HS</button>
-            </div>
-         </div>
-      </div>
-      <div class="row">
-         <div class="nav-container twelve columns">
-            <div id="subnav-tabs" class="subnav">
                <button data-subtab="tab-sub3-1" id="singleTab" class="tab info active">Selected Year</button>
                <button data-subtab="tab-sub3-2" id="multiTab" class="tab info">Multi-Year</button>
             </div>
          </div>
-      </div>             
-      -->
+      </div>              -->
    </div>
    <div class="row">
-      <!-- <div class="nav-container twelve columns"> -->
-         <div class="panel-container">
-            <div id="tab-content">
-               <div data-tab="tab-n-1" class="active">
-                  <section id="tab-one">
-                     <div class="grid">
-                        <div class="empty-box tab1-a-label"><div class="label__header">Total Enrollment</div></div>
-                        <div class="table-box tab1-a1-table"><div id="enrollmentTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab1-a2-lines"><div id="enrollmentChart"></div></div>
+      <div class="panel-container">
+         <div id="tab-content">
+            <div data-tab="tab-n-1" class="active">
+               <section id="tab-one">
+                  <div class="grid">
+                     <div class="empty-box tab1-a-label" id="demo-container-1-label-1"><div class="label__header"><div id="demo-container-1-label-1-text">Total Enrollment</div></div></div>
+                     <div class="table-box tab1-a1-table" id="demo-container-1-table-1"><div id="enrollmentTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab1-a2-lines" id="demo-container-1-chart-1"><div id="enrollmentChart"></div></div>
 
-                        <div class="empty-box tab1-b-label"><div class="label__header">Attendance Rate and Chronic Absenteeism</div></div>
-                        <div class="table-box tab1-b1-table"><div id="attendanceTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab1-b2-lines"><div id="attendanceChart"></div></div>
+                     <div class="empty-box tab1-b-label" id="demo-container-2-label-2"><div class="label__header" id="demo-container-2-label-1-text">Attendance Rate and Chronic Absenteeism</div></div>
+                     <div class="table-box tab1-b1-table" id="demo-container-2-table-2"><div id="attendanceTable" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab1-b2-lines" id="demo-container-2-chart-2"><div id="attendanceChart"></div></div>
 
-                        <div class="group-box tab1-c1-stack"><div id="ethnicityDemoChart"></div></div>
-                        <div class="group-box tab1-c2-stack"><div id="statusDemoChart"></div></div>
-                     </div>
-                  </section>
+                     <div class="group-box tab1-c1-stack" id="demo-container-3-stack-1"><div id="ethnicityDemoChart"></div></div>
+                     <div class="group-box tab1-c2-stack" id="demo-container-3-stack-2"><div id="statusDemoChart"></div></div>
+                  </div>
+               </section>
+            </div>
+            <div data-tab="tab-n-2">
+               <section id="tab-two">
+                  <div class="grid">
+                     <div class="empty-box tab2-a-label" id="info-container-1-label-e1"><div class="label__header" id="info-container-1-label-e1-text">ELA By Ethnicity</div></div>
+                     <div class="table-box tab2-a1-table" id="info-container-1-table-e1"><div id="ethnicityTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab2-a2-lines" id="info-container-1-chart-e1"><div id="ethnicityChart1"></div></div>
+                     <div class="stack-box tab2-a-stack" id="info-container-1-stack-e1"><div id="ethnicityStack1"></div></div>
+
+                     <div class="empty-box tab2-b-label" id="info-container-2-label-e2"><div class="label__header" id="info-container-2-label-e2-text">Math By Ethnicity</div></div>
+                     <div class="table-box tab2-b1-table" id="info-container-2-table-e2"><div id="ethnicityTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab2-b2-lines" id="info-container-2-chart-e2"><div id="ethnicityChart2"></div></div>
+                     <div class="stack-box tab2-b-stack" id="info-container-2-stack-e2"><div id="ethnicityStack2"></div></div>
+
+                     <div class="empty-box tab2-c-label" id="info-container-1-label-s1"><div class="label__header" id="info-container-1-label-s1-text">ELA By Status</div></div>
+                     <div class="table-box tab2-c1-table" id="info-container-1-table-s1"><div id="statusTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab2-c2-lines" id="info-container-1-chart-s1"><div id="statusChart1"></div></div>
+                     <div class="stack-box tab2-c-stack" id="info-container-1-stack-s1"><div id="statusStack1"></div></div>
+
+                     <div class="empty-box tab2-d-label" id="info-container-2-label-s2"><div class="label__header" id="info-container-2-label-s2-text">Math By Status</div></div>
+                     <div class="table-box tab2-d1-table" id="info-container-2-table-s2"><div id="statusTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab2-d2-lines"  id="info-container-2-chart-s2"><div id="statusChart2"></div></div>
+                     <div class="stack-box tab2-d-stack" id="info-container-2-stack-s2"><div id="statusStack2"></div></div>
+
+                     <div class="empty-box tab2-e-label" id="info-container-1-label-t1"><div class="label__header" id="info-container-1-label-t1-text">ELA By Grade</div></div>
+                     <div class="table-box tab2-e1-table" id="info-container-1-table-t1"><div id="totalTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab2-e2-lines" id="info-container-1-chart-t1"><div id="totalChart1"></div></div>
+                     <div class="stack-box tab2-e-stack" id="info-container-1-stack-t1"><div id="totalStack1"></div></div>
+
+                     <div class="empty-box tab2-f-label" id="info-container-2-label-t2"><div class="label__header" id="info-container-2-label-t2-text">Math By Grade</div></div>
+                     <div class="table-box tab2-f1-table" id="info-container-2-table-t2"><div id="totalTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                     <div class="box tab2-f2-lines" id="info-container-2-chart-t2"><div id="totalChart2"></div></div>
+                     <div class="stack-box tab2-f-stack" id="info-container-2-stack-t2"><div id="totalStack2"></div></div>
+
+                  </div>
+               </section>
+            </div>
+            <div data-tab="tab-n-3">
+               <section id="tab-three">
+               <div class="row">
+                  <div class="nav-container twelve columns">
+                     <label id="comparisonLabel">Add or Remove Schools:</label>
+                     <select id="comparisonSelect" multiple></select>
+                  </div>
                </div>
-               <div data-tab="tab-n-2">
-                  <section id="tab-two">
+               <div class="row">
+                  <div class="nav-container twelve columns">
                      <div class="grid">
-                        <div class="empty-box tab2-a-label"><div class="label__header">ELA By Ethnicity</div></div>
-                        <div class="table-box tab2-a1-table"><div id="ethnicityTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-a2-lines"><div id="ethnicityChart1"></div></div>
-                        <div class="stack-box tab2-a-stack"><div id="ethnicityStack1"></div></div>
-
-                        <div class="empty-box tab2-b-label"><div class="label__header">Math By Ethnicity</div></div>
-                        <div class="table-box tab2-b1-table"><div id="ethnicityTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-b2-lines"><div id="ethnicityChart2"></div></div>
-                        <div class="stack-box tab2-b-stack"><div id="ethnicityStack2"></div></div>
-
-                        <div class="empty-box tab2-c-label"><div class="label__header">ELA By Status</div></div>
-                        <div class="table-box tab2-c1-table"><div id="statusTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-c2-lines"><div id="statusChart1"></div></div>
-                        <div class="stack-box tab2-c-stack"><div id="statusStack1"></div></div>
-
-                        <div class="empty-box tab2-d-label"><div class="label__header">Math By Status</div></div>
-                        <div class="table-box tab2-d1-table"><div id="statusTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-d2-lines"><div id="statusChart2"></div></div>
-                        <div class="stack-box tab2-d-stack"><div id="statusStack2"></div></div>
-
-                        <div class="empty-box tab2-e-label"><div class="label__header">ELA By Grade</div></div>
-                        <div class="table-box tab2-e1-table"><div id="totalTable1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-e2-lines"><div id="totalChart1"></div></div>
-                        <div class="stack-box tab2-e-stack"><div id="totalStack1"></div></div>
-
-                        <div class="empty-box tab2-f-label"><div class="label__header">Math By Grade</div></div>
-                        <div class="table-box tab2-f1-table"><div id="totalTable2" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="box tab2-f2-lines"><div id="totalChart2"></div></div>
-                        <div class="stack-box tab2-f-stack"><div id="totalStack2"></div></div>
-                     </div>
-                  </section>
-               </div>
-               <div data-tab="tab-n-3">
-                  <section id="tab-three">
-                  <div class="row">
-                     <div class="nav-container twelve columns">
-                        <label id="comparisonLabel">Add or Remove Schools:</label>
-                        <select id="comparisonSelect" multiple></select>
+                        <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div>
+                        <div class="stack-box tab3-a-group"><div id="elaComparisonByEthnicity"></div></div>
+                        <div class="stack-box tab3-b-group"><div id="elaComparisonBySubgroup"></div></div>
+                        <!-- <div class="stack-box tab3-c-group"><div id="elaComparisonByGrade"></div></div> -->
                      </div>
                   </div>
-                  <div class="row">
-                     <div class="nav-container twelve columns">
-                        <div class="grid">
-                           <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div>
-                           <div class="stack-box tab3-a-group"><div id="elaComparisonByEthnicity"></div></div>
-                           <div class="stack-box tab3-b-group"><div id="elaComparisonBySubgroup"></div></div>
-                        </div>
-                     </div>
-                  </div>
-                  </section>
                </div>
+               </section>
             </div>
          </div>
-      <!-- </div> -->
+      </div>
    </div>
 </body>
 
@@ -292,27 +291,33 @@ function getComparisonValues() {
 function getSelectedValues() {
    const Year = getSelectedYear();
    const school_id = getSchoolSelection();
-   const activeTab = document.querySelectorAll(".tab.active");
-   let location;
-
-   for (const aTab of activeTab) {
-      // only main tab that is skipped is infoTab, so drops
-      // into second condition - will need to be adjusted when
-      // more subnavigation is added
-      if (aTab.id == "demoTab" || aTab.id == "analysisTab") {
-         location = aTab.id
-         break;
-      }
-      else if (aTab.id == "ireadTab" || aTab.id == "ilearnTab") {
-         location = aTab.id
-         break;
-      }
-   }
+   const pageTab = document.querySelector(".tab.main.active").id;
+   const infoTab = document.querySelector(".tab.info.active").id;
+   const typeTab = document.querySelector(".tab.type.active").id;
+   // const activeTab = document.querySelectorAll(".tab.active");
 
    let schoolInfo = allSchoolsObj.filter(o => o["School ID"] == school_id && o.Year == Year);
 
-   const school_type = schoolInfo[0]["School Type"]
-   const school_subtype = schoolInfo[0]["Sub Type"]
+   let school_type = schoolInfo[0]["School Type"]
+   let school_subtype = schoolInfo[0]["Sub Type"]
+
+   let location;
+
+   if (pageTab == "infoTab") {
+      location = infoTab;
+   }
+   else {
+      location = pageTab
+   }
+
+   if (pageTab != "demoTab" && school_type == "K12") {
+      if (typeTab == "HSTab") {
+         school_subtype = "HS"
+      }
+      else {
+         school_subtype = "K8"
+      }
+   }
 
    let selectedValues = {};
    selectedValues.school_id = school_id;
@@ -332,23 +337,41 @@ function getSelectedValues() {
 // switches active status and hides or shows subnavigation
 const navTabs = document.querySelector("div#nav-tabs"),
    subnavTabs = document.querySelector("div#subnav-tabs"),
+   typenavTabs = document.querySelector("div#typenav-tabs"),
    nav_tab_elms = document.querySelectorAll("button[data-tab], div[data-tab]"),
-   subnav_tab_elms = document.querySelectorAll("button[data-subtab]"); // selecting wrong
+   subnav_tab_elms = document.querySelectorAll("button[data-subtab]"),
+   typenav_tab_elms = document.querySelectorAll("button[data-typetab]");
 
    navTabs.onclick = ({target}) => {
 
       const selected_type = getSelectedValues().school_type;
       const selected_subtype = getSelectedValues().school_subtype;
 
-      // ignore other clicks in this area (like spaces between buttons)
+      // ignore other clicks in this area (like spaces 
+      // between buttons)
+      // TODO: Need this for all other buttons?
       if (!target.matches("button[data-tab]")) return
-      
+
+      const pageTab = document.querySelector(".tab.main.active").id;
+      const infoTab = document.querySelector(".tab.info.active").id;
+      const typeTab = document.querySelector(".tab.type.active").id;
       const subContent = document.querySelector(".subnav");
+      const typeContent = document.querySelector(".typenav");
+
+      // display typeNav
+      if (pageTab != "demoTab" && selected_type == "K12") {
+         typeContent.classList.toggle("open");
+      }
+      else {
+         typeContent.classList.remove("open");
+      }
       
       // display of academic info subnav
       if (
-         (target.id == "infoTab") && (selected_type == "K8") &&
-         (selected_subtype != "MS")
+         target.id == "infoTab" && (
+         (selected_type == "K8" && selected_subtype != "MS") ||
+         selected_subtype == "K8"
+      ) 
       ) {
          subContent.classList.toggle("open");
       }
@@ -963,6 +986,7 @@ function academicAnalysisPage(data) {
 
    let ecbsData = getK8LineData(yearData, statusCategory, subject[0], school_type)
    let elaComparisonBySubGroupTransposed = transposeData(ecbsData, "School Name");
+
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonBySubgroupChartData = processBarData(elaComparisonBySubGroupTransposed);
 
@@ -994,22 +1018,30 @@ else {
 }
 
 function navigateHandler(e) {
+   const mainSelection = document.querySelector(".tab.main.active").id;
+   const subSelection = document.querySelector(".tab.info.active").id;
+   const subContent = document.querySelector(".subnav");
+   const typeContent = document.querySelector(".typenav");
 
-    e = e || window.event;
-    var target = e.target || e.srcElement;
+   e = e || window.event;
+   var target = e.target || e.srcElement;
 
-    if (target.id.match("demoTab")) {
-      console.log("Demographics Page")
+   var selectedValues = getSelectedValues();
+   
+   const strYear = selectedValues.year;
+   const intYear = parseInt(strYear)
+   let yearValue;
 
+   const schoolType = selectedValues.school_type;
+   const schoolSubtype = selectedValues.school_subtype;
+
+   if (target.id.match("demoTab")) {
       activeMainTab = "Demographics";
-
-      let selectedValues = getSelectedValues();
-      let currentYear = getSelectedYear();
 
       setYearList(allSchoolsObj,"demographic");
 
-      yearSelection.value = currentYear.toString()
-      yearSelection.setAttribute("value", currentYear.toString());
+      yearSelection.value = strYear; //curYear.toString()
+      yearSelection.setAttribute("value", strYear); //curYear.toString());
 
       gettinJiggyWitIt(selectedValues);
 
@@ -1019,36 +1051,66 @@ function navigateHandler(e) {
       attendanceChart.width(windowWidth);
       ethnicityDemoChart.width(windowWidth);
       statusDemoChart.width(windowWidth);      
-    }
-    if (
-      (target.id.match("infoTab") || target.id.match("ilearnTab")
-      || target.id.match("ireadTab"))
-    ) {
-      console.log("Academic Infomation Page")
+   }
+
+   if (target.id.match("infoTab") ||
+      target.id.match("ilearnTab")||
+      target.id.match("ireadTab")) {
+
+      let stacks = document.querySelectorAll('[id^="info-container-1-stack"]');
+      let subcharts = document.querySelectorAll('[id^="info-container-2"]');
+      let labels = document.querySelectorAll('[id^="info-container-1-label"]');
+
+      console.log(labels)
+
+      if (mainSelection == "infoTab" &&
+         ((schoolType == "K8" && schoolSubtype != "MS") || schoolSubtype == "K8")
+         ) {      
+            subContent.classList.toggle("open");
+         }
+         else {
+            subContent.classList.remove("open");
+         }
+
+      if (target.id.match("ireadTab")) {
+         subcharts.forEach(el => {
+            el.style.display = "none"; 
+         });
+         stacks.forEach(el => {
+            el.style.display = "none"; 
+         });
+         labels.forEach(el => {
+            el.innerHTML = "IREAAAAD!"; 
+         });
+      }
+      else if (target.id.match("ilearnTab")) {
+         subcharts.forEach(el => {
+            el.style.display = "block"; 
+         });
+         stacks.forEach(el => {
+            el.style.display = "block"; 
+         });         
+      }
 
       activeMainTab = "Academic Information";
 
-      let yearValue;
-      let selectedValues = getSelectedValues();
-
-      let currentYear = parseInt(selectedValues.year)
-      
       setYearList(allSchoolsObj,"academic");
 
-      if (currentYear == 2020) {
-         yearValue = 2019;
+      console.log(typeof curAcademicYear)
+      if (strYear == "2020") {
+         yearValue = "2019";
       }
-      else if (currentYear > curAcademicYear) {
-         yearValue = curAcademicYear;
+      else if (intYear > curAcademicYear) {
+         yearValue = curAcademicYear.toString();
       }
       else {
-         yearValue = currentYear;
+         yearValue = strYear;
       }
 
-      yearSelection.value = yearValue.toString()
-      yearSelection.setAttribute("value", yearValue.toString());
+      yearSelection.value = yearValue; //.toString()
+      yearSelection.setAttribute("value", yearValue); //.toString());
 
-      selectedValues["year"] = yearValue.toString()
+      selectedValues["year"] = yearValue; //.toString()
 
       getMeatAndPotatoes(selectedValues);
 
@@ -1065,26 +1127,26 @@ function navigateHandler(e) {
     else if (target.id.match("analysisTab")) {
       activeMainTab = "Academic Analysis";
 
-      let yearValue;
-      let currentYear = getSelectedYear();
-      let selectedValues = getSelectedValues();
+      // let yearValue;
+      // let currentYear = getSelectedYear();
+      // let selectedValues = getSelectedValues();
 
       setYearList(allSchoolsObj,"academic");
 
       if (currentYear == 2020) {
          yearValue = 2019;
       }
-      else if (currentYear > curAcademicYear) {
-         yearValue = curAcademicYear;
+      else if (intYear > curAcademicYear) {
+         yearValue = curAcademicYear.toString();;
       }
       else {
-         yearValue = currentYear;
+         yearValue = strYear;
       }
 
-      yearSelection.value = yearValue.toString()
-      yearSelection.setAttribute("value", yearValue.toString());
+      yearSelection.value = yearValue; //.toString()
+      yearSelection.setAttribute("value", yearValue); //.toString());
 
-      selectedValues["year"] = yearValue.toString()
+      selectedValues["year"] = yearValue; //.toString()
 
       let comparisonValues = getComparisonValues();
 
@@ -1097,14 +1159,22 @@ schoolSelection.addEventListener("change", function () {
 
    let selectedValues = getSelectedValues();
 
-   // TODO: Use as globals or in function?
-   let mainSelection = document.querySelector(".tab.main.active").id;
-   let subSelection = document.querySelector(".tab.info.active").id;
+   // TODO: Set thes in global or in each fucntion?
+   const mainSelection = document.querySelector(".tab.main.active").id;
+   const subSelection = document.querySelector(".tab.info.active").id;
    const subContent = document.querySelector(".subnav");
+   const typeContent = document.querySelector(".typenav");
+
+   if (mainSelection != "demoTab"  && selectedValues.school_type == "K12") {
+      typeContent.classList.toggle("open");
+   }
+   else {
+      typeContent.classList.remove("open");
+   }
 
    if (
-      (mainSelection == "infoTab") && (selectedValues.school_type == "K8") &&
-      (selectedValues.school_subtype != "MS")
+      (mainSelection == "infoTab") && (selectedValues.school_type == "K8" ||
+         selectedValues.subtype == "K8") && (selectedValues.school_subtype != "MS")
    ) {
       subContent.classList.toggle("open");
    }

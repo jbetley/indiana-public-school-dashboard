@@ -305,14 +305,14 @@ def get_public_dropdown():
         right_index=True,
     )
 
-    # identify AHS' lsewhere because their grade levels are not reliably
-    # stored in demographics file (usually as 11 & 12, rarely "Adult")
+    # cannot identify AHS by gradespan because their grade levels are
+    # not reliably stored in the demographics file (usually as 11 & 12,
+    # rarely "Adult")
     ahs_data = get_ahs_averages()
 
     ahs_data = ahs_data[["School ID", "School Type"]]
     ahs_data["Sub Type"] = ahs_data["School Type"]
 
-    # ahs_data = ahs_data.rename(columns={"School Type": "Type"})
     ahs_data = ahs_data.drop_duplicates(subset=["School ID"])
 
     ahs_data = ahs_data.set_index(["School ID"])
@@ -320,9 +320,6 @@ def get_public_dropdown():
 
     dropdown_list.update(ahs_data)
     dropdown_list = dropdown_list.reset_index()
-
-    # filename99 = "dropdown_list.csv"
-    # dropdown_list.to_csv(filename99, index=False)
 
     return dropdown_list
 

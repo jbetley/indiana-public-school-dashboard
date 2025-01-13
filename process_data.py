@@ -384,11 +384,9 @@ def clean_academic_data(
     # school_list will either have one element, or be a list, if one
     # element, we are on the academic_information page, if more than
     # one, we are on the analysis page.
-    # TODO: May want to make this more explicit.
     if len(school_list) > 1:
         is_analysis = True
 
-    # TODO: MAYBE DONT GRAB CORP DATA UNLESS WE ARE IN ANALYSIS PAGE?
     # corp data (for academic_metrics and academic_analysis_single_year)
     # no corp data for AHS other than ahs grad average
 
