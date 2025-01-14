@@ -53,9 +53,9 @@
       </div>        
       <div class="row">
          <div class="nav-container twelve columns">
-            <div id="subnav-tabs" class="typenav">
-               <button data-typetab="tab-s3-1" id="k8Tab" class="tab type active">K8</button>
-               <button data-typetab="tab-s3-2" id="hsTab" class="tab type">HS</button>
+            <div id="typenav-tabs" class="typenav">
+               <button data-typetab="tab-t-1" id="k8Tab" class="tab type active">K8</button>
+               <button data-typetab="tab-t-2" id="hsTab" class="tab type">HS</button>
             </div>
          </div>
       </div>
@@ -190,6 +190,7 @@ const comparisonSelection = document.getElementById("comparisonSelect");
 // TODO: Using these anywhere?
 var activeMainTab = document.querySelectorAll(".tab.active")[0].innerHTML;
 var activeSubInfoTab = document.querySelectorAll(".tab.info.active")[0].innerHTML;
+var activeTypeTab = document.querySelectorAll(".tab.type.active")[0].innerHTML;
 
 var comparisonSelect = new SlimSelect({
   select: "#comparisonSelect",
@@ -257,13 +258,13 @@ function getCorpSelection() {
    let corpIDValue;
 
    if (corpSelection != null && corpSelection.value == "") {
-
       // finds first element in array even if it falsy (but not if undefined)
       corpIDValue = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
    }
    else {
       corpIDValue = corpSelection.value
    }
+
    return corpIDValue
 }
 
@@ -276,11 +277,13 @@ function getSchoolSelection() {
    else {
       schoolIDValue = schoolSelection.value
    }
+
    return schoolIDValue
 }
 
 // adds comparison schools to selectedValues obj on academic analysis page
 function getComparisonValues() {
+
    let selectedValues = getSelectedValues();
    let comparisonSchools = comparisonSelect.getSelected();
    selectedValues.comparison_schools = comparisonSchools;
@@ -289,12 +292,12 @@ function getComparisonValues() {
 }
 
 function getSelectedValues() {
+
    const Year = getSelectedYear();
    const school_id = getSchoolSelection();
    const pageTab = document.querySelector(".tab.main.active").id;
    const infoTab = document.querySelector(".tab.info.active").id;
    const typeTab = document.querySelector(".tab.type.active").id;
-   // const activeTab = document.querySelectorAll(".tab.active");
 
    let schoolInfo = allSchoolsObj.filter(o => o["School ID"] == school_id && o.Year == Year);
 
@@ -311,7 +314,7 @@ function getSelectedValues() {
    }
 
    if (pageTab != "demoTab" && school_type == "K12") {
-      if (typeTab == "HSTab") {
+      if (typeTab == "hsTab") {
          school_subtype = "HS"
       }
       else {
@@ -324,7 +327,7 @@ function getSelectedValues() {
    selectedValues.year = Year;
    selectedValues.school_type = school_type;
    selectedValues.school_subtype = school_subtype;
-   selectedValues.comparison_schools = [];   // placeholder
+   selectedValues.comparison_schools = [];
    selectedValues.location = location;       
 
    return selectedValues
@@ -344,12 +347,10 @@ const navTabs = document.querySelector("div#nav-tabs"),
 
    navTabs.onclick = ({target}) => {
 
-      const selected_type = getSelectedValues().school_type;
-      const selected_subtype = getSelectedValues().school_subtype;
+      const schoolType = getSelectedValues().school_type;
+      const schoolSubtype = getSelectedValues().school_subtype;
 
-      // ignore other clicks in this area (like spaces 
-      // between buttons)
-      // TODO: Need this for all other buttons?
+      // ignore other clicks in this area (like spaces between buttons)
       if (!target.matches("button[data-tab]")) return
 
       const pageTab = document.querySelector(".tab.main.active").id;
@@ -358,21 +359,17 @@ const navTabs = document.querySelector("div#nav-tabs"),
       const subContent = document.querySelector(".subnav");
       const typeContent = document.querySelector(".typenav");
 
-      // display typeNav
-      if (pageTab != "demoTab" && selected_type == "K12") {
+      // school type nav (K8/HS)
+      if (pageTab != "demoTab" && schoolType == "K12") {
          typeContent.classList.toggle("open");
       }
       else {
          typeContent.classList.remove("open");
       }
       
-      // display of academic info subnav
-      if (
-         target.id == "infoTab" && (
-         (selected_type == "K8" && selected_subtype != "MS") ||
-         selected_subtype == "K8"
-      ) 
-      ) {
+      // academic info type nav (ILEARN/IREAD)
+      if (target.id == "infoTab" && 
+         ((schoolType == "K8" && schoolSubtype != "MS") || schoolSubtype == "K8")) {
          subContent.classList.toggle("open");
       }
       else {
@@ -387,15 +384,26 @@ const navTabs = document.querySelector("div#nav-tabs"),
       })
   };
 
-  // academic info subnavigation
+  // academic info type
   subnavTabs.onclick = ({target}) => {
+
       if (!target.matches("button[data-subtab]")) return
 
       subnav_tab_elms.forEach(elTab => {
          elTab.classList
          .toggle("active", (elTab.dataset.subtab===target.dataset.subtab))
       })
+   };
 
+   // school type
+   typenavTabs.onclick = ({target}) => {
+
+      if (!target.matches("button[data-typetab]")) return
+
+      typenav_tab_elms.forEach(elTab => {
+         elTab.classList
+         .toggle("active", (elTab.dataset.typetab===target.dataset.typetab))
+      })
    };
 
 function setCorpList (data) {
@@ -407,7 +415,7 @@ function setCorpList (data) {
    let corpDropdown = yearData.filter((v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i);
 
    // sort alphabetically
-   corpDropdown.sort((a, b) => a["Corporation Name"].localeCompare(b["Corporation Name"]));
+   // corpDropdown.sort((a, b) => a["Corporation Name"].localeCompare(b["Corporation Name"]));
 
    corpDropdown.forEach(
       (corp) => corpSelection
@@ -432,18 +440,21 @@ function setSchoolList(data) {
    // clears school dropdown before rebuilding
    removeOptions(schoolSelection);
 
-   schoolDropdown.sort((a, b) => a["School Name"].localeCompare(b["School Name"]));
+   // schoolDropdown.sort((a, b) => a["School Name"].localeCompare(b["School Name"]));
 
    schoolDropdown.forEach(
       (school) => schoolSelection
       .appendChild(new Option(school["School Name"], school["School ID"]))
    );
 
+   console.log("Set School List")
+   console.log(getSelectedValues())
+
    // load comparison schools
    if (activeMainTab === "Academic Analysis") {
       let selectedValues = getSelectedValues();
       getComparisonSchools(selectedValues);
-   }
+   };
 
    // auto trigger change event whenever School List changes
    var event = new Event("change");
@@ -452,7 +463,9 @@ function setSchoolList(data) {
 
 /// Comparison List ///
 function setComparisonList(data) {
+   
    let subset = data.map(({ ["School ID"]: value, ["School Name"]: text }) => ({ text, value }));
+   
    // remove selected school from dropdown
    subset = subset.slice(1);
 
@@ -464,11 +477,13 @@ function setComparisonList(data) {
    let initialSelections = subset.map(function (obj) {
       return obj.value;
    });
+
    initialSelections = initialSelections.slice(0, 4);
    comparisonSelect.setSelected(initialSelections);
 };
 
 function setYearList(data, id) {
+
    let selectedYear = yearSelection;
 
    removeOptions(selectedYear);
@@ -593,8 +608,6 @@ async function getComparisonSchools(data) {
 
 // Chart Demographic Data
 function demographicsPage(data, select) {
-   console.log("Demographics Page")
-
    let school_id = select.school_id;
    let Year = select.year;
    
@@ -677,11 +690,13 @@ function demographicsPage(data, select) {
    // merge school and corp objects
    let ethnicityArray = [ethnicityYearSchool];
    ethnicityArray.push(ethnicityYearCorp);
+
    let ethnicityTransposed = transposeData(ethnicityArray, "School Name");
    var ethnicityDemoChartData = processBarData(ethnicityTransposed);
 
    let statusArray = [statusYearSchool];
    statusArray.push(statusYearCorp);
+
    let statusTransposed = transposeData(statusArray, "School Name");
    var statusDemoChartData = processBarData(statusTransposed);
 
@@ -735,13 +750,17 @@ function demographicsPage(data, select) {
 // Chart Academic Information
 function academicInfoPage(data, select) {
 
-   let Year = select.year;
-   let school_type = select.school_type
+   const year = select.year;
+   const schoolType = select.school_type
+   // TODO: Fix this here - deal with K12 on initial load
+   console.log("ACAD INFO SELECT")
+   console.log(select)
+   console.log(getSelectedValues())
 
-   if (school_type == "K8") {
+   if (schoolType == "K8") {
          var subject = subjectK8
       }
-      else if ((school_type == "HS") || (school_type == "AHS")) {
+      else if ((schoolType == "HS") || (schoolType == "AHS")) {
          var subject = subjectHS
       }
       
@@ -761,7 +780,7 @@ function academicInfoPage(data, select) {
       const proficiencydata = data.filter((ele) => ele.Year === Number(Year))[0];
 
       ethnicityChart1 = multiLine()
-         .data(getK8LineData(data, ethnicityCategory, subject[0], school_type))
+         .data(getK8LineData(data, ethnicityCategory, subject[0], schoolType))
          .id("ethnicityChart1");
       d3.select("#ethnicityChart1")
          .call(ethnicityChart1);
@@ -773,7 +792,7 @@ function academicInfoPage(data, select) {
          .call(ethnicityStack1);
 
       ethnicityChart2 = multiLine()
-         .data(getK8LineData(data, ethnicityCategory, subject[1], school_type))
+         .data(getK8LineData(data, ethnicityCategory, subject[1], schoolType))
          .id("ethnicityChart2");
       d3.select("#ethnicityChart2")
          .call(ethnicityChart2);
@@ -785,7 +804,7 @@ function academicInfoPage(data, select) {
          .call(ethnicityStack2);
 
       statusChart1 = multiLine()
-         .data(getK8LineData(data, statusCategory, subject[0], school_type))
+         .data(getK8LineData(data, statusCategory, subject[0], schoolType))
          .id("statusChart1");
       d3.select("#statusChart1")
          .call(statusChart1);
@@ -797,7 +816,7 @@ function academicInfoPage(data, select) {
          .call(statusStack1);
 
       statusChart2 = multiLine()
-         .data(getK8LineData(data, statusCategory, subject[1], school_type))
+         .data(getK8LineData(data, statusCategory, subject[1], schoolType))
          .id("statusChart2");
       d3.select("#statusChart2")
          .call(statusChart2);
@@ -809,7 +828,7 @@ function academicInfoPage(data, select) {
          .call(statusStack2);
 
       totalChart1 = multiLine()
-         .data(getK8LineData(data, grade, subject[0], school_type))
+         .data(getK8LineData(data, grade, subject[0], schoolType))
          .id("totalChart1");
       d3.select("#totalChart1")
          .call(totalChart1);
@@ -821,7 +840,7 @@ function academicInfoPage(data, select) {
          .call(totalStack1);
 
       totalChart2 = multiLine()
-         .data(getK8LineData(data, grade, subject[1], school_type))
+         .data(getK8LineData(data, grade, subject[1], schoolType))
          .id("totalChart2");
       d3.select("#totalChart2")
          .call(totalChart2);
@@ -868,8 +887,6 @@ function academicInfoPage(data, select) {
 
             let tableID = "#" + tableName // + subject[l].toLowerCase() 
 
-            console.log(tableID)
-
             let tableData = getTableData(data, categoryList[j], subject[l])
 
             let tableOptions = createBasicTable(tableData, tableID)
@@ -885,13 +902,13 @@ function academicInfoPage(data, select) {
 
    else {
       /* Update Charts */
-
-      ethnicityChart1.data(getK8LineData(data, ethnicityCategory, subject[0], school_type)).id("ethnicityChart1")
-      ethnicityChart2.data(getK8LineData(data, ethnicityCategory, subject[1], school_type)).id("ethnicityChart2")
-      statusChart1.data(getK8LineData(data, statusCategory, subject[0], school_type)).id("statusChart1")
-      statusChart2.data(getK8LineData(data, statusCategory, subject[1], school_type)).id("statusChart2")
-      totalChart1.data(getK8LineData(data, grade, subject[0], school_type)).id("totalChart1")
-      totalChart2.data(getK8LineData(data, grade, subject[1], school_type)).id("totalChart2")
+      console.log(subject)
+      ethnicityChart1.data(getK8LineData(data, ethnicityCategory, subject[0], schoolType)).id("ethnicityChart1")
+      ethnicityChart2.data(getK8LineData(data, ethnicityCategory, subject[1], schoolType)).id("ethnicityChart2")
+      statusChart1.data(getK8LineData(data, statusCategory, subject[0], schoolType)).id("statusChart1")
+      statusChart2.data(getK8LineData(data, statusCategory, subject[1], schoolType)).id("statusChart2")
+      totalChart1.data(getK8LineData(data, grade, subject[0], schoolType)).id("totalChart1")
+      totalChart2.data(getK8LineData(data, grade, subject[1], schoolType)).id("totalChart2")
 
       if ((Year > curAcademicYear) || (Year == "")) { Year = curAcademicYear }
       if ((Year == 2020)) { Year = 2019 }
@@ -959,7 +976,6 @@ function academicInfoPage(data, select) {
 
 // Chart Academic Information
 function academicAnalysisPage(data) {
-   console.log("Academic Analysis Page")
 
    // TODO: pass these values through function? or get them a diff way?
    // TODO: is this duplicative?
@@ -1035,13 +1051,16 @@ function navigateHandler(e) {
    const schoolType = selectedValues.school_type;
    const schoolSubtype = selectedValues.school_subtype;
 
+   console.log(mainSelection)
+   console.log(schoolType)
+   console.log(schoolSubtype)
    if (target.id.match("demoTab")) {
       activeMainTab = "Demographics";
 
       setYearList(allSchoolsObj,"demographic");
 
-      yearSelection.value = strYear; //curYear.toString()
-      yearSelection.setAttribute("value", strYear); //curYear.toString());
+      yearSelection.value = strYear;
+      yearSelection.setAttribute("value", strYear);
 
       gettinJiggyWitIt(selectedValues);
 
@@ -1053,9 +1072,7 @@ function navigateHandler(e) {
       statusDemoChart.width(windowWidth);      
    }
 
-   if (target.id.match("infoTab") ||
-      target.id.match("ilearnTab")||
-      target.id.match("ireadTab")) {
+   if (target.id.match("infoTab") || target.id.match("ilearnTab")|| target.id.match("ireadTab")) {
 
       let stacks = document.querySelectorAll('[id^="info-container-1-stack"]');
       let subcharts = document.querySelectorAll('[id^="info-container-2"]');
@@ -1063,14 +1080,21 @@ function navigateHandler(e) {
 
       console.log(labels)
 
-      if (mainSelection == "infoTab" &&
-         ((schoolType == "K8" && schoolSubtype != "MS") || schoolSubtype == "K8")
-         ) {      
-            subContent.classList.toggle("open");
-         }
-         else {
-            subContent.classList.remove("open");
-         }
+      if (schoolType == "K12") {
+         typeContent.classList.toggle("open");
+      }
+      else {
+         typeContent.classList.remove("open");
+      }
+
+      if (mainSelection == "infoTab" && (
+         (schoolType == "K8" && schoolSubtype != "MS") || schoolSubtype == "K8"
+         )) {      
+         subContent.classList.toggle("open");
+      }
+      else {
+         subContent.classList.remove("open");
+      }
 
       if (target.id.match("ireadTab")) {
          subcharts.forEach(el => {
@@ -1096,7 +1120,6 @@ function navigateHandler(e) {
 
       setYearList(allSchoolsObj,"academic");
 
-      console.log(typeof curAcademicYear)
       if (strYear == "2020") {
          yearValue = "2019";
       }
@@ -1112,6 +1135,8 @@ function navigateHandler(e) {
 
       selectedValues["year"] = yearValue; //.toString()
 
+      console.log("Nav Values")
+      console.log(selectedValues)
       getMeatAndPotatoes(selectedValues);
 
       // adjust chart size based on browser window size
@@ -1188,6 +1213,8 @@ schoolSelection.addEventListener("change", function () {
       getFishAndChips(comparisonValues);
    }
    else if (mainSelection === "infoTab")  {
+      console.log("School Selection Values")
+      console.log(selectedValues)
       getMeatAndPotatoes(selectedValues);
    }
    else {
@@ -1228,6 +1255,9 @@ if (document.readyState !== "loading") {
    setYearList(allSchoolsObj,"demographic");
 
    let selectedValues = getSelectedValues();
+
+   console.log("CorpSelect Values")
+   console.log(selectedValues)
 
    gettinJiggyWitIt(selectedValues);
    getMeatAndPotatoes(selectedValues);

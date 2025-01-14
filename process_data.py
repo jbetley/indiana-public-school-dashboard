@@ -390,6 +390,8 @@ def clean_academic_data(
     # corp data (for academic_metrics and academic_analysis_single_year)
     # no corp data for AHS other than ahs grad average
 
+    print(school_type)
+
     # if True, we are on academic analysis page and need comp
     # and corp data
     if is_analysis == True:

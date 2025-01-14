@@ -65,6 +65,13 @@ def load_config():
 def load_school_dropdown():
     school_df = get_public_dropdown()
 
+    school_df = school_df.sort_values(
+        ["Corporation Name", "School Name"], ascending=[True, True]
+    )
+
+    # filename99 = "school_df.csv"
+    # school_df.to_csv(filename99, index=False)
+
     dropdown_list = [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in school_df.to_dict(orient="records")
@@ -152,18 +159,26 @@ def load_academic_data():
 
     schools = [data["school_id"]] + data["comparison_schools"]
 
-    raw_proficiency_data = get_academic_data(schools, data["school_type"])
+    # school_subtype for K12 will either be K8 or HS, school_subtype
+    # for K8 will be ES, MS, or K8
+    if data["school_type"] == "K12":
+
+        if data["school_subtype"] == "K12":
+            school_type = "K8"
+        else:
+            school_type = data["school_subtype"]
+    else:
+        school_type = data["school_type"]
+
+    raw_proficiency_data = get_academic_data(schools, school_type)
 
     proficiency_data = clean_academic_data(
         raw_proficiency_data,
         schools,
-        data["school_type"],
+        school_type,
         data["year"],
         data["location"],
     )
-
-    # filename99 = "proficiency_data.csv"
-    # proficiency_data.to_csv(filename99, index=False)
 
     # df is empty or only has information cols (e.g., MS for IREAD data)
     if len(proficiency_data.columns) <= 6:
