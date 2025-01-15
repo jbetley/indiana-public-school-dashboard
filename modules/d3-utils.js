@@ -2,7 +2,7 @@
 // d3.js utility functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     07.04.24
+// date:     01.11.25
 
 
 // function to wrap text in d3 chart
@@ -60,15 +60,17 @@ function legendXPositionText(data, position, textOffset, avgFontWidth) {
   return legendXPosition(data, position, avgFontWidth) + textOffset;
 }
 
-
 function legendXPosition(data, position, avgFontWidth) {
+
   let labelWidth = 15;
   if (position == 0) {
     return 0;
   } else {
     var xPosition = 0;
     for (i = 0; i < position; i++) {
-      xPosition += (data[i].length * avgFontWidth + labelWidth);
+// TODO: Trying to determine why data[i].length used to work but doesnt now- is 1 sufficient?
+      // console.log(data[i].length)
+      xPosition += (1 * avgFontWidth + labelWidth); //data[i].length
     }
     return xPosition;
   }

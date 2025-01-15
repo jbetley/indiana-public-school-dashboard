@@ -293,13 +293,13 @@ function getComparisonValues() {
 
 function getSelectedValues() {
 
-   const Year = getSelectedYear();
+   const year = getSelectedYear();
    const school_id = getSchoolSelection();
    const pageTab = document.querySelector(".tab.main.active").id;
    const infoTab = document.querySelector(".tab.info.active").id;
    const typeTab = document.querySelector(".tab.type.active").id;
 
-   let schoolInfo = allSchoolsObj.filter(o => o["School ID"] == school_id && o.Year == Year);
+   let schoolInfo = allSchoolsObj.filter(o => o["School ID"] == school_id && o.Year == year);
 
    let school_type = schoolInfo[0]["School Type"]
    let school_subtype = schoolInfo[0]["Sub Type"]
@@ -324,7 +324,7 @@ function getSelectedValues() {
 
    let selectedValues = {};
    selectedValues.school_id = school_id;
-   selectedValues.year = Year;
+   selectedValues.year = year;
    selectedValues.school_type = school_type;
    selectedValues.school_subtype = school_subtype;
    selectedValues.comparison_schools = [];
@@ -407,15 +407,12 @@ const navTabs = document.querySelector("div#nav-tabs"),
    };
 
 function setCorpList (data) {
-   const Year = getSelectedYear();
+   const year = getSelectedYear();
 
-   let yearData = data.filter(o => o.Year == Number(Year));
+   let yearData = data.filter(o => o.Year == Number(year));
 
    // remove duplicates
    let corpDropdown = yearData.filter((v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i);
-
-   // sort alphabetically
-   // corpDropdown.sort((a, b) => a["Corporation Name"].localeCompare(b["Corporation Name"]));
 
    corpDropdown.forEach(
       (corp) => corpSelection
@@ -429,18 +426,16 @@ function setCorpList (data) {
 function setSchoolList(data) {
    let schoolDropdown = []
 
-   const Year = getSelectedYear();
+   const year = getSelectedYear();
    const selCorpID = getCorpSelection();
    const selSchoolID = getSchoolSelection();
 
-   let yearData = data.filter(o => o.Year == Number(Year));
+   let yearData = data.filter(o => o.Year == Number(year));
 
    schoolDropdown = yearData.filter(obj => obj["Corporation ID"] == selCorpID)
 
    // clears school dropdown before rebuilding
    removeOptions(schoolSelection);
-
-   // schoolDropdown.sort((a, b) => a["School Name"].localeCompare(b["School Name"]));
 
    schoolDropdown.forEach(
       (school) => schoolSelection
@@ -609,7 +604,7 @@ async function getComparisonSchools(data) {
 // Chart Demographic Data
 function demographicsPage(data, select) {
    let school_id = select.school_id;
-   let Year = select.year;
+   let year = select.year;
    
    let schoolData = data.filter((ele) => ele["School ID"] === Number(school_id));
    let corpData = data.filter((ele) => ele["School ID"] != Number(school_id));
@@ -627,8 +622,8 @@ function demographicsPage(data, select) {
       corpData = dropElements(corpData, yearsToRemove);
    };
 
-   const curYearSchoolDemographics = schoolData.filter((ele) => ele.Year === Number(Year))[0];
-   const curYearCorpDemographics = corpData.filter((ele) => ele.Year === Number(Year))[0];
+   const curYearSchoolDemographics = schoolData.filter((ele) => ele.Year === Number(year))[0];
+   const curYearCorpDemographics = corpData.filter((ele) => ele.Year === Number(year))[0];
 
    // enrollment table data //
    var enrollmentTableObj = Object.entries(curYearSchoolDemographics).reduce((acc, [key, value]) => {
@@ -750,17 +745,22 @@ function demographicsPage(data, select) {
 // Chart Academic Information
 function academicInfoPage(data, select) {
 
-   const year = select.year;
-   const schoolType = select.school_type
-   // TODO: Fix this here - deal with K12 on initial load
    console.log("ACAD INFO SELECT")
    console.log(select)
    console.log(getSelectedValues())
+   // TODO: Any difference between select and getSelected() ??
+   let year = select.year;
+   let schoolType = select.school_type
+   let schoolsubType = select.school_subtype
 
-   if (schoolType == "K8") {
+   if (schoolType == "K12" && schoolsubType == "K12") {
+         schoolType = "K8"
+      }
+
+   if (schoolType == "K8" || schoolType == "K12") {
          var subject = subjectK8
       }
-      else if ((schoolType == "HS") || (schoolType == "AHS")) {
+      else if (schoolType == "HS" || schoolType == "AHS") {
          var subject = subjectHS
       }
       
@@ -774,10 +774,10 @@ function academicInfoPage(data, select) {
    if (!academicInfoPage.initialize){
 
       // make sure year doesn't exceed max value
-      if ((Year > curAcademicYear) || (Year == "")) { Year = curAcademicYear}
+      if ((year > curAcademicYear) || (year == "")) { year = curAcademicYear }
 
       // Proficiency Breakdowns display current year only
-      const proficiencydata = data.filter((ele) => ele.Year === Number(Year))[0];
+      const proficiencydata = data.filter((ele) => ele.Year === Number(year))[0];
 
       ethnicityChart1 = multiLine()
          .data(getK8LineData(data, ethnicityCategory, subject[0], schoolType))
@@ -910,10 +910,10 @@ function academicInfoPage(data, select) {
       totalChart1.data(getK8LineData(data, grade, subject[0], schoolType)).id("totalChart1")
       totalChart2.data(getK8LineData(data, grade, subject[1], schoolType)).id("totalChart2")
 
-      if ((Year > curAcademicYear) || (Year == "")) { Year = curAcademicYear }
-      if ((Year == 2020)) { Year = 2019 }
+      if ((year > curAcademicYear) || (year == "")) { year = curAcademicYear }
+      if ((year == 2020)) { year = 2019 }
 
-      const proficiencydata = data.filter((ele) => ele.Year === Number(Year))[0];
+      const proficiencydata = data.filter((ele) => ele.Year === Number(year))[0];
 
       ethnicityStack1.data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[0])).id("ethnicityStack1")
       ethnicityStack2.data(getProficiencyBreakdown(proficiencydata, ethnicityCategory, subject[1])).id("ethnicityStack2")
@@ -930,7 +930,7 @@ function academicInfoPage(data, select) {
       let tableID;
 
       // Remove any elements with years > the selected year
-      const tabledata = data.filter((obj, index) => !(obj.Year > Number(Year)));
+      const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
 
       let newcols = tabledata.map(a => a.Year)
       newcols = newcols.map(String)
@@ -980,7 +980,7 @@ function academicAnalysisPage(data) {
    // TODO: pass these values through function? or get them a diff way?
    // TODO: is this duplicative?
    let selectedValues = getSelectedValues();
-   let Year = getSelectedYear();
+   let year = getSelectedYear();
    let school_type = selectedValues.school_type;
 
    if (school_type == "K8") {
@@ -992,7 +992,7 @@ function academicAnalysisPage(data) {
 
    // Single Year Analysis Page
    console.log(" ACADEMIC ANALYSIS Comparison Year Data")
-   let yearData = data.filter(o => o.Year == Number(Year));
+   let yearData = data.filter(o => o.Year == Number(year));
 
    let ecbeData = getK8LineData(yearData, ethnicityCategory, subject[0], school_type)
    let elaComparisonByEthnicityTransposed = transposeData(ecbeData, "School Name");
@@ -1158,7 +1158,7 @@ function navigateHandler(e) {
 
       setYearList(allSchoolsObj,"academic");
 
-      if (currentYear == 2020) {
+      if (strYear == 2020) {
          yearValue = 2019;
       }
       else if (intYear > curAcademicYear) {
@@ -1277,6 +1277,7 @@ function resize() {
    // as half the value of the innerwidth of the window
    // TODO: Add breakpoint for single cols
    // TODO: create function for width calls
+   // TODO: Add call to fix chart legends
    let windowWidth = window.innerWidth/2 - 125;
    
    if (windowWidth >= 290) {
