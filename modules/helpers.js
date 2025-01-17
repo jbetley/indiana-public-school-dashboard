@@ -223,16 +223,39 @@ function calcProficiency (data, proficient, tested) {
 
 
 // process data for Ag Grid tables
-function getTableData(data, category, subject) {
-  // create array of Category names + Year
+function getTableData(data, category, subject, selection) {
+
+  const location = selection.location;
+
+  let proficienctSuffix;
+  let testedSuffix;
+  
+  // TODO: Fix this logic
+  // demoTab is active on load
+  if (location == "infoTab" || location == "ilearnTab" || location == "demoTab") { 
+    proficienctSuffix = "Total Proficient";
+    testedSuffix = "Total Tested";
+  }
+  else if (location == "ireadTab") {
+    proficienctSuffix = "Pass N";
+    testedSuffix = "Test N";
+  }
+
+  // TODO: Need to fix this logic because there is no subject for
+  else if (location == "hsTab") { // Grad Rate
+    proficienctSuffix = "Graduates";
+    testedSuffix = "Cohort Count";
+
+    // proficienctSuffix2 = "At Benchmark";  // SAT
+    // testedSuffix2 = "Total Tested";
+  }
+
   const categoryProficient = [];
   const categoryTested = [];
-  const categoryProficiency = [];
 
   for (let a = 0; a < category.length; a++) {
-    categoryProficient.push(category[a] + "|" + subject + "Total Proficient");
-    categoryTested.push(category[a] + "|" + subject + "Total Tested");
-    categoryProficiency.push(category[a] + " Proficiency");
+    categoryProficient.push(category[a] + "|" + subject + " " + proficienctSuffix);
+    categoryTested.push(category[a] + "|" + subject + " " + testedSuffix);
   }
 
   let filteredData = []
@@ -249,8 +272,8 @@ function getTableData(data, category, subject) {
 
       for (let a = 0; a < category.length; a++) {
 
-        let proficient = category[a] + "|" + subject + " Total Proficient";
-        let tested = category[a] + "|" + subject + " Total Tested";
+        let proficient = categoryProficient[a];
+        let tested = categoryTested[a]; 
         let proficiency = category[a]
 
         // if tested value is greater than 0 and not NaN - calculate Proficiency
@@ -309,6 +332,15 @@ function getTableData(data, category, subject) {
 
  /**
    * Find any given number of keys and remove them
+   * @param {array<object>} data - An array of objects (academic data)
+   * @param {array<string>} category - list of categories
+   * @param {array<string>} subject - List of subjects
+   * @param {string} type - school type (K8, HS, K12, AHS)
+   * @return {array<object>} The array with filtered/processed data
+   */
+  // TODO: What is the above?
+ /**
+   * Find any given number of keys and remove them
    * @param {array<object>} array - An array of objects
    * @param {string} search_str - string suffix to add to keys (if applicable)
    * @param {array<string>} keys - List of keys to keep
@@ -341,36 +373,30 @@ function filterData(array, search_str, keys) {
 
 }
 
- /**
-   * Find any given number of keys and remove them
-   * @param {array<object>} data - An array of objects (academic data)
-   * @param {array<string>} category - list of categories
-   * @param {array<string>} subject - List of subjects
-   * @param {string} type - school type (K8, HS, K12, AHS)
-   * @return {array<object>} The array with filtered/processed data
-   */
-function getK8LineData(data, category, subject, type) {
+function getK8LineData(data, category, subject, selection) {
 
-  if (type == "K8") {
+  const type = selection.school_type;
+  const subtype = selection.school_subtype;
+
+  console.log(selection)
+  if (type == "K8" || (type == "K12" && subtype == "K8")) {
     if (['ELA', 'Math'].includes(subject)) {
         search_str = "|" + subject + " Proficient %"
     }
-    else {    // IREAD
-      console.log(subject)
+    else {
+      search_str = "|IREAD Proficient %"
     }
 
   }
-  else if ((type == "HS") ||(type == "AHS")) {
+  else if (type == "HS" || type == "AHS" ||
+    (type == "K12" && subtype == "HS")) {
     if (['EBRW', 'Math'].includes(subject)) {
       search_str = "|" + subject + " Benchmark %"
     }
-    else {  // Grad Rate
+    else {
       search_str = "|Graduation Rate"
     }
   }
-
-  // console.log("LINEDATA")
-  // console.log(search_str)
 
   category = category.concat(["Year", "School Name"])
 
@@ -402,16 +428,10 @@ function getK8LineData(data, category, subject, type) {
 // process data for multi-line information chart
 function getHSLineData(data, category, subject, type) {
 
-  console.log(data)
-  // TODO: ADD IREAD! - separate here based on type and subject
   if (type == "K8") {
     if (['ELA', 'Math'].includes(subject)) {
         remove_str = "|" + subject + " Proficient %"
     }
-    else {    // IREAD
-      console.log(subject)
-    }
-
   }
   else if ((type == "HS") ||(type == "AHS")) {
     if (['EBRW', 'Math'].includes(subject)) {
@@ -541,6 +561,9 @@ function getProficiencyBreakdown(data, categoryList, subject) {
 // process data for linechart function (Academic Info Page)
 function processData (data) {
 
+  // console.log("DATA IN")
+  // console.log(data)
+  // console.log(data.columns)
   // convert array of objects grouped on "Year" to an array of
   // objects with an "id" key and a "values" key where values
   // is an array of objects with "year" and "proficiency" keys
@@ -558,7 +581,8 @@ function processData (data) {
 
   return sliced
   });
-
+  // console.log("SLIVES")
+  // console.log(slices)
   // Clean the data: 1) filter out objects where proficiency
   // is NaN; 2) remove categories where all values are NaN; and
   // 3) track which years have data (for xAxis)

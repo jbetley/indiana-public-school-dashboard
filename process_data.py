@@ -390,8 +390,6 @@ def clean_academic_data(
     # corp data (for academic_metrics and academic_analysis_single_year)
     # no corp data for AHS other than ahs grad average
 
-    print(school_type)
-
     # if True, we are on academic analysis page and need comp
     # and corp data
     if is_analysis == True:
@@ -706,11 +704,12 @@ def clean_academic_data(
                 processed_data["School ID"] == str(school_id)
             ].copy()
 
-            if location == "ireadTab":
-                final_school_data = final_school_data.filter(
-                    regex=r"\|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
-                    axis=1,
-                )
+            # if location == "ireadTab":
+            #     final_school_data = final_school_data.filter(
+            #         regex=r"\|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
+            #         axis=1,
+            #     )
+
             # else:
             #     final_school_data = final_school_data.filter(
             #         regex=r"\|ELA Proficient %$|\|Math Proficient %$|^Year$|Low|High|School Name|School ID|Corporation ID",

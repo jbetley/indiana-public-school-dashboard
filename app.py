@@ -170,10 +170,11 @@ def load_academic_data():
     else:
         school_type = data["school_type"]
 
-    raw_proficiency_data = get_academic_data(schools, school_type)
+    print(data)
+    raw_data = get_academic_data(schools, school_type)
 
-    proficiency_data = clean_academic_data(
-        raw_proficiency_data,
+    data = clean_academic_data(
+        raw_data,
         schools,
         school_type,
         data["year"],
@@ -181,18 +182,18 @@ def load_academic_data():
     )
 
     # df is empty or only has information cols (e.g., MS for IREAD data)
-    if len(proficiency_data.columns) <= 6:
+    if len(data.columns) <= 6:
         return_values = []
 
     else:
         # # clarify school type (NOTE: Bake this in to clean_data?)
         # gradespan = get_gradespan(data["school_id"], data["school_type"], data["year"])
 
-        proficiency_data = proficiency_data.sort_values(by="Year")
+        data = data.sort_values(by="Year")
 
         school_proficiency = [
             {k: v for k, v in m.items() if v == v and v is not None}
-            for m in proficiency_data.to_dict(orient="records")
+            for m in data.to_dict(orient="records")
         ]
 
         return_values = [school_proficiency]

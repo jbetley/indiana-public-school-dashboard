@@ -137,10 +137,12 @@ function multiLine() {
 
       var legendContainer = svg.append('g')
         .attr('class', 'legendcontainer');
-        // .attr('transform', "translate(0," + (height + (margin.bottom / 5)) +")");
 
       updateData = function() {
 
+        console.log("ENTERING")
+        console.log(data)
+        
         // display empty svg is there is no data
         if (data.length == 0 || data.columns.length == 0) {
 
@@ -168,7 +170,12 @@ function multiLine() {
 
           dataByYear = data
 
+          
+          // console.log("DATAPWOCEDSSED")
+          // console.log(data)
           dataProcessed = processData(dataByYear);
+
+          // console.log(dataProcessed)
 
           dataByCategory = dataProcessed[0];
           years = dataProcessed[1];
@@ -269,9 +276,10 @@ function multiLine() {
           const fontSize = 10;
           var rectWidth = 10; // start at 10 due to 0-based indexing
           var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
-// TODO: Fix this tst kludge
-          var tst = [];
-
+          
+          // used to capture x,y coords for each legend item
+          var legendHistory = [];
+          
           svg.selectAll("g.legend")
             .attr("transform", function (d, i) {
 
@@ -288,9 +296,9 @@ function multiLine() {
                 x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
               }
 
-              console.log(d3.select(this).select("text").node())
-              console.log("OFFSET ORIGINAL")
-              console.log(xOffset)
+              // console.log(d3.select(this).select("text").node())
+              // console.log("OFFSET ORIGINAL")
+              // console.log(xOffset)
 
               // xOffset is the length of the string plus the xOffset value
               xOffset = xOffset + x_pos;
@@ -351,11 +359,8 @@ function multiLine() {
               const finalXposition = (xOffset - x_pos + legendStartX);
               const finalYposition = y_pos;
 
-              tst.push({id: categories[i], x: finalXposition, y: finalYposition}); 
-
-              console.log("===========")
-              console.log(tst)
-
+              legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition}); 
+              console.log(legendHistory)
               // final translation is with respect to the initial translation of
               // the legendcontainer.
               return "translate(" + finalXposition + "," + finalYposition + ")"
@@ -363,10 +368,11 @@ function multiLine() {
 
           // once the legend has been completed, do some calcs to shift the
           // legendcontainer to the middle of the svg.
-
+          console.log("legendHistory")
+          console.log(legendHistory)
           // tst[0].x is the x value for the first legend item
           // TODO: there has to be a better way to get this value
-          const legendItemStartingX = tst[0].x
+          const legendItemStartingX = legendHistory[0].x
           // the current x position of the legendcontainer
           const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
           // account for the initial X translation of the svg
@@ -522,6 +528,151 @@ function multiLine() {
             .attr("cy", function (d,i) { return y(d.proficiency)});
          
           svg.select("rect.overlay").attr("width", width);
+
+          // TODO: TESTING
+          // base xOffset is the starting x position of the legendcontainer
+          var legendStartX = d3.select(".legendcontainer").node().getCTM().e
+          var xOffset = 0;
+          var row = 1;
+          var y_pos = 0;
+          const fontSize = 10;
+          var rectWidth = 10; // start at 10 due to 0-based indexing
+          const origSvgWidth = d3.select("svg")._groups[0][0].attributes[0].value
+          const percentChange = widthScale/origSvgWidth
+          var svgWidth = widthScale
+          const rectOffset = 10;
+
+          // used to capture x,y coords for each legend item
+          var legendHistory = [];
+
+          svg.selectAll("g.legend")
+            .attr("transform", function (d, i) {
+
+              rectWidth = i * 10
+
+              // getComputedTextLength() returns 0 if the text hasn't been rendered (e.g.,
+              // on initial load of the app when focus is in another tab and display is
+              // set to none for the academic_info page) - so we use a different utility
+              // function (Browsertext) that uses built-in functionality in the HTML5 canvas
+              // 2D context if xpos is 0
+              var x_pos = d3.select(this).select("text").node().getComputedTextLength();
+
+              if (x_pos == 0) {
+                x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
+              }
+
+              // console.log(d3.select(this).select("text").node())
+              // console.log("OFFSET ORIGINAL")
+              // console.log(xOffset)
+
+              // xOffset is the length of the string plus the xOffset value
+              xOffset = xOffset + x_pos;
+
+              // console.log("String + offset")
+              // console.log(xOffset)
+
+              // if the length of the string + the current xPosition exceeds
+              // the width of the svg, we want to wrap to next line - the first
+              // condition only triggers if the length of the string measured from
+              // the current offset is longer than total width of svg.
+              // console.log("SVG WIDTH")
+              let boundingArea = 0;
+
+              if (categories.length > 6) {
+                boundingArea = svgWidth - (180 * percentChange)
+              }
+              else {
+                boundingArea = svgWidth - (100 * percentChange)
+              }
+
+              if (xOffset + rectWidth >= boundingArea) {
+
+                // reset xOffset to 0 plus length of moves string
+                xOffset = legendStartX
+                xOffset = xOffset + x_pos;
+
+                // console.log("SHIFTED!!! - OFFSET")
+                // console.log(xOffset)
+
+                // shift down 15 pixels
+                y_pos = row * 15
+
+                // NOTE: because this is a "group" translation, it doesn't directly impact
+                // the rec/text position (x values) determined by legendXPosition functions.
+                // Set x value back to left edge
+                d3.select(this).select("rect").attr("x", 0)
+                d3.select(this).select("text").attr("x", rectOffset)
+
+                row+=1
+              }
+              else {
+                // First row
+                if (row == 1) {
+                    y_pos = 0
+                }
+                else {
+
+                  let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
+
+                  // account for rect size and 12 pixel offset between rect and text
+                  // add twice to text to account for prior and current offset
+                  d3.select(this).select("rect").attr("x", rectWidth + rectOffset)
+                  d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
+                }
+              };
+
+              // console.log("CHECKINGSTUFF")
+              // console.log(d3.select(this).select("text").node().getBoundingClientRect())
+
+              const rightPos = d3.select(this).select("text").node().getBoundingClientRect().right          
+              const leftPos = d3.select(this).select("text").node().getBoundingClientRect().left
+              const txtWidth = d3.select(this).select("text").node().getBoundingClientRect().width
+              let finalXposition = (xOffset - x_pos + legendStartX);
+              let finalYposition = y_pos;
+
+              legendHistory.push(
+                {
+                  index: i,
+                  id: categories[i],
+                  x: finalXposition,
+                  y: finalYposition,
+                  right: rightPos,
+                  left: leftPos
+                }
+              );
+              // console.log(legendHistory)
+              if (i > 0) {
+                // console.log("FIRST")
+                if (legendHistory[i].y == legendHistory[i-1].y) {
+                  // console.log("SECOND")
+                  if (legendHistory[i].left < legendHistory[i-1].right) {
+                    // console.log("OVERLAP: " + legendHistory[i].id)
+                    const diff = legendHistory[i-1].right - legendHistory[i].left // not working
+                    finalXposition = finalXposition + 20;
+                  }
+                }
+              }
+              // final translation is with respect to the initial translation of
+              // the legendcontainer.
+              return "translate(" + finalXposition + "," + finalYposition + ")"
+            });
+
+          // once the legend has been completed, do some calcs to shift the
+          // legendcontainer to the middle of the svg.
+
+          // tst[0].x is the x value for the first legend item
+          const legendItemStartingX = legendHistory[0].x
+          // the current x position of the legendcontainer
+          const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
+          // account for the initial X translation of the svg
+          const initialSvgTranslate = 35
+          // the width of the container
+          const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
+          
+          const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
+
+          svg.selectAll(".legendcontainer")
+            .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
         };
   
 
