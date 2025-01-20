@@ -140,8 +140,8 @@ function multiLine() {
 
       updateData = function() {
 
-        console.log("ENTERING")
-        console.log(data)
+        // console.log("ENTERING")
+        // console.log(data)
         
         // display empty svg is there is no data
         if (data.length == 0 || data.columns.length == 0) {
@@ -360,7 +360,7 @@ function multiLine() {
               const finalYposition = y_pos;
 
               legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition}); 
-              console.log(legendHistory)
+              // console.log(legendHistory)
               // final translation is with respect to the initial translation of
               // the legendcontainer.
               return "translate(" + finalXposition + "," + finalYposition + ")"
@@ -368,8 +368,8 @@ function multiLine() {
 
           // once the legend has been completed, do some calcs to shift the
           // legendcontainer to the middle of the svg.
-          console.log("legendHistory")
-          console.log(legendHistory)
+          // console.log("legendHistory")
+          // console.log(legendHistory)
           // tst[0].x is the x value for the first legend item
           // TODO: there has to be a better way to get this value
           const legendItemStartingX = legendHistory[0].x

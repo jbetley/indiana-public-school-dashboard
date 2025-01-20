@@ -178,7 +178,7 @@ def load_academic_data():
         schools,
         school_type,
         data["year"],
-        data["location"],
+        data["page_tab"],
     )
 
     # df is empty or only has information cols (e.g., MS for IREAD data)

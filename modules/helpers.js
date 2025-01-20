@@ -88,7 +88,7 @@ function processBarData(data) {
 };
 
 
-// create basic Ag Grid table
+// create Ag Grid table
 function createBasicTable(data, tableID) {
   let keys = Object.keys(data.reduce(function(result, obj) {
      return Object.assign(result, obj);
@@ -97,6 +97,51 @@ function createBasicTable(data, tableID) {
   // Move "Category" to front of Array
   keys = keys.filter(item => item != "Category");
   keys.unshift("Category")
+
+  let columns = keys.map(field => ({field}));
+
+  columns.forEach(function(e) {
+     if (e.field == "Category") {
+        e.valueFormatter = "";
+        e.resizable = false;
+        e.autoHeight = true;
+        e.wrapText = true;
+        e.minWidth = 80;
+        e.maxWidth = 90;
+        e.cellClass = "ag-left-aligned-cell";
+        e.headerClass = "text-center";
+     }
+     else {
+        e.valueFormatter = percentageFormatter;
+        e.flex = 1;
+        e.resizable = false;
+        e.cellClass = "ag-center-aligned-cell";
+        e.headerClass = "text-center";
+     }
+  });
+
+  let options = {
+     columnDefs: columns,
+     rowData: data,
+     gridId: tableID
+  };
+  return options
+}
+
+// initialize empty table
+function initializeTable(tableID) {
+
+  keys = ["Category", "2020", "2021", "2022", "2023", "2024"]
+  data = [
+    {
+      "Category": "",
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 0,
+      "2024": 0                      
+    }
+  ];
 
   let columns = keys.map(field => ({field}));
   
@@ -226,38 +271,69 @@ function calcProficiency (data, proficient, tested) {
 function getTableData(data, category, subject, selection) {
 
   const location = selection.location;
+  const pageTab = selection.page_tab
+  const infoTab = selection.info_tab
+  const typeTab = selection.type_tab
+  const schoolType = selection.school_type
+  const schoolSubtype = selection.school_subtype
 
   let proficienctSuffix;
   let testedSuffix;
   
-  // TODO: Fix this logic
-  // demoTab is active on load
-  if (location == "infoTab" || location == "ilearnTab" || location == "demoTab") { 
-    proficienctSuffix = "Total Proficient";
-    testedSuffix = "Total Tested";
-  }
-  else if (location == "ireadTab") {
-    proficienctSuffix = "Pass N";
-    testedSuffix = "Test N";
-  }
+  console.log("TABLE SECLETION")
+  console.log(selection)
+  console.log(data)
+  console.log(subject)
+  console.log(category)
 
-  // TODO: Need to fix this logic because there is no subject for
-  else if (location == "hsTab") { // Grad Rate
-    proficienctSuffix = "Graduates";
-    testedSuffix = "Cohort Count";
+  // demoTab is included for load
+  if (pageTab == "infoTab" || location == "demoTab") { 
 
-    // proficienctSuffix2 = "At Benchmark";  // SAT
-    // testedSuffix2 = "Total Tested";
+    if (typeTab == "k8Tab") {
+      if (infoTab == "ireadTab") {
+        proficienctSuffix = "Pass N";
+        testedSuffix = "Test N";
+      }
+      else {
+        proficienctSuffix = "Total Proficient";
+        testedSuffix = "Total Tested";
+      }
+    }
+    else if (typeTab == "hsTab") {
+
+      if (subject == "Graduation") {
+        proficienctSuffix = "Graduates";
+        testedSuffix = "Cohort Count";  
+      }
+      else {
+        proficienctSuffix = "At Benchmark";
+        testedSuffix = "Total Tested"; 
+      }
+
+    }
   }
 
   const categoryProficient = [];
   const categoryTested = [];
 
   for (let a = 0; a < category.length; a++) {
-    categoryProficient.push(category[a] + "|" + subject + " " + proficienctSuffix);
-    categoryTested.push(category[a] + "|" + subject + " " + testedSuffix);
+    if (subject == "Graduation") {
+      categoryProficient.push(category[a] + "|" + proficienctSuffix);
+      categoryTested.push(category[a] + "|" + testedSuffix);
+    }
+    else if (subject == "SAT") {
+      categoryProficient.push(category[a] + "|" + "EBRW " + proficienctSuffix);
+      categoryProficient.push(category[a] + "|" + "Math " + proficienctSuffix);
+      categoryTested.push(category[a] + "|" + "EBRW " + testedSuffix);
+      categoryTested.push(category[a] + "|" + "Math " + testedSuffix);
+    }
+    else {
+      categoryProficient.push(category[a] + "|" + subject + " " + proficienctSuffix);
+      categoryTested.push(category[a] + "|" + subject + " " + testedSuffix);
+    }
   }
 
+  // TODO: ADD 
   let filteredData = []
   var noneTested = []
   var insufficientN = []
@@ -327,6 +403,10 @@ function getTableData(data, category, subject, selection) {
           finalData.push(yearData)
         }
       }
+
+    // console.log("FinalData")
+    // console.log(finalData)  
+
     return finalData
 }
 
@@ -377,8 +457,8 @@ function getK8LineData(data, category, subject, selection) {
 
   const type = selection.school_type;
   const subtype = selection.school_subtype;
-
-  console.log(selection)
+  // console.log("GETTING K8LINEDATA")
+  // console.log(selection)
   if (type == "K8" || (type == "K12" && subtype == "K8")) {
     if (['ELA', 'Math'].includes(subject)) {
         search_str = "|" + subject + " Proficient %"
@@ -480,7 +560,11 @@ function longYear(year) {
 
 
 // process data for stackedBarCharts
-function getProficiencyBreakdown(data, categoryList, subject) {
+function getProficiencyBreakdown(data, categoryList, subject, selection) {
+  const year = selection.year;
+
+  let yearData = data.filter((ele) => ele.Year === Number(year))[0];
+
   let rating = ["Below Proficiency", "Approaching Proficiency", "At Proficiency", "Above Proficiency"]
   const Year = data.Year
 
@@ -489,7 +573,7 @@ function getProficiencyBreakdown(data, categoryList, subject) {
   // in rating array. "indexOf" returns the index of the first occurrence
   // of the specified substring (-1 if not present). "some" tests whether
   // at least one element in the array passes the given test
-  let filteredData = Object.fromEntries(Object.entries(data).filter(
+  let filteredData = Object.fromEntries(Object.entries(yearData).filter(
      ([key, value]) =>
      rating.some(v => key.indexOf(v) > -1) &&
         categoryList.some(v => key.indexOf (v + "|" + subject) > -1)
