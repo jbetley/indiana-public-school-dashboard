@@ -20,7 +20,7 @@
 
 /// Multi-Line Year over Year Chart ///
 function multiLine() {
-  
+
   let defaultWidth = window.innerWidth/2 - 125;
 
   var margin = {top: 15, right: 35, bottom: 80, left: 35},
@@ -84,7 +84,7 @@ function multiLine() {
       // using scalePoint seems to work better than scaleTime
       // var yearRange = [parseInt(years[0]),parseInt(years[years.length-1])]
       // x.domain(yearRange);
-      
+
       x.domain(years);
 
       var dom = d3.select(this);
@@ -140,9 +140,6 @@ function multiLine() {
 
       updateData = function() {
 
-        // console.log("ENTERING")
-        // console.log(data)
-        
         // display empty svg is there is no data
         if (data.length == 0 || data.columns.length == 0) {
 
@@ -170,12 +167,7 @@ function multiLine() {
 
           dataByYear = data
 
-          
-          // console.log("DATAPWOCEDSSED")
-          // console.log(data)
           dataProcessed = processData(dataByYear);
-
-          // console.log(dataProcessed)
 
           dataByCategory = dataProcessed[0];
           years = dataProcessed[1];
@@ -229,7 +221,7 @@ function multiLine() {
 
           const fontWidth = 6;
           const rectOffset = 10;
-          
+
           var legend = legendContainer.selectAll('.legend')
             .data(dataByCategory)
               .enter().append('g')
@@ -267,7 +259,6 @@ function multiLine() {
 // see: https://gist.github.com/bobmonteverde/2070069
 // https://stackoverflow.com/questions/49454761/how-to-horizontally-centre-a-responsive-multi-line-legend-in-d3
 
-
           // base xOffset is the starting x position of the legendcontainer
           var legendStartX = d3.select(".legendcontainer").node().getCTM().e
           var xOffset = 0; //parseInt(legendStartX);
@@ -276,10 +267,10 @@ function multiLine() {
           const fontSize = 10;
           var rectWidth = 10; // start at 10 due to 0-based indexing
           var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
-          
+
           // used to capture x,y coords for each legend item
           var legendHistory = [];
-          
+
           svg.selectAll("g.legend")
             .attr("transform", function (d, i) {
 
@@ -296,21 +287,13 @@ function multiLine() {
                 x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
               }
 
-              // console.log(d3.select(this).select("text").node())
-              // console.log("OFFSET ORIGINAL")
-              // console.log(xOffset)
-
               // xOffset is the length of the string plus the xOffset value
               xOffset = xOffset + x_pos;
-
-              // console.log("XPOSITION")
-              // console.log(x_pos)
 
               // if the length of the string + the current xPosition exceeds
               // the width of the svg, we want to wrap to next line - the first
               // condition only triggers if the length of the string measured from
               // the current offset is longer than total width of svg.
-              // console.log("SVG WIDTH")
               let boundingArea = 0;
 
               if (categories.length > 6) {
@@ -325,9 +308,6 @@ function multiLine() {
                 // reset xOffset to 0 plus length of moves string
                 xOffset = legendStartX
                 xOffset = xOffset + x_pos;
-
-                // console.log("SHIFTED!!! - OFFSET")
-                // console.log(xOffset)
 
                 // shift down 15 pixels
                 y_pos = row * 15
@@ -359,8 +339,8 @@ function multiLine() {
               const finalXposition = (xOffset - x_pos + legendStartX);
               const finalYposition = y_pos;
 
-              legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition}); 
-              // console.log(legendHistory)
+              legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition});
+
               // final translation is with respect to the initial translation of
               // the legendcontainer.
               return "translate(" + finalXposition + "," + finalYposition + ")"
@@ -368,8 +348,7 @@ function multiLine() {
 
           // once the legend has been completed, do some calcs to shift the
           // legendcontainer to the middle of the svg.
-          // console.log("legendHistory")
-          // console.log(legendHistory)
+
           // tst[0].x is the x value for the first legend item
           // TODO: there has to be a better way to get this value
           const legendItemStartingX = legendHistory[0].x
@@ -379,17 +358,17 @@ function multiLine() {
           const initialSvgTranslate = 35
           // the width of the container
           const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
-          
+
           const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
 
           svg.selectAll(".legendcontainer")
             .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
-          
+
           // Set up transition.
           const dur = 200;
           const t = d3.transition().duration(dur);
 
-          // TODO: Also getting duplicate lines!
+          // TODO: getting duplicate lines!
           // TODO: Testing getting rid of this extra layer
           // let lineGroupUpdate = svg.selectAll(".linechart-g")
           //   .data(dataByCategory)
@@ -486,7 +465,7 @@ function multiLine() {
             .attr("transform", "translate(-" + margin.left + ",-" + margin.top + ")")
             .attr("class", "overlay")
             .attr("width", svgWidth)
-            .attr("height", svgHeight)            
+            .attr("height", svgHeight)
             .on("mouseover", mouseOver)
             .on("mouseout", mouseOut)
             .on("mousemove", mouseMove)
@@ -497,36 +476,36 @@ function multiLine() {
 
           // width is passed in as window.innerWidth/2
           widthScale = width - margin.left - margin.right;
-  
+
           transformAdjust = 80;
 
           let svgParent = d3.select(svg._groups[0][0].parentNode)
           svgParent.transition().duration(200).attr('width', widthScale + transformAdjust);
-  
+
           // reset xScale range and redraw everything
           x.range([0, widthScale]);
-  
+
           svg.select("g.x.axis")
             .transition()
             .duration(200)
             .call(xAxis);
-  
+
           svg.select("g.y.axis")
             .transition()
             .duration(200)
             .call(yAxis.tickSizeInner(-widthScale));
-  
+
           svg.selectAll("path.lines")
             .transition()
             .duration(200)
             .attr("d", d => line(d.values));
-            
+
           svg.selectAll("circle.circles")
             .transition()
             .duration(200)
             .attr("cx", function (d,i) { return x(d.year)})
             .attr("cy", function (d,i) { return y(d.proficiency)});
-         
+
           svg.select("rect.overlay").attr("width", width);
 
           // TODO: TESTING
@@ -561,21 +540,14 @@ function multiLine() {
                 x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
               }
 
-              // console.log(d3.select(this).select("text").node())
-              // console.log("OFFSET ORIGINAL")
-              // console.log(xOffset)
-
               // xOffset is the length of the string plus the xOffset value
               xOffset = xOffset + x_pos;
-
-              // console.log("String + offset")
-              // console.log(xOffset)
 
               // if the length of the string + the current xPosition exceeds
               // the width of the svg, we want to wrap to next line - the first
               // condition only triggers if the length of the string measured from
               // the current offset is longer than total width of svg.
-              // console.log("SVG WIDTH")
+
               let boundingArea = 0;
 
               if (categories.length > 6) {
@@ -590,9 +562,6 @@ function multiLine() {
                 // reset xOffset to 0 plus length of moves string
                 xOffset = legendStartX
                 xOffset = xOffset + x_pos;
-
-                // console.log("SHIFTED!!! - OFFSET")
-                // console.log(xOffset)
 
                 // shift down 15 pixels
                 y_pos = row * 15
@@ -621,10 +590,7 @@ function multiLine() {
                 }
               };
 
-              // console.log("CHECKINGSTUFF")
-              // console.log(d3.select(this).select("text").node().getBoundingClientRect())
-
-              const rightPos = d3.select(this).select("text").node().getBoundingClientRect().right          
+              const rightPos = d3.select(this).select("text").node().getBoundingClientRect().right
               const leftPos = d3.select(this).select("text").node().getBoundingClientRect().left
               const txtWidth = d3.select(this).select("text").node().getBoundingClientRect().width
               let finalXposition = (xOffset - x_pos + legendStartX);
@@ -640,11 +606,10 @@ function multiLine() {
                   left: leftPos
                 }
               );
-              // console.log(legendHistory)
+
+              // TODO: Test to push legends apart if they overlap?
               if (i > 0) {
-                // console.log("FIRST")
                 if (legendHistory[i].y == legendHistory[i-1].y) {
-                  // console.log("SECOND")
                   if (legendHistory[i].left < legendHistory[i-1].right) {
                     // console.log("OVERLAP: " + legendHistory[i].id)
                     const diff = legendHistory[i-1].right - legendHistory[i].left // not working
@@ -668,13 +633,13 @@ function multiLine() {
           const initialSvgTranslate = 35
           // the width of the container
           const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
-          
+
           const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
 
           svg.selectAll(".legendcontainer")
             .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
         };
-  
+
 
     }); // end selection
 
@@ -726,9 +691,9 @@ function multiLine() {
 
     // data for the targeted year
     var yearData = dataByYear.find(obj => obj.Year === year)
-    
+
     focus.attr("transform", "translate(" + x(year) + ",0)");
-    
+
     /// tipbox with connecting arrow using svg path
     that.selectAll('.tipbox path')
       .style("opacity", 1)
@@ -756,14 +721,13 @@ function multiLine() {
           yStart = y(dataByCategory.proficiency);
           xStart = x(dataByCategory.year);
 
-          // TODO: console.log("GETTING WEIRD FREEZING WHERE RIGHTMOST YEAR ISNT WORKING")
-          // console.log(year)
-          // console.log(years)
+          // TODO: Got a weird freeze where rightmost year isn't working
+          // TODO: Have not been able to reporduce.
 
           // if the closest "year" to mouse position is equal to the
           // rightmost year (the closest to the right edge), flip the
           // tipbox to the left
-          
+
           if (year == years[years.length-1]) {
             // https://yqnn.github.io/svg-path-editor/
             // left-> M xStart yStart l -8 3 l 0 10 l -36 0 l -0 -26 l 36 -0 l 0 10 l 8 3
@@ -804,7 +768,7 @@ function multiLine() {
           // of each point and determine if an offset is necessary given the height
           // of the tipbox (26px) and desired spacing (3px).
           boxPosition = []
-          
+
           Object.keys(yearData).forEach((k, i) => {
             if (k != "Year") {
               positionInfo = {}
@@ -856,21 +820,6 @@ function multiLine() {
           return colors[d.id]
         }
       });
-      // TODO: Do not believe that this is necessary
-      // .style("left", function(d) {
-      //   if (dataByCategory) {
-
-      //     if (x(dataByCategory.year) > 350) { 
-      //       console.log("Random over 350 thing")
-      //       console.log(x(dataByCategory.year))
-      //       return null //-50 + "px"
-      //     }
-      //     else
-      //     {
-      //       return null
-      //     }
-      //   }
-      // });
 
       that.selectAll('.tipbox text')
         .attr("x", function(d) {
@@ -878,14 +827,14 @@ function multiLine() {
           data = d.values.filter(d => d.year == year)[0];
 
           if (data != undefined) {
-            
+
             // determine x position of the text based on the x position
             // of the left side of the tipbox path (the arrow), the width
             // of the tipbox (44 pixels), and the length of the str value
             // in pixels
             const tipboxPath = d3.select(this.parentNode).select("path.path");
             var tipboxLeftEdge = tipboxPath.node().getBBox().x
-            
+
             // add 8 pixels to the width calculation to account for the
             // length of the connecting arrow (leftEdge is measured from
             // the tip of the arrow, not the edge of the first horizontal)
@@ -899,7 +848,7 @@ function multiLine() {
             tipboxRectOffset = (tipboxWidth - txtWidth) / 2
 
             // adjustment when tipbox has been flipped to left
-            if (year == years[years.length-1]) {              
+            if (year == years[years.length-1]) {
               var pathX = tipboxLeftEdge + tipboxRectOffset - 8;
             }
             // normal right-side tipbox
@@ -998,7 +947,8 @@ function singleLine() {
     updateData,
     updateWidth,
     y = d3.scaleLinear().range([height, 0]),
-    x = d3.scaleTime().range([0, width]);
+    x = d3.scalePoint().range([0, width]);
+    // x = d3.scaleTime().range([0, width]);
 
   let data,
     id;
@@ -1028,11 +978,20 @@ function singleLine() {
     selection.each(function () {
 
       const years = data.map(el => el.Year);
-      let yearRange = [parseInt(years[0]),parseInt(years[years.length-1])];
-      x.domain(yearRange);
+      // let yearRange = [parseInt(years[0]),parseInt(years[years.length-1])];
+      // x.domain(yearRange);
 
-      const minEnrollment = parseInt(d3.min(data, function (d) { return d["Total Enrollment"];}));
-      const maxEnrollment = parseInt(d3.max(data, function (d) { return d["Total Enrollment"];}));
+      x.domain(years);
+
+      // const minEnrollment = parseInt(d3.min(data, function (d) { return d["Total Enrollment"];}));
+      // const maxEnrollment = parseInt(d3.max(data, function (d) { return d["Total Enrollment"];}));
+
+      const minEnrollment = d3.min(data, function (d) { 
+        return +d["Total Enrollment"];
+      });
+      const maxEnrollment = d3.max(data, function (d) { 
+        return +d["Total Enrollment"];
+      });
 
       y.domain([minEnrollment - 200, maxEnrollment + 200]);
 
@@ -1086,12 +1045,17 @@ function singleLine() {
       updateData = function() {
 
         const years = data.map(el => el.Year);
-        let yearRange = [parseInt(years[0]),parseInt(years[years.length-1])];
+        // let yearRange = [parseInt(years[0]),parseInt(years[years.length-1])];
+        // x.domain(yearRange);
 
-        x.domain(yearRange);
+        x.domain(years);
 
-        const minEnrollment = parseInt(d3.min(data, function (d) { return d["Total Enrollment"];}));
-        const maxEnrollment = parseInt(d3.max(data, function (d) { return d["Total Enrollment"];}));
+        const minEnrollment = d3.min(data, function (d) { 
+          return +d["Total Enrollment"];
+        });
+        const maxEnrollment = d3.max(data, function (d) { 
+          return +d["Total Enrollment"];
+        });
 
         y.domain([minEnrollment-200, maxEnrollment+200]);
 
@@ -1227,7 +1191,7 @@ function singleLine() {
           .duration(200)
           .attr("cx", function (d,i) { return x(d.Year)})
           .attr("cy", function (d,i) { return y(d["Total Enrollment"])});
-       
+
         svg.select("rect.overlay").attr("width", widthScale);
 
       };
@@ -1270,9 +1234,17 @@ function singleLine() {
 
       data = data[0];
 
-      // TODO: See if changes made in multiline work here as well
+      // TODO: ADJUST The bisection to fit single chart (see multiline)
+
+      // NOTE: See explanation in multiline mouseMove
+      var inverseModeScale = d3.scaleQuantize()
+      .domain(x.range())
+      .range(x.domain())
+
       // mouse position
-      const x0 = x.invert(d3.mouse(those)[0]);
+      const x0 = inverseModeScale(d3.mouse(those)[0]);
+
+      // const x0 = x.invert(d3.mouse(those)[0]);
 
       //bisect the data
       const j = (d3.bisect(years, x0, 1)) - 1;
@@ -1473,6 +1445,7 @@ function horizontalGroupBar() {
         .attr("height", "30px");
 
       selectedYear = document.getElementById("yearSelect").value
+
       yearString = longYear(selectedYear);
 
       if (exists(data[0], 'Free or Reduced Price Meals')) {
@@ -1759,6 +1732,7 @@ function horizontalGroupBar() {
           .attr("x", function(d) { return x(d[1]) + 5;});
 
         let titleX = ((margin.left + margin.right) - (margin.left/3)) /2
+
         svg.select("rect.titlebox")
           .transition()
           .duration(250)
@@ -2233,9 +2207,8 @@ function verticalGroupBar() {
 }; // end verticalBar
 
 
+/* Proficiency Breakdown charts */
 function horizontalStackedBar() {
-
-  // let defaultWidth = window.innerWidth/2;
 
   var margin = {top: 15, right: 25, bottom: 15, left: 60},
     width = 540 - margin.left - margin.right,
@@ -2367,6 +2340,7 @@ function horizontalStackedBar() {
 
         d3.select(this)
           .style("opacity", .5);
+
       };
 
       const mouseMove = function(event,d) {
@@ -2401,18 +2375,19 @@ function horizontalStackedBar() {
           .style("z-index", "99");
 
         // TODO: find way to get position from selected rather than
-        // TODO: position of svg from top of screen
+        // TODO: position of svg from top of screen - none of the
+        // TODO: usual (getBoundingClientRec, bbox, etc.) work
         // the offset from the top of the screen to the top of the svg
         let that = d3.select("#" + id)._groups[0][0].offsetTop;
 
         tooltip.html(html)
-          .style("top", that + why - 90 + "px")
-          .style("left", (d3.mouse(this)[0]+90) + "px")
+          .style("top", that + why - 120 + "px")
+          .style("left", (d3.mouse(this)[0]+120) + "px")
+
       };
 
-      const mouseOut = function(d) {
+      const mouseLeave = function(d) {
         focus.style("display", "none");
-
         tooltip
             .style("opacity", 0);
 
@@ -2500,7 +2475,7 @@ function horizontalStackedBar() {
               .attr("height",function(d) { return y.bandwidth() })
               .on("mouseover", mouseOver)
               .on("mousemove", mouseMove)
-              .on("mouseleave", mouseOut),
+              .on("mouseleave", mouseLeave),
             null,
             exit => {
               exit

@@ -833,11 +833,16 @@ function demographicsPage(data, select) {
    var enrollmentTableData = Object.keys(enrollmentTableObj)
       .map(key => ({grade: key, enrollment: enrollmentTableObj[key]}));
 
-   // enrollment chart data //
+   // numerically sort the list of grades using only the number
+   enrollmentTableData.sort((a,b) => parseInt(a.grade.slice(6)) - parseInt(b.grade.slice(6)));
+
+   // enrollment chart
    let keep = ["Year","Total Enrollment"];
    var enrollmentChartData = filterObj(schoolData, keep);
 
-   // attendance and chronic absenteeism data //
+   console.log(enrollmentChartData)
+
+   // attendance and chronic absenteeism
    keep = ["Year","Attendance Rate", "Chronic Absenteeism %"];
    var attendanceChartData = filterObj(schoolData, keep);
 
@@ -969,9 +974,6 @@ function academicInfoPage(data, selection) {
    // Subject: "Graduation Rate" & "SAT"
    let hsLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup"]
 
-// TODO: HERE
-   console.log("LABELSS")
-   console.log(selection)
    // set subject, type, and chart labels
    if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
       if (k8Tab == "ireadTab") {         
@@ -985,7 +987,8 @@ function academicInfoPage(data, selection) {
       else {
          subject = subjectK8
          let sub;
-         const replicated = ilearnLabelSuffixes.flatMap(item => [item, item]); // byGrade,byGrade,byEthnicity . . .
+         // replicate and interleave (e.g., byGrade,byGrade,byEthnicity . . .)
+         const replicated = ilearnLabelSuffixes.flatMap(item => [item, item]); 
 
          labelsLg.forEach((el, i) => {
             if (i % 2 == 0) {
@@ -1006,259 +1009,193 @@ function academicInfoPage(data, selection) {
    ) {
       subject = subjectHS
       let sub;
-      
-      hsLabelSuffixes.push(...hsLabelSuffixes); // replicate array at end of existing array
-      
-      // TODO: Separate Grad and SAT
-      labelsLg.forEach((el, i) => {
-         if (i < 3 ) {
-            sub = "Graduation Rate"
-         }
-         else {
-            sub = "SAT"
-         }
 
-         let hsLabel = sub + " " + hsLabelSuffixes[i];
-         el.firstChild.textContent = hsLabel;
-      });         
-   }
+      if (hsTab == "gradTab") {         
+
+         labelsSm.forEach((el, i) => {
+            let gradLabel = subject[0] + " " + hsLabelSuffixes[i];
+            el.firstChild.textContent = gradLabel;
+         });
+      }
+      else {
+         
+         const replicated = hsLabelSuffixes.flatMap(item => [item, item]);
+
+         labelsLg.forEach((el, i) => {
+            
+            if (i % 2 == 0) {
+               sub = "EBRW"
+            }
+            else {
+               sub = "Math"
+            }
+
+            let satLabel = "SAT" + " " + sub + " " + replicated[i];
+            el.firstChild.textContent = satLabel;
+         });
+      }
+   };
       
    if (!academicInfoPage.initialize) {
-
-      // make sure year doesn't exceed max value
-      // Proficiency Breakdowns display current year only
-      // if ((year > curAcademicYear) || (year == "")) { year = curAcademicYear }
-      // const proficiencydata = data.filter((ele) => ele.Year === Number(year))[0];
-
-      // if iread: 1-3
-      // if ilearn: 4-9
-      // if grad: 1-3
-      // if sat: 4-9
-
       // categories: 1) grade/total; 2) ethnicity; 3) subgroup
-      // subjects: 1-3) none; 4-9) ELA/EBRW / Math
+      // subjects: 1-3) none; 4-9) ELA/EBRW & Math
+      // if iread/grad: tables 1-3
+      // if ilearn/sat: tables 4-9
+      // proficiency breakdowns display current year only
 
-      // Initialize all charts on load
-      let infoCharts = {}
       let id, name;
 
-      // for (let i = 1; i < 18; i++) {
-
-      // chart1: IREAD TOTAL / GRAD RATE TOTAL
+      // chart1: IREAD Total / Graduation Rate Total
       infoChart1 = multiLine()
          .data(getK8LineData(data, grade, subject[0], selection))
          .id("chart1");
       d3.select("#chart1")
          .call(infoChart1);
 
-      // chart2: IREAD BY ETHNICITY / GRAD RATE BY ETHNICITY
+      // chart2: IREAD By Ethnicity / Graduation Rate By Ethnicity
       infoChart2 = multiLine()
          .data(getK8LineData(data, ethnicity, subject[0], selection))
          .id("chart2");
       d3.select("#chart2")
          .call(infoChart2);
 
-      // chart3: IREAD BY SUBGROUP / GRAD RATE BY SUBGROUP
+      // chart3: IREAD By Subgroup / Graduation Rate By Subgroup
       infoChart3 = multiLine()
          .data(getK8LineData(data, subgroup, subject[0], selection))
          .id("chart3");
       d3.select("#chart3")
          .call(infoChart3);
 
-      // chart4: ILEARN ELA BY GRADE / SAT EBRW Overview
+      // chart4: ILEARN ELA By Grade / SAT EBRW Overview
       infoChart4 = multiLine()
          .data(getK8LineData(data, grade, subject[0], selection))
          .id("chart4");
       d3.select("#chart4")
          .call(infoChart4);
 
+      // stack4
       infoStack4 = horizontalStackedBar()
          .data(getProficiencyBreakdown(data, grade, subject[0], selection))
          .id("stack4");
       d3.select("#stack4")
          .call(infoStack4);
 
-      // chart5: ILEARN MATH BY GRADE / SAT MATH OVERVIEW
+      // chart5: ILEARN Math By Grade / SAT Math Overview
       infoChart5 = multiLine()
          .data(getK8LineData(data, grade, subject[1], selection))
          .id("chart5");
       d3.select("#chart5")
          .call(infoChart5);
 
+      // stack5
       infoStack5 = horizontalStackedBar()
          .data(getProficiencyBreakdown(data, grade, subject[1], selection))
          .id("stack5");
       d3.select("#stack5")
          .call(infoStack5);
 
-      // chart6: ILEARN ELA BY ETHNICITY / SAT EBRW BY ETHNICITY          
+      // chart6: ILEARN ELA By Ethnicity / SAT EBRW By Ethnicity          
       infoChart6 = multiLine()
          .data(getK8LineData(data, ethnicity, subject[0], selection))
          .id("chart6");
       d3.select("#chart6")
          .call(infoChart6);
 
+      // stack6
       infoStack6 = horizontalStackedBar()
          .data(getProficiencyBreakdown(data, ethnicity, subject[0], selection))
          .id("stack6");
       d3.select("#stack6")
          .call(infoStack6);
 
-      // chart7: ILEARN MATH BY ETHNICITY / SAT MATH BY ETHNICITY          
+      // chart7: ILEARN Math By Ethnicity / SAT Math By Ethnicity          
       infoChart7 = multiLine()
          .data(getK8LineData(data, ethnicity, subject[1], selection))
          .id("chart7");
       d3.select("#chart7")
          .call(infoChart7);
 
+      // stack7
       infoStack7 = horizontalStackedBar()
          .data(getProficiencyBreakdown(data, ethnicity, subject[1], selection))
          .id("stack7");
       d3.select("#stack7")
          .call(infoStack7);
 
-      // chart8: ILEARN ELA BY SUBGROUP / SAT EBRW BY SUBGROUP         
+      // chart8: ILEARN ELA By Subgroup / SAT EBRW By Subgroup         
       infoChart8 = multiLine()
          .data(getK8LineData(data, subgroup, subject[0], selection))
          .id("chart8");
       d3.select("#chart8")
          .call(infoChart8);
 
+      // stack8
       infoStack8 = horizontalStackedBar()
          .data(getProficiencyBreakdown(data, subgroup, subject[0], selection))
          .id("stack8");
       d3.select("#stack8")
          .call(infoStack8);
 
-      // chart9: ILEARN MATH BY SUBGROUP / SAT MATH BY SUBGROUP         
+      // chart9: ILEARN Math By Subgroup / SAT Math By Subgroup         
       infoChart9 = multiLine()
          .data(getK8LineData(data, subgroup, subject[1], selection))
          .id("chart9");
       d3.select("#chart9")
          .call(infoChart9);
 
+      // stack9
       infoStack9 = horizontalStackedBar()
          .data(getProficiencyBreakdown(data, subgroup, subject[1], selection))
          .id("stack9");
       d3.select("#stack9")
          .call(infoStack9);
 
-      // ORIGINAL
-      // ethnicityChart1 = multiLine()
-      //    .data(getK8LineData(data, ethnicity, subject[0], selection))
-      //    .id("ethnicityChart1");
-      // d3.select("#ethnicityChart1")
-      //    .call(ethnicityChart1);
-
-      // ethnicityStack1 = horizontalStackedBar()
-      //    .data(getProficiencyBreakdown(proficiencydata, ethnicity, subject[0]))
-      //    .id("ethnicityStack1");
-      // d3.select("#ethnicityStack1")
-      //    .call(ethnicityStack1);
-
-      // ethnicityChart2 = multiLine()
-      //    .data(getK8LineData(data, ethnicity, subject[1], selection))
-      //    .id("ethnicityChart2");
-      // d3.select("#ethnicityChart2")
-      //    .call(ethnicityChart2);
-
-      // ethnicityStack2 = horizontalStackedBar()
-      //    .data(getProficiencyBreakdown(proficiencydata, ethnicity, subject[1]))
-      //    .id("ethnicityStack2");
-      // d3.select("#ethnicityStack2")
-      //    .call(ethnicityStack2);
-
-      // statusChart1 = multiLine()
-      //    .data(getK8LineData(data, subgroup, subject[0], selection))
-      //    .id("statusChart1");
-      // d3.select("#statusChart1")
-      //    .call(statusChart1);
-
-      // statusStack1 = horizontalStackedBar()
-      //    .data(getProficiencyBreakdown(proficiencydata, subgroup, subject[0]))
-      //    .id("statusStack1");
-      // d3.select("#statusStack1")
-      //    .call(statusStack1);
-
-      // statusChart2 = multiLine()
-      //    .data(getK8LineData(data, subgroup, subject[1], selection))
-      //    .id("statusChart2");
-      // d3.select("#statusChart2")
-      //    .call(statusChart2);
-
-      // statusStack2 = horizontalStackedBar()
-      //    .data(getProficiencyBreakdown(proficiencydata, subgroup, subject[1]))
-      //    .id("statusStack2");
-      // d3.select("#statusStack2")
-      //    .call(statusStack2);
-
-      // totalChart1 = multiLine()
-      //    .data(getK8LineData(data, grade, subject[0], selection))
-      //    .id("totalChart1");
-      // d3.select("#totalChart1")
-      //    .call(totalChart1);
-
-      // totalStack1 = horizontalStackedBar()
-      //    .data(getProficiencyBreakdown(proficiencydata, grade, subject[0]))
-      //    .id("totalStack1");
-      // d3.select("#totalStack1")
-      //    .call(totalStack1);
-
-      // totalChart2 = multiLine()
-      //    .data(getK8LineData(data, grade, subject[1], selection))
-      //    .id("totalChart2");
-      // d3.select("#totalChart2")
-      //    .call(totalChart2);
-
-      // totalStack2 = horizontalStackedBar()
-      //    .data(getProficiencyBreakdown(proficiencydata, grade, subject[1]))
-      //    .id("totalStack2");
-      // d3.select("#totalStack2")
-      //    .call(totalStack2);
-
 // Tables
 // https://www.ag-grid.com/javascript-data-grid/grid-api/
 // https://javascript.plainenglish.io/angular-how-can-you-clear-the-references-of-multiple-ag-grid-tables-together-353610b0c126
 // https://stackoverflow.com/questions/67917738/multiple-ag-grids-setselected-to-true-is-only-working-for-the-last-grid
-
 // https://stackoverflow.com/questions/53920531/can-we-change-the-view-for-ag-grid-in-mobile-devices
 
-      // table1: IREAD TOTAL / GRAD RATE TOTAL
-      // table2: IREAD BY ETHNICITY / GRAD RATE BY ETHNICITY
-      // table3: IREAD BY SUBGROUP / GRAD RATE BY SUBGROUP
-      // table4: ILEARN ELA BY GRADE / SAT EBRW Overview 
-      // table5: ILEARN MATH BY GRADE / SAT MATH OVERVIEW
-      // table6: ILEARN ELA BY ETHNICITY / SAT EBRW BY ETHNICITY 
-      // table7: ILEARN MATH BY ETHNICITY / SAT MATH BY ETHNICITY 
-      // table8: ILEARN ELA BY SUBGROUP / SAT EBRW BY SUBGROUP
-      // table9: ILEARN MATH BY SUBGROUP / SAT MATH BY SUBGROUP
-      let tableNum;
-      let tableStart;
-      // if (pageTab == "infoTab") {
-      if (typeTab == "k8Tab") {
-         if (k8Tab == "ilearnTab") {
-            tableNum = 6;
-            tableStart = 4;
-            subject = ["ELA", "Math"]
-         }
-         else if (k8Tab == "ireadTab") {
-            tableNum = 3;
-            tableStart = 1;
-            subject = ["IREAD"];
-         }
-      }
-      else if (typeTab == "hsTab") {
-         if (hsTab == "gradTab") {
-            tableNum = 3;
-            tableStart = 1;
-            subject = ["Graduation"]
-         }
-         else if (hsTab == "satTab") {
-            tableNum = 6;
-            tableStart = 4;               
-            subject = ["EBRW", "Math"];
-         }            
-      }
+      // table1: IREAD Total / Graduation Rate Total
+      // table2: IREAD By Ethnicity / Graduation Rate By Ethnicity
+      // table3: IREAD By Subgroup / Graduation Rate By Subgroup
+      // table4: ILEARN Math By Grade / SAT Math Overview 
+      // table5: ILEARN Math By Grade / SAT Math Overview
+      // table6: ILEARN ELA By Ethnicity / SAT EBRW By Ethnicity 
+      // table7: ILEARN Math By Ethnicity / SAT Math By Ethnicity 
+      // table8: ILEARN ELA By Subgroup / SAT EBRW By Subgroup
+      // table9: ILEARN Math By Subgroup / SAT Math By Subgroup
+
+      // let tableNum;
+      // let tableStart;
+
+      // if (typeTab == "k8Tab") {
+
+      //    if (k8Tab == "ilearnTab") {
+      //       tableNum = 6;
+      //       tableStart = 4;
+      //       subject = ["ELA", "Math"]
+      //    }
+      //    else if (k8Tab == "ireadTab") {
+      //       tableNum = 3;
+      //       tableStart = 1;
+      //       subject = ["IREAD"];
+      //    }
+
+      // }
+      // else if (typeTab == "hsTab") {
+
+      //    if (hsTab == "gradTab") {
+      //       tableNum = 3;
+      //       tableStart = 1;
+      //       subject = ["Graduation"]
+      //    }
+      //    else if (hsTab == "satTab") {
+      //       tableNum = 6;
+      //       tableStart = 4;               
+      //       subject = ["EBRW", "Math"];
+      //    }
+
       // }
 
       // Initialize nine (9) empty tables
@@ -1271,72 +1208,13 @@ function academicInfoPage(data, selection) {
          gridApi[k] = agGrid.createGrid(gridDiv, tableOptions);
       }
 
-      // let z = 0;
-      // // Create table for each category group and subject and
-      // // store in Array. NOTE: There has to be a better way to do this.
-      // for (let k = 0; k < categoryList.length; k++) {    // Grade/Total, Ethnicity, Subgroup
-      //    for (let l = 0; l < subject.length; l++) {      // either 1 or 2 items
-      
-      //       let tableName = "table" + (z+1);
-      //       let tableID = "#" + tableName
-
-      //       let tableData = getTableData(data, categoryList[k], subject[l], pageTab)
-      //       let tableOptions = createBasicTable(tableData, tableID)
-      //       console.log("tableOPTIONS")
-      //       console.log(tableOptions)
-      //       var gridDiv = document.querySelector(tableID)
-
-      //       gridApi[z] = agGrid.createGrid(gridDiv, tableOptions);
-      //       z++;
-      //    }
-      // }
-
-      console.log("GRIDAPI CREATED")
-      console.log(gridApi)
-      // let z = 0;
-      // // Create table for each category group and subject and
-      // // store in Array. NOTE: There has to be a better way to do this.
-      // for (let l = 0; l < subject.length; l++) {
-      //    for (let j = 0; j < categoryList.length; j++) {
-
-      //       // assign tableDiv based on content
-      //       let tableName ="Table";
-      //       let identifier;
-
-      //       if (subject[l] == "ELA" || subject[l] == "EBRW") {
-      //          identifier = "1"
-      //       }
-      //       else {
-      //          identifier = "2"
-      //       }
-
-      //       if (categoryList[j].includes("Black")) {
-      //          tableName = "ethnicityTable" + identifier;
-      //       }
-      //       else if (categoryList[j].includes("Special Education")) {
-      //          tableName = "statusTable" + identifier;
-      //       }
-      //       else {
-      //          tableName = "totalTable" + identifier;
-      //       }
-
-      //       let tableID = "#" + tableName // + subject[l].toLowerCase() 
-
-      //       let tableData = getTableData(data, categoryList[j], subject[l], location)
-
-      //       let tableOptions = createBasicTable(tableData, tableID)
-
-      //       var gridDiv = document.querySelector(tableID)
-
-      //       gridApi[z] = agGrid.createGrid(gridDiv, tableOptions);
-      //       z++;
-      //    }
-      // }
       academicInfoPage.initialize = true;
+
    }
-   else {
-      /* Update Charts */
-      let tableNum, tableStart;
+   else {      /* Update */
+
+      let tableNum,
+         tableShift; // number of tables to "skip"
       // for HS:
       // Graduation Rate Total
       // Graduation Rate Ethinicty
@@ -1345,12 +1223,11 @@ function academicInfoPage(data, selection) {
       // SAT by Ethnicity (BOTH EBRW and Math)
       // SAT by Subgroup (BOTH EBRW and Math)
 
-      // if (pageTab == "infoTab") {
       if (typeTab == "k8Tab") {
-         if (k8Tab == "ilearnTab") {
 
+         if (k8Tab == "ilearnTab") {
             tableNum = 6;
-            tableShift = 4;
+            tableShift = 3;
             subject = ["ELA", "Math"]
 
             infoChart4.data(getK8LineData(data, grade, subject[0], selection)).id("chart4")
@@ -1366,106 +1243,79 @@ function academicInfoPage(data, selection) {
             infoStack7.data(getProficiencyBreakdown(data, ethnicity, subject[1], selection)).id("stack7")
             infoStack8.data(getProficiencyBreakdown(data, subgroup, subject[0], selection)).id("stack8")
             infoStack9.data(getProficiencyBreakdown(data, subgroup, subject[1], selection)).id("stack9")               
-         
          }
+
          else if (k8Tab == "ireadTab") {
-            
             tableNum = 3;
-            tableShift = 1;
+            tableShift = 0;
             subject = ["IREAD"];
             
-            infoChart1.data(getK8LineData(data, grade, subject[0], selection)).id("chart1")
-            infoChart2.data(getK8LineData(data, grade, subject[0], selection)).id("chart2")
-            infoChart3.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart3")
+            const total = ["Total"];
+
+            infoChart1.data(getK8LineData(data, total, subject[0], selection)).id("chart1")
+            infoChart2.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart2")
+            infoChart3.data(getK8LineData(data, subgroup, subject[0], selection)).id("chart3")
          }
       }
       else if (typeTab == "hsTab") {
+         
+         const total = ["Total"];
+
          if (hsTab == "gradTab") {
-            
             tableNum = 3;
-            tableShift = 1;
+            tableShift = 0;
             subject = ["Graduation"];
 
-            infoChart1.data(getK8LineData(data, grade, subject[0], selection)).id("chart1")
-            infoChart2.data(getK8LineData(data, grade, subject[0], selection)).id("chart2")
-            infoChart3.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart3")
+            infoChart1.data(getK8LineData(data, total, subject[0], selection)).id("chart1")
+            infoChart2.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart2")
+            infoChart3.data(getK8LineData(data, subgroup, subject[0], selection)).id("chart3")
          }
          else if (typeTab == "satTab") {
-
             tableNum = 6;
-            tableShift = 4;
+            tableShift = 3;
             subject = ["EBRW", "Math"];
 
-            infoChart4.data(getK8LineData(data, grade, subject[0], selection)).id("chart4")
-            infoChart5.data(getK8LineData(data, grade, subject[1], selection)).id("chart5")
+            infoChart4.data(getK8LineData(data, total, subject[0], selection)).id("chart4")
+            infoChart5.data(getK8LineData(data, total, subject[1], selection)).id("chart5")
             infoChart6.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart6")
             infoChart7.data(getK8LineData(data, ethnicity, subject[1], selection)).id("chart7")
             infoChart8.data(getK8LineData(data, subgroup, subject[0], selection)).id("chart8")
             infoChart9.data(getK8LineData(data, subgroup, subject[1], selection)).id("chart9")
          }
-      // }
       };
-
-      // TODO: INITIALIZE WORKS - UPDATE DOES NOT
 
       /* Update Tables */
       //https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
       // TODO: This seems Kludgy as hell. Loops through array of grids (using a
       // global) and using the gridDivID to determine which data to use.
-      let tableData;
-      let tableID;
+      let tableData, tableID, catList;
 
-      // TODO: THis is borken
-      // Remove any elements with years > the selected year
+      // Remove objects with years > the selected year
       const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
 
-      let newcols = tabledata.map(a => a.Year)
-      newcols = newcols.map(String)
-      
       console.log('UPDATING TABLE')
-      console.log(gridApi)
-      console.log(newcols)
 
       for (let y=0; y<tableNum;y++) {
+
          let index = y + tableShift;
          const sub = i % 2;
 
-         if (tableShift == 1) {
-            let catList = [grade, ethnicity, subgroup]
+         if (tableShift == 0) {
+            catList = [grade, ethnicity, subgroup]
          }
          else {
-            let catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
+            catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
          }
 
          tableID = gridApi[index].getGridId()
 
+
          tableData = getTableData(tabledata, catList[y], subject[sub], selection)
 
          // console.log(tableID)
-         // if (tableID.includes("ethnicity")) {
-         //    if (tableID.includes("1")) {
-         //       tableData = getTableData(tabledata, ethnicity, subject[0], selection)
-         //    }
-         //    else {
-         //       tableData = getTableData(tabledata, ethnicity, subject[1], selection)
-         //    }
-         // }
-         // else if (tableID.includes("status")) {
-         //    if (tableID.includes("2")) {
-         //       tableData = getTableData(tabledata, subgroup, subject[0], selection)
-         //    }
-         //    else {
-         //       tableData = getTableData(tabledata, subgroup, subject[1], selection)
-         //    }
-         // }
-         // else {
-         //    if (tableID.includes("1")) {
-         //       tableData = getTableData(tabledata, grade, subject[0], selection)
-         //    }
-         //    else {
-         //       tableData = getTableData(tabledata, grade, subject[1], selection)
-         //    }
-         // }
+         // console.log(catList[y])
+         // console.log(subject[sub])
+         // console.log(tableData)
 
          let tableOptions = createBasicTable(tableData)
 
@@ -1474,43 +1324,6 @@ function academicInfoPage(data, selection) {
          gridApi[index].setGridOption("columnDefs", tableOptions.columnDefs);
          gridApi[index].setGridOption("rowData", tableData);
       };
-      // for (let y=0; y<gridApi.length;y++) {
-
-      //    tableID = gridApi[y].getGridId()
-
-      //    console.log(tableID)
-      //    if (tableID.includes("ethnicity")) {
-      //       if (tableID.includes("1")) {
-      //          tableData = getTableData(tabledata, ethnicity, subject[0], selection)
-      //       }
-      //       else {
-      //          tableData = getTableData(tabledata, ethnicity, subject[1], selection)
-      //       }
-      //    }
-      //    else if (tableID.includes("status")) {
-      //       if (tableID.includes("2")) {
-      //          tableData = getTableData(tabledata, subgroup, subject[0], selection)
-      //       }
-      //       else {
-      //          tableData = getTableData(tabledata, subgroup, subject[1], selection)
-      //       }
-      //    }
-      //    else {
-      //       if (tableID.includes("1")) {
-      //          tableData = getTableData(tabledata, grade, subject[0], selection)
-      //       }
-      //       else {
-      //          tableData = getTableData(tabledata, grade, subject[1], selection)
-      //       }
-      //    }
-
-      //    let tableOptions = createBasicTable(tableData)
-
-      //    // need to reset columndefs as well as rowdata or else table
-      //    // will have empty cols.
-      //    gridApi[y].setGridOption("columnDefs", tableOptions.columnDefs);
-      //    gridApi[y].setGridOption("rowData", tableData);
-      // };
    }
 };
 
@@ -1521,12 +1334,12 @@ function academicAnalysisPage(data) {
    // TODO: is this duplicative?
    let selectedValues = getSelectedValues();
    let year = getSelectedYear();
-   let school_type = selectedValues.school_type;
+   const schoolType = selectedValues.school_type;
 
-   if (school_type == "K8") {
+   if (schoolType == "K8") {
          var subject = subjectK8
       }
-      else if ((school_type == "HS") || (school_type == "AHS")) {
+      else if ((schoolType == "HS") || (schoolType == "AHS")) {
          var subject = subjectHS
       }
 
@@ -1696,12 +1509,33 @@ function navigateHandler(e) {
          stacks.forEach(el => {
             el.style.display = "none";
          });
+
+         if (hsSelection == "gradTab") {
+            stacks.forEach(el => {
+               el.style.display = "none"; 
+            });
+            infoSm.forEach(el => {
+               el.style.display = "flex"; 
+            });
+            infoLg.forEach(el => {
+               el.style.display = "none"; 
+            });
+         }
+         else if (hsSelection == "satTab") {
+            stacks.forEach(el => {
+               el.style.display = "none"; 
+            });
+            infoSm.forEach(el => {
+               el.style.display = "none"; 
+            });
+            infoLg.forEach(el => {
+               el.style.display = "flex"; 
+            });            
+         }
+
          k8Content.classList.remove("open");
          hsContent.classList.add("open");
       }      
-      // else { // TODO: Need this?
-      //    subContent.classList.remove("open");
-      // }
 
       activeMainTab = "Academic Information";
 

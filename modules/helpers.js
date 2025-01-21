@@ -2,7 +2,7 @@
 // data processing functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     07.04.24  
+// date:     01.21.25  
 
 
 // format value as percentage (used for Ag Grid)
@@ -135,11 +135,11 @@ function initializeTable(tableID) {
   data = [
     {
       "Category": "",
-      "2020": 0,
-      "2021": 0,
-      "2022": 0,
-      "2023": 0,
-      "2024": 0                      
+      "2020": "",
+      "2021": "",
+      "2022": "",
+      "2023": "",
+      "2024": ""                      
     }
   ];
 
@@ -272,25 +272,32 @@ function getTableData(data, category, subject, selection) {
 
   const location = selection.location;
   const pageTab = selection.page_tab
-  const infoTab = selection.info_tab
+  const k8Tab = selection.k8_tab
+  const hsTab = selection.hs_tab
   const typeTab = selection.type_tab
-  const schoolType = selection.school_type
-  const schoolSubtype = selection.school_subtype
+  // const schoolType = selection.school_type
+  // const schoolSubtype = selection.school_subtype
 
   let proficienctSuffix;
   let testedSuffix;
   
-  console.log("TABLE SECLETION")
-  console.log(selection)
-  console.log(data)
-  console.log(subject)
-  console.log(category)
+  // console.log("TABLE SECLETION")
+  // console.log(selection)
+  // console.log(data)
+  // console.log(subject)
+  // console.log(category)
 
-  // demoTab is included for load
-  if (pageTab == "infoTab" || location == "demoTab") { 
-
+  // include demoTab 
+  if (pageTab == "infoTab") { //|| location == "demoTab") { 
     if (typeTab == "k8Tab") {
-      if (infoTab == "ireadTab") {
+      if (k8Tab == "ireadTab") {
+
+        // drop all individual grades from category for IREAD, SAT
+        // and Grad Rate
+        // if (exists(category, "Grade 3")) {
+        //   category = ["Total"]
+        // }
+
         proficienctSuffix = "Pass N";
         testedSuffix = "Test N";
       }
@@ -298,18 +305,22 @@ function getTableData(data, category, subject, selection) {
         proficienctSuffix = "Total Proficient";
         testedSuffix = "Total Tested";
       }
+
     }
     else if (typeTab == "hsTab") {
+      
+      // if (exists(category, "Grade 3")) {
+      //   category = ["Total"]
+      // }
 
-      if (subject == "Graduation") {
+      if (hsTab == "gradTab") {
         proficienctSuffix = "Graduates";
-        testedSuffix = "Cohort Count";  
+        testedSuffix = "Cohort Count"; 
       }
       else {
         proficienctSuffix = "At Benchmark";
         testedSuffix = "Total Tested"; 
       }
-
     }
   }
 
@@ -321,19 +332,22 @@ function getTableData(data, category, subject, selection) {
       categoryProficient.push(category[a] + "|" + proficienctSuffix);
       categoryTested.push(category[a] + "|" + testedSuffix);
     }
-    else if (subject == "SAT") {
-      categoryProficient.push(category[a] + "|" + "EBRW " + proficienctSuffix);
-      categoryProficient.push(category[a] + "|" + "Math " + proficienctSuffix);
-      categoryTested.push(category[a] + "|" + "EBRW " + testedSuffix);
-      categoryTested.push(category[a] + "|" + "Math " + testedSuffix);
-    }
+    // else if (subject == "SAT") {
+    //   categoryProficient.push(category[a] + "|" + "EBRW " + proficienctSuffix);
+    //   categoryProficient.push(category[a] + "|" + "Math " + proficienctSuffix);
+    //   categoryTested.push(category[a] + "|" + "EBRW " + testedSuffix);
+    //   categoryTested.push(category[a] + "|" + "Math " + testedSuffix);
+    // }
     else {
       categoryProficient.push(category[a] + "|" + subject + " " + proficienctSuffix);
       categoryTested.push(category[a] + "|" + subject + " " + testedSuffix);
     }
   }
 
-  // TODO: ADD 
+  // console.log(categoryProficient)
+  // console.log(categoryTested)
+
+  // TODO: Fix This
   let filteredData = []
   var noneTested = []
   var insufficientN = []
@@ -404,8 +418,8 @@ function getTableData(data, category, subject, selection) {
         }
       }
 
-    // console.log("FinalData")
-    // console.log(finalData)  
+    console.log("FinalData")
+    console.log(finalData)  
 
     return finalData
 }
@@ -558,15 +572,13 @@ function longYear(year) {
   return fullYear
 }
 
-
 // process data for stackedBarCharts
 function getProficiencyBreakdown(data, categoryList, subject, selection) {
   const year = selection.year;
-
   let yearData = data.filter((ele) => ele.Year === Number(year))[0];
-
+  // const Year = yearData.Year
+  
   let rating = ["Below Proficiency", "Approaching Proficiency", "At Proficiency", "Above Proficiency"]
-  const Year = data.Year
 
   // iterate over all of the entries in data (ilearnObjAll), filtering out
   // those keys that do not include one of the substrings included
@@ -628,8 +640,8 @@ function getProficiencyBreakdown(data, categoryList, subject, selection) {
         else {
           // create an array of strings for data with insufficient n-size
           let catName = categoryList[j]
-          let catTested = data[catName + "|" + subject + " Total Tested"] // use full data file
-          let nsizeString = catName + "(Tested: " + catTested + ")"
+          let catTested = yearData[catName + "|" + subject + " Total Tested"]
+          let nsizeString = catName + " (Tested: " + catTested + ")"
           insufficientN.push(nsizeString)
         }
      }
@@ -638,16 +650,13 @@ function getProficiencyBreakdown(data, categoryList, subject, selection) {
   rating.unshift("Category")
   proficiencyData["columns"] = rating
 
-  return [proficiencyData, insufficientN, Year]
+  return [proficiencyData, insufficientN, year]
 }
 
 
 // process data for linechart function (Academic Info Page)
 function processData (data) {
 
-  // console.log("DATA IN")
-  // console.log(data)
-  // console.log(data.columns)
   // convert array of objects grouped on "Year" to an array of
   // objects with an "id" key and a "values" key where values
   // is an array of objects with "year" and "proficiency" keys
@@ -665,8 +674,7 @@ function processData (data) {
 
   return sliced
   });
-  // console.log("SLIVES")
-  // console.log(slices)
+
   // Clean the data: 1) filter out objects where proficiency
   // is NaN; 2) remove categories where all values are NaN; and
   // 3) track which years have data (for xAxis)
