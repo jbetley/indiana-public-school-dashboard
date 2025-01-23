@@ -2,7 +2,7 @@
 // d3.js charting functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     01.11.25
+// date:     01.21.25
 
 // https://datawanderings.com/2019/10/28/tutorial-making-a-line-chart-in-d3-js-v-5/
 // https://observablehq.com/@greenafrican/grouped-bar-chart
@@ -80,10 +80,6 @@ function multiLine() {
             return d.proficiency + .10; })
             })
         ]);
-
-      // using scalePoint seems to work better than scaleTime
-      // var yearRange = [parseInt(years[0]),parseInt(years[years.length-1])]
-      // x.domain(yearRange);
 
       x.domain(years);
 
@@ -174,7 +170,7 @@ function multiLine() {
 
           categories = dataByYear.columns;
           categories = categories.filter(el => el != "School Name")
-          categories.forEach((category, i) => category[category] = colorList[i])
+          categories.forEach((category, i) => colors[category] = colorList[i])
 
           y.domain([(0), d3.max(dataByCategory, function(c) {
             return d3.max(c.values, function(d) {
@@ -225,7 +221,7 @@ function multiLine() {
           var legend = legendContainer.selectAll('.legend')
             .data(dataByCategory)
               .enter().append('g')
-              .attr('class', 'legend')
+              .attr('class', 'legend');
 
           legend.append('rect')
             .attr("x", function(d, i) {
@@ -253,15 +249,15 @@ function multiLine() {
               return d.id;
             })
 
+// TODO: LEGEND PLACEMENT SUUUUUUCCCCKKKSSS
 // TODO: Make the legend responsive? May need to make this a function and re-run it
 // TODO: steps, 1) build horizontal legend; 2) break the line if necessary;
 // TODO: 3) calculate center based on current svg; 4) ADD to WIDTH resize function
-// see: https://gist.github.com/bobmonteverde/2070069
 // https://stackoverflow.com/questions/49454761/how-to-horizontally-centre-a-responsive-multi-line-legend-in-d3
 
           // base xOffset is the starting x position of the legendcontainer
           var legendStartX = d3.select(".legendcontainer").node().getCTM().e
-          var xOffset = 0; //parseInt(legendStartX);
+          var xOffset = 0; 
           var row = 1;
           var y_pos = 0;
           const fontSize = 10;
@@ -477,9 +473,11 @@ function multiLine() {
           // width is passed in as window.innerWidth/2
           widthScale = width - margin.left - margin.right;
 
-          transformAdjust = 80;
-
+          // TODO: the "svg" variable is actually "g" so parentnode is the svg
           let svgParent = d3.select(svg._groups[0][0].parentNode)
+
+          // TODO: need to figure out how to automate transformAdjust val
+          transformAdjust = 80;
           svgParent.transition().duration(200).attr('width', widthScale + transformAdjust);
 
           // reset xScale range and redraw everything
@@ -607,16 +605,16 @@ function multiLine() {
                 }
               );
 
-              // TODO: Test to push legends apart if they overlap?
-              if (i > 0) {
-                if (legendHistory[i].y == legendHistory[i-1].y) {
-                  if (legendHistory[i].left < legendHistory[i-1].right) {
-                    // console.log("OVERLAP: " + legendHistory[i].id)
-                    const diff = legendHistory[i-1].right - legendHistory[i].left // not working
-                    finalXposition = finalXposition + 20;
-                  }
-                }
-              }
+              // // TODO: Test to push legends apart if they overlap?
+              // if (i > 0) {
+              //   if (legendHistory[i].y == legendHistory[i-1].y) {
+              //     if (legendHistory[i].left < legendHistory[i-1].right) {
+              //       // console.log("OVERLAP: " + legendHistory[i].id)
+              //       const diff = legendHistory[i-1].right - legendHistory[i].left // not working
+              //       finalXposition = finalXposition + 20;
+              //     }
+              //   }
+              // }
               // final translation is with respect to the initial translation of
               // the legendcontainer.
               return "translate(" + finalXposition + "," + finalYposition + ")"
@@ -1145,26 +1143,29 @@ function singleLine() {
 
         svg.selectAll("rect.overlay").remove();
 
+          // determine the actual height and width of the svg group and
+          // set the overlay to the same width/height
+          svgAttributes = d3.select("g")._groups[0][0].parentNode.attributes
+          svgWidth = svgAttributes.getNamedItem("width").value
+          const svgHeight = svgAttributes.getNamedItem("height").value
+
         var overlay = svg.append('rect')
+          .attr("transform", "translate(-" + margin.left + ",-" + margin.top + ")")
           .attr("class", "overlay")
-          .attr("width", width)
-          .attr("height", height)
+          .attr("width", svgWidth)
+          .attr("height", svgHeight)
           .on("mouseover", mouseOver)
           .on("mouseout", mouseOut)
           .on("mousemove", mouseMove);
 
       } // end update Function
 
-// TODO: Use Overlay Change from multi-line here as well
       updateWidth = function() {
 
         // width is passed in as window.innerWidth/2
         widthScale = width - margin.left - margin.right;
 
-        // TODO: the "svg" variable is actually "g" so parentnode is the svg
         let svgParent = d3.select(svg._groups[0][0].parentNode)
-
-        // TODO: need to figure out how to automate transformAdjust val
         transformAdjust = 80;
         svgParent.transition().duration(200).attr('width', widthScale + transformAdjust);
 
@@ -1192,7 +1193,7 @@ function singleLine() {
           .attr("cx", function (d,i) { return x(d.Year)})
           .attr("cy", function (d,i) { return y(d["Total Enrollment"])});
 
-        svg.select("rect.overlay").attr("width", widthScale);
+        svg.select("rect.overlay").attr("width", widthScale + transformAdjust);
 
       };
 
@@ -1341,14 +1342,14 @@ function singleLine() {
 }; // end simpleLineChart function
 
 
-// Proficiency bar charts //
+// Enrollment by Ethnicity/Subgroup
 function horizontalGroupBar() {
 
   let defaultWidth = window.innerWidth/2 - 125;
 
   var margin = {top: 45, right: 20, bottom: 25, left: 50},
     width = defaultWidth - margin.left - margin.right,
-    height = 360 - margin.top - margin.bottom,
+    height = 380 - margin.top - margin.bottom,
     widthScale,
     updateData,
     updateWidth,
@@ -1378,6 +1379,9 @@ function horizontalGroupBar() {
       let selectedYear;
       let yearString;
       let groupTitleText = "";
+
+      // used by title rect and text to fix slight offset from center
+      const manualAdjustment = 7;
 
       const chartData = data[0]
       const missingString = data[1] // not currently needed
@@ -1431,9 +1435,11 @@ function horizontalGroupBar() {
       var groupTitle = svg.append("g")
         .classed("title", true);
 
-      // NOTE: Is there a better way to do this?
+      // the rect position is relative to the svg including transforms (50,45). however,
+      // we want the title to be in the center of the containing div, not the svg group.
+      let containerWidth = d3.select('[id^="demo-container-3-stack"]')._groups[0][0].clientWidth;
       const svgWidth = width + margin.left + margin.right
-      const xVal = ((svgWidth - width) - (margin.left/3)) /2
+      const xVal = (containerWidth - svgWidth) / 4
 
       groupTitle.append("rect")
         .classed("titlebox", true)
@@ -1464,7 +1470,7 @@ function horizontalGroupBar() {
         .style('text-anchor','middle')
         .style('alignment-baseline', 'middle')
         .attr('dx', function(d) {
-          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2 + manualAdjustment
         })
         .attr('y', -55)
         .text(groupTitleText);
@@ -1696,7 +1702,7 @@ function horizontalGroupBar() {
               .style('text-anchor','middle')
               .style('alignment-baseline', 'middle')
               .attr('dx', function(d) {
-                return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+                return (width + margin.left + margin.right)/2 - margin.left - margin.right/2 + manualAdjustment
               })
               .attr('y', -55)
               .text(function(d) { return d })
@@ -1728,20 +1734,28 @@ function horizontalGroupBar() {
 
         svg.selectAll("text.label")
           .transition()
-          .duration(250)
+          .duration(150)
           .attr("x", function(d) { return x(d[1]) + 5;});
 
-        let titleX = ((margin.left + margin.right) - (margin.left/3)) /2
-
+        // the containing div will always be 70 pixels wider than the svg post
+        // transition (because of 35px padding on the div). the rect is attached to
+        // the svg group so we need to adjust to account for the width change.
+        // even so, the rect is off center, manual adjustment fixes, but I'd 
+        // prefer a more organic situation
+        const svgWidth = widthScale + transformAdjust;
+        const containerWidth = svgWidth + 70
+        const manualAdjustment = 7
+        const xVal = ((containerWidth - svgWidth) / 4) - manualAdjustment
+ 
         svg.select("rect.titlebox")
           .transition()
-          .duration(250)
+          .duration(0)
           .attr("width", (widthScale))
-          .attr("x", -titleX)
+          .attr("x", -xVal) 
 
         svg.select("text.titletext")
         .transition()
-        .duration(250)
+        .duration(0)
         .attr("font-size", function(d) {
           if (widthScale < 180) {
             return "8px"
@@ -1753,19 +1767,9 @@ function horizontalGroupBar() {
             return "12px"
           }
         })
-        .attr('y', function(d) {
-          if (widthScale < 180) {
-            return -55.5
-          }
-          else if (widthScale < 230) {
-            return -55.2
-          }
-          else {
-            return -55
-          }
-        })
+        // no idea how I came up with this formula
         .attr('dx', function(d) {
-          return (widthScale + margin.left + margin.right)/2 - margin.left - (margin.right/3)
+          return (widthScale + margin.left + margin.right)/2 - margin.left + manualAdjustment
         });
 
         // TODO: Adjust x (higher) dynamically, somehow
@@ -1802,7 +1806,425 @@ function horizontalGroupBar() {
 };
 
   return chart;
-}; // end simpleGroupBarChart
+}; // end horizontalGroupBarChart
+
+
+/* Proficiency Breakdown charts */
+function horizontalStackedBar() {
+
+  var margin = {top: 15, right: 25, bottom: 15, left: 60},
+    width = 540 - margin.left - margin.right,
+    height = 380 - margin.top - margin.bottom,
+    updateData,
+    focus,
+    categories,
+    colors,
+    x = d3.scaleLinear().domain([0, 1]).range([0, width]),
+    y = d3.scaleBand().range([0, height]).padding(.3);
+
+  let data,
+    id;
+
+  var colors = {};
+  const colorList = ["#df8f2d", "#ebbb81", "#96b8db", "#74a2d7"];
+  
+  const manualAdjustment = 7;
+
+  var yAxis = d3.axisLeft(y).tickSize(0).tickPadding(8);
+
+  function chart(selection){
+
+    selection.each(function () {
+
+      let barData = data[0];
+      let selectedYear = data[2];
+
+      categories = barData.columns.slice(1);
+
+      categories.forEach((category, i) => colors[category] = colorList[i]);
+
+      y.domain(barData.map(d => d.Category));
+
+      var dom = d3.select(this);
+      let id = dom._groups[0][0].id;
+
+      var svg = dom.append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("transform", `translate(${margin.left}, 0)`);
+
+      svg.append("g")
+        .attr('class', 'y axis')
+        .style("font-size", 8)
+        .style("font-family", "Inter, sans-serif")
+        .attr("color", "#6783a9")
+        .call(yAxis)
+        .call(d => d.select(".domain").remove())
+        .attr("transform", `translate(0, 20)`);
+
+      var title = svg.append("g");
+
+      let actualSvg = d3.select(svg._groups[0][0]) /// GET WIDTH
+      console.log(actualSvg)
+      title.append("rect")
+        .attr("width", (width + margin.left + margin.right)/2)
+        .attr("x", function(d) {
+          return ((width + margin.left + margin.right)/3) / 2
+        })
+        .attr("rx", 5)
+        .style("fill", "#6783a9")
+        .attr("height", "30px");
+
+      title.append("text")
+        .classed("title", true)
+        .attr("fill", "white")
+        .style("font-weight", 700)
+        .attr("font-size", "12px")
+        .style("font-family", "Inter, sans-serif")
+        .style('text-anchor','middle')
+        .style('alignment-baseline', 'middle')
+        .attr('dx', function(d) {       // the "dx" value is an experiment
+          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+        })
+        .attr('dy', 15)
+        .text("Proficiency Breakdown (" + selectedYear +")");
+
+      // apply translate to all barstack items (including axis) to
+      // make room for title
+      var barstack = svg.append("g")
+        .attr('class', 'barstack')
+        .attr('id', id)
+        .attr("transform", `translate(0, 20)`);
+
+      var endtext = svg.append("g")
+        .attr("class", "endtext");
+
+      endtext.append("text")
+        .attr('class', 'endnote')
+        .style("fill", "steelblue")
+        .style("font-size", 10);
+
+      focus = svg.append('g')
+        .attr('class', 'focus')
+        .style('display', 'none');
+
+      focus.append('line')
+        .attr('class', 'hover-back-line')
+        .attr('x1', 0)
+        .attr('x2', width+10);
+
+      focus.append('line')
+        .attr('class', 'hover-line')
+        .attr('x1', 0)
+        .attr('x2', width+10);
+
+      // TODO: This is incorrect somehow - making div the parent causes
+      // TODO: location to be measured from browser rather than element
+      var tooltipContainer = d3.select("#" + id);
+
+      var tooltip = tooltipContainer.append("div")
+        .style("position", "absolute")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("width", "200px")
+        .style("height", "80px")
+        .style("background-color", "white")
+        .style("font-size", "10px")
+        .style("font-family", "Inter, sans-serif")
+        .style("text-align", "left")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px");
+
+      const mouseOver = function(d) {
+
+        focus.style("display", null);
+
+        tooltip
+          .style("opacity", 1);
+
+        d3.select(this)
+          .style("opacity", .5);
+
+      };
+
+      const mouseMove = function(event,d) {
+
+        const datum = d3.select(this).datum().data;
+
+        var html = "";
+        const f = d3.format(",.2%");
+
+        let z = 0;
+        for (const k in datum) {
+          if (k !== "Category") {
+            html += `<span style='font-size: 1em; color: ${colorList[z]};'><i class='fa fa-square center-icon'></i></span>&nbsp&nbsp&nbsp${k}: ${d3.format(",.2%")(datum[k])}<p>`
+            z++
+          };
+        };
+
+        // find the top ("y") coordinate of the selected rect and half
+        // the height - we want focus bar in the middle of the rect
+        let ywhere = parseFloat(d3.select(this).attr("y"));
+        let halfheight = parseFloat(d3.select(this).attr("height")) / 2;
+
+        // text y var is already located in middle and text does not
+        // have a height var so will show up as NaN - so we sub 0
+        if (isNaN(halfheight)) { halfheight = 0 };
+
+        // add 20 to account for barstack translate
+        const why = ywhere + halfheight + 20;
+
+        focus
+          .attr("transform", "translate(0," + why + ")")
+          .style("z-index", "99");
+
+        // TODO: find way to get position from selected rather than
+        // TODO: position of svg from top of screen - none of the
+        // TODO: usual (getBoundingClientRec, bbox, etc.) work
+        // the offset from the top of the screen to the top of the svg
+        let that = d3.select("#" + id)._groups[0][0].offsetTop;
+
+        tooltip.html(html)
+          .style("top", that + why - 120 + "px")
+          .style("left", (d3.mouse(this)[0]+120) + "px")
+
+      };
+
+      const mouseLeave = function(d) {
+        focus.style("display", "none");
+        tooltip
+            .style("opacity", 0);
+
+        d3.select(this)
+            .style("stroke", "none")
+            .style("opacity", 1);
+      };
+
+      updateData = function() {
+
+        const stack = d3.stack()
+          .keys(categories)
+          .order(d3.stackOrderNone)
+          .offset(d3.stackOffsetNone);
+
+        let barData = data[0];
+        let insufficient = data[1];
+        let selectedYear = data[2];
+
+        var endnote = "";
+        if (insufficient.length > 0) {
+          endnote = [insufficient.join(", ") + "."]
+        };
+
+        const stackedData = stack(barData);
+
+        categories = barData.columns.slice(1);
+        categories.forEach((category, i) => colors[category] = colorList[i]);
+
+        y.domain(barData.map(d => d.Category));
+
+        svg.select("g.y.axis")
+          .transition()
+          .duration(250)
+          .call(yAxis)
+          .call(g => {
+            g.selectAll("text")
+            g.selectAll("line")
+              .attr('stroke', '#A9A9A9')
+              .attr('stroke-width', 0.7)
+              .attr('opacity', 0.3)
+          g.select(".domain").remove()
+          })
+          .attr('display', 'block')
+          .attr("transform", `translate(0, 20)`);
+
+        setTimeout(() => {
+          svg.select("g.y.axis")
+            .selectAll(".tick text")
+            .style("font-size", 10)
+            .style("font-family", "Inter, sans-serif")
+            .attr('dy', 0)
+            .call(wrap, 60);
+        }, 0);
+
+        const dur = 200;
+        const t = d3.transition().duration(dur);
+
+        barstack.selectAll("g")
+          .data(stackedData)
+          .join(
+            enter => enter
+              .append("g")
+              .attr("fill", function (d,i) { return colors[d.key]}),
+            null, // no update function
+            exit => {
+              exit
+                .transition()
+                .duration(dur / 2)
+                .style("fill-opacity", 0)
+                .remove();
+            }
+          )
+          .selectAll("rect")
+          .data(d => d)
+          .join(
+            enter => enter
+              .append("rect")
+              .attr("class", "bar")
+              .attr("x", function(d) { return x(d[0])})
+              .attr("y", function(d,i) {
+                return y(d.data.Category)
+              })
+              .attr("width", function(d) { return x(d[1]) - x(d[0])})
+              .attr("height",function(d) { return y.bandwidth() })
+              .on("mouseover", mouseOver)
+              .on("mousemove", mouseMove)
+              .on("mouseleave", mouseLeave),
+            null,
+            exit => {
+              exit
+                .transition()
+                .duration(dur / 2)
+                .style("fill-opacity", 0)
+                .remove();
+            }
+          )
+          .transition(t)
+          .delay((d, i) => i * 20)
+          .attr("x", function(d) { return x(d[0])})
+          .attr("y", function(d,i) { return y(d.data.Category) })
+          .attr("width", d => x(d[1]) - x(d[0]))
+          .attr("height",function(d) { return y.bandwidth() });
+
+        barstack.selectAll("g")
+          .data(stackedData)
+          .join(
+            enter => enter
+              .append("g"),
+            null,
+            exit => {
+              exit
+                .transition()
+                .duration(dur / 2)
+                .text("")
+                .remove();
+            }
+          )
+          .selectAll("text")
+          .data(d => d)
+          .join(
+            enter => enter
+              .append("text")
+              .attr("class", "bartext")
+              .text(function(d ,i) {
+                const val = (d[1]-d[0]);
+                if (val < .1) { return "" }
+                else { return d3.format(",.2%")(val) }
+              })
+              .attr("text-anchor", "middle")
+              .style("fill", "steelblue")
+              .style("font-size", 10)
+              .attr("y", function(d,i) { return y(d.data.Category) + (y.bandwidth()/2)})
+              .attr("dy", function(d) {
+                return ".5em"
+              })
+              .attr("x", function(d) { return (x(d[0]) + x(d[1]))/2}),
+              null,
+              exit => {
+                exit
+                  .transition()
+                  .duration(dur / 2)
+                  .text("")
+                  .remove();
+              }
+          )
+          .transition(t)
+          .delay((d, i) => i * 20)
+          .text(function(d ,i) {
+            const val = (d[1]-d[0]);
+            if (val < .1) { return "" }
+            else { return d3.format(",.2%")(val) }
+          })
+          .attr("y", function(d,i) {
+            return y(d.data.Category) + (y.bandwidth()/2)
+          })
+          .attr("dy", function(d) {
+            return ".5em"
+          })
+          .attr("x", function(d) { return (x(d[0]) + x(d[1]))/2});
+
+          svg.selectAll("text.endtext").remove();
+          svg.selectAll(".endline").remove();
+
+          if (endnote.length > 0) {
+
+            svg.append("line")
+              .attr("class","endline")
+              .style("stroke", "steelblue")
+              .style('shape-rendering','crispEdges')
+              .style("opacity", 0.5)
+              .attr("x1", -20)
+              .attr("y1", height+5)
+              .attr("x2", width/2)
+              .attr("y2", height+5);
+
+            endtext.selectAll(".endnote")
+              .data(endnote, function(d) { return d })
+              .enter()
+              .append("text")
+              .style("fill", "steelblue")
+              .style("font-size", 10)
+              .attr("y", height + 20)
+              .attr("dx", -20)
+              .attr("class","endtext")
+              .style("font-weight", 700)
+              .text("Insufficient N-Size: ")
+              .append("tspan")
+              .style("font-weight", 300)
+              .text(function(d) { return d });
+          };
+
+          svg.selectAll("text.title").remove();
+
+          title.append("text")
+            .classed("title", true)
+            .attr("fill", "white")
+            .style("font-weight", 700)
+            .attr("font-size", "12px")
+            .style("font-family", "Inter, sans-serif")
+            .style('text-anchor','middle')
+            .style('alignment-baseline', 'middle')
+            .attr('dx', function(d) {
+              return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+            })
+            .attr('dy', 15)
+            .text("Proficiency Breakdown (" + selectedYear +")");
+        }; // end Update
+      }); // end each
+
+      updateData();
+
+    }; // end stackedBar chart
+
+    // getter and setter methods
+  chart.data = function(value) {
+    if (!arguments.length) return data;
+    data = value;
+    if (typeof updateData === 'function') updateData();
+    return chart;
+  };
+
+  chart.id = function(value){
+    if (!arguments.length) return id;
+    id = value;
+    if (typeof updateId === 'function') updateId();
+    return chart;
+  };
+
+  return chart;
+}; // end stackedBar
 
 
 // Analysis Grouped Bar //
@@ -2205,417 +2627,3 @@ function verticalGroupBar() {
 
   return chart;
 }; // end verticalBar
-
-
-/* Proficiency Breakdown charts */
-function horizontalStackedBar() {
-
-  var margin = {top: 15, right: 25, bottom: 15, left: 60},
-    width = 540 - margin.left - margin.right,
-    height = 380 - margin.top - margin.bottom,
-    updateData,
-    focus,
-    categories,
-    colors,
-    x = d3.scaleLinear().domain([0, 1]).range([0, width]),
-    y = d3.scaleBand().range([0, height]).padding(.3);
-
-  let data,
-    id;
-
-  var colors = {};
-  const colorList = ["#df8f2d", "#ebbb81", "#96b8db", "#74a2d7"];
-
-  var yAxis = d3.axisLeft(y).tickSize(0).tickPadding(8);
-
-  function chart(selection){
-
-    selection.each(function () {
-
-      let barData = data[0];
-      let selectedYear = data[2];
-
-      categories = barData.columns.slice(1);
-
-      categories.forEach((category, i) => colors[category] = colorList[i]);
-
-      y.domain(barData.map(d => d.Category));
-
-      var dom = d3.select(this);
-      let id = dom._groups[0][0].id;
-
-      var svg = dom.append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("transform", `translate(${margin.left}, 0)`);
-
-      svg.append("g")
-        .attr('class', 'y axis')
-        .style("font-size", 8)
-        .style("font-family", "Inter, sans-serif")
-        .attr("color", "#6783a9")
-        .call(yAxis)
-        .call(d => d.select(".domain").remove())
-        .attr("transform", `translate(0, 20)`);
-
-      var title = svg.append("g");
-
-      title.append("rect")
-        .attr("width", (width + margin.left + margin.right)/2)
-        .attr("x", function(d) {
-          return ((width + margin.left + margin.right)/3) / 2
-        })
-        .attr("rx", 5)
-        .style("fill", "#6783a9")
-        .attr("height", "30px");
-
-      title.append("text")
-        .classed("title", true)
-        .attr("fill", "white")
-        .style("font-weight", 700)
-        .attr("font-size", "12px")
-        .style("font-family", "Inter, sans-serif")
-        .style('text-anchor','middle')
-        .style('alignment-baseline', 'middle')
-        .attr('dx', function(d) {       // the "dx" value is an experiment
-          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-        })
-        .attr('dy', 15)
-        .text("Proficiency Breakdown (" + selectedYear +")");
-
-      // apply translate to all barstack items (including axis) to
-      // make room for title
-      var barstack = svg.append("g")
-        .attr('class', 'barstack')
-        .attr('id', id)
-        .attr("transform", `translate(0, 20)`);
-
-      var endtext = svg.append("g")
-        .attr("class", "endtext");
-
-      endtext.append("text")
-        .attr('class', 'endnote')
-        .style("fill", "steelblue")
-        .style("font-size", 10);
-
-      focus = svg.append('g')
-        .attr('class', 'focus')
-        .style('display', 'none');
-
-      focus.append('line')
-        .attr('class', 'hover-back-line')
-        .attr('x1', 0)
-        .attr('x2', width+10);
-
-      focus.append('line')
-        .attr('class', 'hover-line')
-        .attr('x1', 0)
-        .attr('x2', width+10);
-
-      // TODO: This is incorrect somehow - making div the parent causes
-      // TODO: location to be measured from browser rather than element
-      var tooltipContainer = d3.select("#" + id);
-
-      var tooltip = tooltipContainer.append("div")
-        .style("position", "absolute")
-        .attr("class", "tooltip")
-        .style("opacity", 0)
-        .style("width", "200px")
-        .style("height", "80px")
-        .style("background-color", "white")
-        .style("font-size", "10px")
-        .style("font-family", "Inter, sans-serif")
-        .style("text-align", "left")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px");
-
-      const mouseOver = function(d) {
-
-        focus.style("display", null);
-
-        tooltip
-          .style("opacity", 1);
-
-        d3.select(this)
-          .style("opacity", .5);
-
-      };
-
-      const mouseMove = function(event,d) {
-
-        const datum = d3.select(this).datum().data;
-
-        var html = "";
-        const f = d3.format(",.2%");
-
-        let z = 0;
-        for (const k in datum) {
-          if (k !== "Category") {
-            html += `<span style='font-size: 1em; color: ${colorList[z]};'><i class='fa fa-square center-icon'></i></span>&nbsp&nbsp&nbsp${k}: ${d3.format(",.2%")(datum[k])}<p>`
-            z++
-          };
-        };
-
-        // find the top ("y") coordinate of the selected rect and half
-        // the height - we want focus bar in the middle of the rect
-        let ywhere = parseFloat(d3.select(this).attr("y"));
-        let halfheight = parseFloat(d3.select(this).attr("height")) / 2;
-
-        // text y var is already located in middle and text does not
-        // have a height var so will show up as NaN - so we sub 0
-        if (isNaN(halfheight)) { halfheight = 0 };
-
-        // add 20 to account for barstack translate
-        const why = ywhere + halfheight + 20;
-
-        focus
-          .attr("transform", "translate(0," + why + ")")
-          .style("z-index", "99");
-
-        // TODO: find way to get position from selected rather than
-        // TODO: position of svg from top of screen - none of the
-        // TODO: usual (getBoundingClientRec, bbox, etc.) work
-        // the offset from the top of the screen to the top of the svg
-        let that = d3.select("#" + id)._groups[0][0].offsetTop;
-
-        tooltip.html(html)
-          .style("top", that + why - 120 + "px")
-          .style("left", (d3.mouse(this)[0]+120) + "px")
-
-      };
-
-      const mouseLeave = function(d) {
-        focus.style("display", "none");
-        tooltip
-            .style("opacity", 0);
-
-        d3.select(this)
-            .style("stroke", "none")
-            .style("opacity", 1);
-      };
-
-      updateData = function() {
-
-        const stack = d3.stack()
-          .keys(categories)
-          .order(d3.stackOrderNone)
-          .offset(d3.stackOffsetNone);
-
-        let barData = data[0];
-        let insufficient = data[1];
-        let selectedYear = data[2];
-
-        var endnote = "";
-        if (insufficient.length > 0) {
-          endnote = [insufficient.join(", ") + "."]
-        };
-
-        const stackedData = stack(barData);
-
-        categories = barData.columns.slice(1);
-        categories.forEach((category, i) => colors[category] = colorList[i]);
-
-        y.domain(barData.map(d => d.Category));
-
-        svg.select("g.y.axis")
-          .transition()
-          .duration(250)
-          .call(yAxis)
-          .call(g => {
-            g.selectAll("text")
-            g.selectAll("line")
-              .attr('stroke', '#A9A9A9')
-              .attr('stroke-width', 0.7)
-              .attr('opacity', 0.3)
-          g.select(".domain").remove()
-          })
-          .attr('display', 'block')
-          .attr("transform", `translate(0, 20)`);
-
-        setTimeout(() => {
-          svg.select("g.y.axis")
-            .selectAll(".tick text")
-            .style("font-size", 10)
-            .style("font-family", "Inter, sans-serif")
-            .attr('dy', 0)
-            .call(wrap, 60);
-        }, 0);
-
-        const dur = 200;
-        const t = d3.transition().duration(dur);
-
-        barstack.selectAll("g")
-          .data(stackedData)
-          .join(
-            enter => enter
-              .append("g")
-              .attr("fill", function (d,i) { return colors[d.key]}),
-            null, // no update function
-            exit => {
-              exit
-                .transition()
-                .duration(dur / 2)
-                .style("fill-opacity", 0)
-                .remove();
-            }
-          )
-          .selectAll("rect")
-          .data(d => d)
-          .join(
-            enter => enter
-              .append("rect")
-              .attr("class", "bar")
-              .attr("x", function(d) { return x(d[0])})
-              .attr("y", function(d,i) {
-                return y(d.data.Category)
-              })
-              .attr("width", function(d) { return x(d[1]) - x(d[0])})
-              .attr("height",function(d) { return y.bandwidth() })
-              .on("mouseover", mouseOver)
-              .on("mousemove", mouseMove)
-              .on("mouseleave", mouseLeave),
-            null,
-            exit => {
-              exit
-                .transition()
-                .duration(dur / 2)
-                .style("fill-opacity", 0)
-                .remove();
-            }
-          )
-          .transition(t)
-          .delay((d, i) => i * 20)
-          .attr("x", function(d) { return x(d[0])})
-          .attr("y", function(d,i) { return y(d.data.Category) })
-          .attr("width", d => x(d[1]) - x(d[0]))
-          .attr("height",function(d) { return y.bandwidth() });
-
-        barstack.selectAll("g")
-          .data(stackedData)
-          .join(
-            enter => enter
-              .append("g"),
-            null,
-            exit => {
-              exit
-                .transition()
-                .duration(dur / 2)
-                .text("")
-                .remove();
-            }
-          )
-          .selectAll("text")
-          .data(d => d)
-          .join(
-            enter => enter
-              .append("text")
-              .attr("class", "bartext")
-              .text(function(d ,i) {
-                const val = (d[1]-d[0]);
-                if (val < .1) { return "" }
-                else { return d3.format(",.2%")(val) }
-              })
-              .attr("text-anchor", "middle")
-              .style("fill", "steelblue")
-              .style("font-size", 10)
-              .attr("y", function(d,i) { return y(d.data.Category) + (y.bandwidth()/2)})
-              .attr("dy", function(d) {
-                return ".5em"
-              })
-              .attr("x", function(d) { return (x(d[0]) + x(d[1]))/2}),
-              null,
-              exit => {
-                exit
-                  .transition()
-                  .duration(dur / 2)
-                  .text("")
-                  .remove();
-              }
-          )
-          .transition(t)
-          .delay((d, i) => i * 20)
-          .text(function(d ,i) {
-            const val = (d[1]-d[0]);
-            if (val < .1) { return "" }
-            else { return d3.format(",.2%")(val) }
-          })
-          .attr("y", function(d,i) {
-            return y(d.data.Category) + (y.bandwidth()/2)
-          })
-          .attr("dy", function(d) {
-            return ".5em"
-          })
-          .attr("x", function(d) { return (x(d[0]) + x(d[1]))/2});
-
-          svg.selectAll("text.endtext").remove();
-          svg.selectAll(".endline").remove();
-
-          if (endnote.length > 0) {
-
-            svg.append("line")
-              .attr("class","endline")
-              .style("stroke", "steelblue")
-              .style('shape-rendering','crispEdges')
-              .style("opacity", 0.5)
-              .attr("x1", -20)
-              .attr("y1", height+5)
-              .attr("x2", width/2)
-              .attr("y2", height+5);
-
-            endtext.selectAll(".endnote")
-              .data(endnote, function(d) { return d })
-              .enter()
-              .append("text")
-              .style("fill", "steelblue")
-              .style("font-size", 10)
-              .attr("y", height + 20)
-              .attr("dx", -20)
-              .attr("class","endtext")
-              .style("font-weight", 700)
-              .text("Insufficient N-Size: ")
-              .append("tspan")
-              .style("font-weight", 300)
-              .text(function(d) { return d });
-          };
-
-          svg.selectAll("text.title").remove();
-
-          title.append("text")
-            .classed("title", true)
-            .attr("fill", "white")
-            .style("font-weight", 700)
-            .attr("font-size", "12px")
-            .style("font-family", "Inter, sans-serif")
-            .style('text-anchor','middle')
-            .style('alignment-baseline', 'middle')
-            .attr('dx', function(d) {
-              return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-            })
-            .attr('dy', 15)
-            .text("Proficiency Breakdown (" + selectedYear +")");
-        }; // end Update
-      }); // end each
-
-      updateData();
-
-    }; // end stackedBar chart
-
-    // getter and setter methods
-  chart.data = function(value) {
-    if (!arguments.length) return data;
-    data = value;
-    if (typeof updateData === 'function') updateData();
-    return chart;
-  };
-
-  chart.id = function(value){
-    if (!arguments.length) return id;
-    id = value;
-    if (typeof updateId === 'function') updateId();
-    return chart;
-  };
-
-  return chart;
-}; // end stackedBar

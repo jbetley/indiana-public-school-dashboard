@@ -226,9 +226,8 @@
 // Indiana Public School Academic Dashboard
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     01.19.25
+// date:     01.21.25
 
-/* Global Variables */
 // Max Academic and Demographic Years
 const getMaxYears = `${window.origin}/config`;
 const yearResponse = await fetch(getMaxYears);
@@ -240,8 +239,8 @@ const curDemographicYear = maxYears.demographic_year
 // List of Corporation and School Names for dropdown
 const allSchoolsUrl = `${window.origin}/load`;
 const allSchoolsResponse = await fetch(allSchoolsUrl);
-
 var allSchoolsObj = await allSchoolsResponse.json();
+
 allSchoolsObj.forEach(function (obj) {
    obj["Corporation Name"] = obj["Corporation Name"] + " (" + toString(obj["Corporation ID"]) + ")"
    obj["School Name"] = obj["School Name"] + " (" + toString(obj["School ID"]) + ")"
@@ -285,28 +284,6 @@ var gridApi = [];
 var elaComparisonByEthnicity;
 var elaComparisonBySubgroup;
 
-// var enrollmentChart;
-// var attendanceChart;
-// var ethnicityDemoChart;
-// var statusDemoChart;
-// var enrollmentTableGridApi;
-// var attendanceTableGridApi;
-// var ethnicityChart1;
-// var ethnicityChart2;
-// var statusChart1;
-// var statusChart2;
-// var totalChart1;
-// var totalChart2;
-// var ethnicityStack1;
-// var ethnicityStack2;
-// var statusStack1;
-// var statusStack2;
-// var totalStack1;
-// var totalStack2;
-// var gridApi = [];
-// var elaComparisonByEthnicity;
-// var elaComparisonBySubgroup;
-
 // https://www.pluralsight.com/resources/blog/guides/handling-nested-http-requests-using-the-fetch-api
 // https://dev.to/alexmercedcoder/making-multiple-api-calls-in-javascript-kip
 // https://www.makeuseof.com/tag/python-javascript-communicate-json/
@@ -343,7 +320,6 @@ const schoolSelection = document.getElementById("schoolSelect");
 schoolSelection.addEventListener("change", function () {
    let selectedValues = getSelectedValues();
 
-   // TODO: Set thes in global or in each fucntion?
    const mainSelection = document.querySelector(".tab.main.active").id;
    const k8Content = document.querySelector(".k8nav");
    const hsContent = document.querySelector(".hsnav");
@@ -359,18 +335,28 @@ schoolSelection.addEventListener("change", function () {
       typeContent.classList.remove("open");
    }
 
+   let k8TypeTab = document.getElementById("k8Tab");
+   let hsTypeTab = document.getElementById("hsTab");
+
    if (mainSelection == "infoTab" || mainSelection == "anlysisTab") {
       if (selectedValues.school_type == "K8" ||
-         (selectedValues.subtype == "K8" && selectedValues.school_subtype != "MS"))
+         (selectedValues.school_subtype == "K8" && selectedValues.school_subtype != "MS"))
       {
          k8Content.classList.add("open");
          hsContent.classList.remove("open");
+         k8TypeTab.classList.add("active");
+         hsTypeTab.classList.remove("active");
+         selectedValues.type_tab = "k8Tab"
+
       }
       else if (selectedValues.school_type == "HS" ||
          (selectedValues.school_type == "K12" && selectedValues.school_subtype == "HS"))
       {
          k8Content.classList.remove("open");
          hsContent.classList.add("open");
+         k8TypeTab.classList.remove("active");
+         hsTypeTab.classList.add("active");
+         selectedValues.type_tab = "hsTab"
       } 
    }
 
@@ -533,16 +519,6 @@ navTabs.onclick = ({target}) => {
 
    // ignore other clicks in this area (like spaces between buttons)
    if (!target.matches("button[data-tab]")) return
-
-   // TODO: NEED ANY/ALL OF THESE?
-   // const pageSelection = document.querySelector(".tab.main.active").id;
-   // const k8Selection = document.querySelector(".tab.k8info.active").id;
-   // const hsSelection = document.querySelector(".tab.hsinfo.active").id;
-   // const typeSelection = document.querySelector(".tab.type.active").id;
-
-   // const k8Content = document.querySelector(".k8nav");      // IREAD/ILEARN
-   // const hsContent = document.querySelector(".hsnav");      // Graduation Rate/SAT
-   // const typeContent = document.querySelector(".typenav");  // K8/HS
 
    // cycling through "dataset", which is "tab-n-1", "tab-n-2"
    // and setting class to active where the target.dataset equals the class
@@ -934,9 +910,10 @@ function demographicsPage(data, select) {
 };
 
 // Academic Information
-function academicInfoPage(data, selection) {
+function academicInfoPage(data, select) {
 
-   // let selection = getSelectedValues();
+   // testing get() instead of passed values
+   let selection = getSelectedValues();
 
    // TODO: HANDLE BLANK TABLE - Probably want to do this first
    if (!Array.isArray(data) || !data.length) {
@@ -1156,48 +1133,6 @@ function academicInfoPage(data, selection) {
 // https://stackoverflow.com/questions/67917738/multiple-ag-grids-setselected-to-true-is-only-working-for-the-last-grid
 // https://stackoverflow.com/questions/53920531/can-we-change-the-view-for-ag-grid-in-mobile-devices
 
-      // table1: IREAD Total / Graduation Rate Total
-      // table2: IREAD By Ethnicity / Graduation Rate By Ethnicity
-      // table3: IREAD By Subgroup / Graduation Rate By Subgroup
-      // table4: ILEARN Math By Grade / SAT Math Overview 
-      // table5: ILEARN Math By Grade / SAT Math Overview
-      // table6: ILEARN ELA By Ethnicity / SAT EBRW By Ethnicity 
-      // table7: ILEARN Math By Ethnicity / SAT Math By Ethnicity 
-      // table8: ILEARN ELA By Subgroup / SAT EBRW By Subgroup
-      // table9: ILEARN Math By Subgroup / SAT Math By Subgroup
-
-      // let tableNum;
-      // let tableStart;
-
-      // if (typeTab == "k8Tab") {
-
-      //    if (k8Tab == "ilearnTab") {
-      //       tableNum = 6;
-      //       tableStart = 4;
-      //       subject = ["ELA", "Math"]
-      //    }
-      //    else if (k8Tab == "ireadTab") {
-      //       tableNum = 3;
-      //       tableStart = 1;
-      //       subject = ["IREAD"];
-      //    }
-
-      // }
-      // else if (typeTab == "hsTab") {
-
-      //    if (hsTab == "gradTab") {
-      //       tableNum = 3;
-      //       tableStart = 1;
-      //       subject = ["Graduation"]
-      //    }
-      //    else if (hsTab == "satTab") {
-      //       tableNum = 6;
-      //       tableStart = 4;               
-      //       subject = ["EBRW", "Math"];
-      //    }
-
-      // }
-
       // Initialize nine (9) empty tables
       for (let k = 0; k < 9; k++) {
          let tableName = "table" + (k+1);
@@ -1215,20 +1150,13 @@ function academicInfoPage(data, selection) {
 
       let tableNum,
          tableShift; // number of tables to "skip"
-      // for HS:
-      // Graduation Rate Total
-      // Graduation Rate Ethinicty
-      // Graduation Rate Subgroup
-      // SAT Overview (Total EBRW| Total Math)
-      // SAT by Ethnicity (BOTH EBRW and Math)
-      // SAT by Subgroup (BOTH EBRW and Math)
-
+      
       if (typeTab == "k8Tab") {
 
          if (k8Tab == "ilearnTab") {
             tableNum = 6;
             tableShift = 3;
-            subject = ["ELA", "Math"]
+            subject = subjectK8
 
             infoChart4.data(getK8LineData(data, grade, subject[0], selection)).id("chart4")
             infoChart5.data(getK8LineData(data, grade, subject[1], selection)).id("chart5")
@@ -1248,7 +1176,7 @@ function academicInfoPage(data, selection) {
          else if (k8Tab == "ireadTab") {
             tableNum = 3;
             tableShift = 0;
-            subject = ["IREAD"];
+            subject = subjectIR;
             
             const total = ["Total"];
 
@@ -1264,7 +1192,7 @@ function academicInfoPage(data, selection) {
          if (hsTab == "gradTab") {
             tableNum = 3;
             tableShift = 0;
-            subject = ["Graduation"];
+            subject = ["Graduation", "Graduation"];   // TODO: Create variable
 
             infoChart1.data(getK8LineData(data, total, subject[0], selection)).id("chart1")
             infoChart2.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart2")
@@ -1409,6 +1337,8 @@ function navigateHandler(e) {
 
    var selectedValues = getSelectedValues();
    
+   console.log(selectedValues)
+
    const strYear = selectedValues.year;
    const intYear = parseInt(strYear)
    let yearValue;

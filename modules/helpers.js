@@ -288,15 +288,9 @@ function getTableData(data, category, subject, selection) {
   // console.log(category)
 
   // include demoTab 
-  if (pageTab == "infoTab") { //|| location == "demoTab") { 
+  if (pageTab == "infoTab") { 
     if (typeTab == "k8Tab") {
       if (k8Tab == "ireadTab") {
-
-        // drop all individual grades from category for IREAD, SAT
-        // and Grad Rate
-        // if (exists(category, "Grade 3")) {
-        //   category = ["Total"]
-        // }
 
         proficienctSuffix = "Pass N";
         testedSuffix = "Test N";
@@ -309,10 +303,6 @@ function getTableData(data, category, subject, selection) {
     }
     else if (typeTab == "hsTab") {
       
-      // if (exists(category, "Grade 3")) {
-      //   category = ["Total"]
-      // }
-
       if (hsTab == "gradTab") {
         proficienctSuffix = "Graduates";
         testedSuffix = "Cohort Count"; 
@@ -417,9 +407,6 @@ function getTableData(data, category, subject, selection) {
           finalData.push(yearData)
         }
       }
-
-    console.log("FinalData")
-    console.log(finalData)  
 
     return finalData
 }
