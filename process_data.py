@@ -235,14 +235,14 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
         filter_cols = r"^Category|CCR Percentage|Grade 12\|Graduation Rate|Total\|Graduation Rate|ADM Average|Graduation to Enrollment\|Graduation Rate|Benchmark \%|Below|Approaching|At|^Year$"
         substring_dict = {
             " Total Tested": "",
-            "\|Cohort Count": "|Graduation",
-            "\|Count": "",
+            r"|Cohort Count": r"|Graduation",
+            r"|Count": "",
         }
 
     elif school_type == "HS":
-        tested_cols = "Total Tested|Cohort Count|Year"
+        tested_cols = r"Total Tested|Cohort Count|Year"
         filter_cols = r"^Category|Graduation Rate$|AHS|Pass Rate$|Benchmark %|Below|Approaching|At|^Year$"
-        substring_dict = {" Total Tested": "", "\|Cohort Count": "|Graduation"}
+        substring_dict = {r" Total Tested": "", r"|Cohort Count": r"|Graduation"}
 
     else:
         tested_cols = "Total Tested|Test N|Year"
