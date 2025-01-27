@@ -50,7 +50,15 @@
                <button data-tab="tab-n-3" id="analysisTab" class="tab main">Academic Analysis</button>
             </div>
          </div>
-      </div>        
+      </div>
+      <div class="row">
+         <div class="nav-container twelve columns">
+            <div id="analysisnav-tabs" class="analysisnav">
+               <button data-analysistab="tab-a-1" id="singleTab" class="tab analysis active">Selected Year</button>
+               <button data-analysistab="tab-a-2" id="multiTab" class="tab analysis">Multi-Year</button>
+            </div>
+         </div>
+      </div>               
       <div class="row">
          <div class="nav-container twelve columns">
             <div id="typenav-tabs" class="typenav">
@@ -75,14 +83,6 @@
             </div>
          </div>
       </div>      
-      <!-- <div class="row">
-         <div class="nav-container twelve columns">
-            <div id="subnav-tabs" class="subnav">
-               <button data-subtab="tab-sub3-1" id="singleTab" class="tab info active">Selected Year</button>
-               <button data-subtab="tab-sub3-2" id="multiTab" class="tab info">Multi-Year</button>
-            </div>
-         </div>
-      </div>              -->
    </div>
    <div class="row">
       <div class="panel-container">
@@ -161,9 +161,10 @@
                <div class="row">
                   <div class="nav-container twelve columns">
                      <div class="grid">
-                        <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div>
+                        <!-- <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div> -->
                         <div class="stack-box tab3-a-group"><div id="elaComparisonByEthnicity"></div></div>
-                        <div class="stack-box tab3-b-group"><div id="elaComparisonBySubgroup"></div></div>
+                        <div class="table-box tab3-table-1" id="analysis-container-table-1"><div id="analysis-table1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
+                        <!-- <div class="stack-box tab3-b-group"><div id="elaComparisonBySubgroup"></div></div> -->
                         <!-- <div class="stack-box tab3-c-group"><div id="elaComparisonByGrade"></div></div> -->
                      </div>
                   </div>
@@ -235,7 +236,8 @@ var infoStack6;
 var infoStack7;
 var infoStack8;
 var infoStack9;
-var gridApi = [];
+var infoGridApi = [];
+var analysisGridApi = [];
 var elaComparisonByEthnicity;
 var elaComparisonBySubgroup;
 
@@ -279,8 +281,10 @@ schoolSelection.addEventListener("change", function () {
    const k8Content = document.querySelector(".k8nav");
    const hsContent = document.querySelector(".hsnav");
    const typeContent = document.querySelector(".typenav");
+   const analysisContent = document.querySelector(".typenav");
 
-   if (mainSelection != "demoTab"  && selectedValues.school_type == "K12")
+   // show k8/hs selector for k12 schools on all pages but demographics
+   if (mainSelection != "demoTab" && selectedValues.school_type == "K12")
    {
       typeContent.classList.add("open");
       k8Content.classList.remove("open");
@@ -293,7 +297,7 @@ schoolSelection.addEventListener("change", function () {
    let k8TypeTab = document.getElementById("k8Tab");
    let hsTypeTab = document.getElementById("hsTab");
 
-   if (mainSelection == "infoTab" || mainSelection == "anlysisTab") {
+   if (mainSelection == "infoTab" || mainSelection == "analysisTab") {
       if (selectedValues.school_type == "K8" ||
          (selectedValues.school_subtype == "K8" && selectedValues.school_subtype != "MS"))
       {
@@ -316,15 +320,25 @@ schoolSelection.addEventListener("change", function () {
    }
 
    if (mainSelection === "analysisTab") {
+
+      analysisContent.classList.add("open");
+
       getComparisonSchools(selectedValues);
       let comparisonValues = getComparisonValues();
       getAcademicAnalysisData(comparisonValues);
    }
    else if (mainSelection === "infoTab")  {
+
+      analysisContent.classList.remove("open");
+
       getAcademicInfoData(selectedValues);
    }
    else {
+
+      analysisContent.classList.remove("open");
+
       getDemographicData(selectedValues)
+
    }
 });
 
@@ -418,7 +432,8 @@ function getSelectedValues() {
    const typeTab = document.querySelector(".tab.type.active").id;
    const k8Tab = document.querySelector(".tab.k8info.active").id;
    const hsTab = document.querySelector(".tab.hsinfo.active").id;
- 
+   const analysisTab = document.querySelector(".tab.analysis.active").id;
+
    let schoolInfo = allSchoolsObj.filter(o => o["School ID"] == schoolId && o.Year == year);
 
    let school_type = schoolInfo[0]["School Type"]
@@ -444,11 +459,11 @@ function getSelectedValues() {
    selectedValues.page_tab = pageTab;
    selectedValues.k8_tab = k8Tab;
    selectedValues.hs_tab = hsTab;
-   selectedValues.type_tab = typeTab;      
+   selectedValues.type_tab = typeTab;
+   selectedValues.analysis_tab = analysisTab; 
 
    return selectedValues
 }
-
 
 // var activeMainTab = document.querySelectorAll(".tab.active")[0].innerHTML;
 // var activeSubInfoTab = document.querySelectorAll(".tab.info.active")[0].innerHTML;
@@ -466,7 +481,9 @@ const navTabs = document.querySelector("div#nav-tabs"),
    hsnavTabs = document.querySelector("div#hsnav-tabs"),
    hsnav_tab_elms = document.querySelectorAll("button[data-hstab]"),
    typenavTabs = document.querySelector("div#typenav-tabs"),
-   typenav_tab_elms = document.querySelectorAll("button[data-typetab]");
+   typenav_tab_elms = document.querySelectorAll("button[data-typetab]"),
+   analysisnavTabs = document.querySelector("div#analysisnav-tabs"),
+   analysisnav_tab_elms = document.querySelectorAll("button[data-analysistab]");
 
 navTabs.onclick = ({target}) => {
 
@@ -515,6 +532,17 @@ typenavTabs.onclick = ({target}) => {
       elTab.classList
       .toggle("active", (elTab.dataset.typetab===target.dataset.typetab))
    })
+};
+
+// Analysis Year
+analysisnavTabs.onclick = ({target}) => {
+
+if (!target.matches("button[data-analysistab]")) return
+
+analysisnav_tab_elms.forEach(elTab => {
+   elTab.classList
+   .toggle("active", (elTab.dataset.analysistab===target.dataset.analysistab))
+})
 };
 
 
@@ -1110,7 +1138,7 @@ function academicInfoPage(data) {
 
          let tableOptions = initializeTable(tableID)
          var gridDiv = document.querySelector(tableID)
-         gridApi[k] = agGrid.createGrid(gridDiv, tableOptions);
+         infoGridApi[k] = agGrid.createGrid(gridDiv, tableOptions);
       }
 
       academicInfoPage.initialize = true;
@@ -1205,7 +1233,7 @@ function academicInfoPage(data) {
             catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
          }
 
-         tableID = gridApi[index].getGridId()
+         tableID = infoGridApi[index].getGridId()
 
 
          tableData = getTableData(tabledata, catList[i], subject[sub], selection)
@@ -1214,8 +1242,8 @@ function academicInfoPage(data) {
 
          // need to reset columndefs as well as rowdata or else table
          // will have empty cols.
-         gridApi[index].setGridOption("columnDefs", tableOptions.columnDefs);
-         gridApi[index].setGridOption("rowData", tableData);
+         infoGridApi[index].setGridOption("columnDefs", tableOptions.columnDefs);
+         infoGridApi[index].setGridOption("rowData", tableData);
       };
    }
 };
@@ -1233,6 +1261,7 @@ function academicAnalysisPage(data) {
    const k8Tab = selection.k8_tab
    const hsTab = selection.hs_tab
 
+   let subject;
    console.log(" ACADEMIC ANALYSIS Comparison Year Data")
    console.log(selection)
 
@@ -1318,17 +1347,26 @@ function academicAnalysisPage(data) {
    //       var subject = subjectHS
    //    }
 
-   // Single Year Analysis Page
+   // Single Year Analysis Page //
+   //Comparison: Current Year ELA Proficiency
+   //Comparison: Current Year Math Proficiency
+   //Comparison: Current Year IREAD Proficiency
+   //Comparison: ELA Proficiency by Ethnicity
+   //Comparison: IREAD Proficiency by Ethnicity
+   //Comparison: Math Proficiency by Ethnicity
+   //Comparison: ELA Proficiency by Subgroup
+   //Comparison: IREAD Proficiency by Subgroup
+   //Comparison: Math Proficiency by Subgroup
 
    let yearData = data.filter(o => o.Year == Number(year));
 
-   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], school_type)
+   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], schoolType)
    let elaComparisonByEthnicityTransposed = transposeData(ecbeData, "School Name");
    
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonByEthnicityChartData = processBarData(elaComparisonByEthnicityTransposed);
 
-   let ecbsData = getK8LineData(yearData, subgroup, subject[0], school_type)
+   let ecbsData = getK8LineData(yearData, subgroup, subject[0], schoolType)
    let elaComparisonBySubGroupTransposed = transposeData(ecbsData, "School Name");
 
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
@@ -1336,17 +1374,80 @@ function academicAnalysisPage(data) {
 
    if (!academicAnalysisPage.initialize){
 
-   elaComparisonByEthnicity = verticalGroupBar().data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
+      elaComparisonByEthnicity = verticalGroupBar().data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
       d3.select("#elaComparisonByEthnicity").call(elaComparisonByEthnicity);
 
-   elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
-      d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
+   // Initialize all nine tables on-load (empty)
+   // for (let k = 0; k < 9; k++) {
+   //    let tableName = "table" + (k+1);
+   //    let tableID = "#" + tableName
+
+   //    let tableOptions = initializeTable(tableID)
+   //    var analysisGridDiv = document.querySelector(tableID)
+   //    analysisGridApi[k] = agGrid.createGrid(gridDiv, tableOptions);
+   // }
+      let tableID = "#analysis-table1"
+      let tableOptions = initializeTable(tableID)
+      console.log(tableOptions)
+      let analysisGridDiv = document.querySelector(tableID)
+      console.log(analysisGridDiv)
+      analysisGridApi[0] = agGrid.createGrid(analysisGridDiv, tableOptions);
+
+   // elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+   //    d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
 
    academicAnalysisPage.initialize = true;
    }
    else {
       elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
-      elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+      // elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+
+      let analysisTableData, analysisTableID, catList;
+
+      // Remove objects with years > the selected year
+      const yeardata = data.filter((obj, index) => !(obj.Year > Number(year)));
+
+      console.log("ANALYSIS TABLE")
+      console.log(yeardata)
+      // catList = [grade, ethnicity, subgroup]
+      // catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
+
+      analysisTableID = analysisGridApi[0].getGridId()
+
+      analysisTableData = getTableData(yeardata, ethnicity, "ELA", selection)
+
+      let analysisTableOptions = createBasicTable(analysisTableData)
+
+      // need to reset columndefs as well as rowdata or else table
+      // will have empty cols.
+      analysisGridApi[0].setGridOption("columnDefs", analysisTableOptions.columnDefs);
+      analysisGridApi[0].setGridOption("rowData", analysisTableData);
+
+
+      // for (let i=0; i<tableNum; i++) {
+
+      //    let index = i + tableShift;
+      //    const sub = i % 2;
+
+      //    if (tableShift == 0) {
+      //       catList = [grade, ethnicity, subgroup]
+      //    }
+      //    else {
+      //       catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
+      //    }
+
+      //    tableID = infoGridApi[index].getGridId()
+
+
+      //    tableData = getTableData(tabledata, catList[i], subject[sub], selection)
+
+      //    let tableOptions = createBasicTable(tableData)
+
+      //    // need to reset columndefs as well as rowdata or else table
+      //    // will have empty cols.
+      //    infoGridApi[index].setGridOption("columnDefs", tableOptions.columnDefs);
+      //    infoGridApi[index].setGridOption("rowData", tableData);
+      // };      
    }
    // TODO: Multi-Year Analysis Page
 };
@@ -1366,10 +1467,15 @@ function navigateHandler(e) {
    const k8Selection = document.querySelector(".tab.k8info.active").id;
    const hsSelection = document.querySelector(".tab.hsinfo.active").id;
    const typeSelection = document.querySelector(".tab.type.active").id;
+   const analysisSelection = document.querySelector(".tab.analysis.active").id;
 
    const k8Content = document.querySelector(".k8nav");
    const hsContent = document.querySelector(".hsnav");
    const typeContent = document.querySelector(".typenav");
+   const analysisContent = document.querySelector(".analysisnav");
+
+   // let singleYearTab = document.getElementById("singleTab");
+   // let multiYearTab = document.getElementById("multiTab");
 
    // target is the button triggering the onClick
    // mainSelection is the main nav (demoTab, infoTab, analysisTab)
@@ -1380,6 +1486,8 @@ function navigateHandler(e) {
    var target = e.target || e.srcElement;
 
    var selectedValues = getSelectedValues();
+
+   const selectedPage = selectedValues.page_tab;
 
    const strYear = selectedValues.year;
    const intYear = parseInt(strYear)
@@ -1400,13 +1508,16 @@ function navigateHandler(e) {
       hsContent.classList.remove("open");
    }
 
-   if (target.id.match("demoTab")) {
+   console.log(selectedValues)
+   console.log("target")
+   console.log(target.id)
 
-      // activeMainTab = "Demographics";
+   if (target.id.match("demoTab")) {
 
       k8Content.classList.remove("open");
       hsContent.classList.remove("open");
       typeContent.classList.remove("open");
+      analysisContent.classList.remove("open");
 
       setYearList(allSchoolsObj,"demographic");
 
@@ -1423,18 +1534,22 @@ function navigateHandler(e) {
       statusDemoChart.width(windowWidth);      
    }
 
-   else if (target.id.match("infoTab") ||
-      target.id.match("ilearnTab") ||
-      target.id.match("ireadTab") ||
-      target.id.match("k8Tab") ||
-      target.id.match("hsTab") ||
-      target.id.match("gradTab") ||
-      target.id.match("satTab")
+   else if (
+      target.id.match("infoTab") ||
+      selectedPage.match("infoTab") &&
+         (target.id.match("ilearnTab") ||
+         target.id.match("ireadTab") ||
+         target.id.match("k8Tab") ||
+         target.id.match("hsTab") ||
+         target.id.match("gradTab") ||
+         target.id.match("satTab"))
    ) {
 
       let stacks = document.querySelectorAll('[id^="info-container-stack"]');
       let infoLg = document.querySelectorAll('[id^="info-container-lg"]');
       let infoSm = document.querySelectorAll('[id^="info-container-sm"]');
+
+      analysisContent.classList.remove("open");
 
       if (schoolType == "K12") {
          typeContent.classList.add("open");
@@ -1509,7 +1624,6 @@ function navigateHandler(e) {
          hsContent.classList.add("open");
       }      
 
-      // activeMainTab = "Academic Information";
 
       setYearList(allSchoolsObj,"academic");
 
@@ -1548,13 +1662,18 @@ function navigateHandler(e) {
       infoChart9.width(windowWidth);
 
     }
-    else if (target.id.match("analysisTab")) {
-      
-      // activeMainTab = "Academic Analysis";
-
-      // let yearValue;
-      // let currentYear = getSelectedYear();
-      // let selectedValues = getSelectedValues();
+    else if (
+      target.id.match("analysisTab") ||
+      selectedPage.match("analysisTab") &&
+         (target.id.match("ilearnTab") ||
+         target.id.match("ireadTab") ||
+         target.id.match("k8Tab") ||
+         target.id.match("hsTab") ||
+         target.id.match("gradTab") ||
+         target.id.match("satTab"))
+   ) {
+   
+      analysisContent.classList.add("open");
 
       setYearList(allSchoolsObj,"academic");
 
@@ -1568,12 +1687,10 @@ function navigateHandler(e) {
          yearValue = strYear;
       }
 
-      yearSelection.value = yearValue; //.toString()
-      yearSelection.setAttribute("value", yearValue); //.toString());
+      yearSelection.value = yearValue;
+      yearSelection.setAttribute("value", yearValue);
 
-      selectedValues["year"] = yearValue; //.toString()
-
-      // let comparisonValues = getComparisonValues();
+      selectedValues["year"] = yearValue;
 
       getAcademicAnalysisData(getComparisonValues());
    }
@@ -1581,6 +1698,7 @@ function navigateHandler(e) {
 
 /* Main Block */
 
+console.log(document.readyState)
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
    setYearList(allSchoolsObj,"demographic");
@@ -1590,7 +1708,9 @@ if (document.readyState !== "loading") {
    const k8Content = document.querySelector(".k8nav");
    const hsContent = document.querySelector(".hsnav");
    const typeContent = document.querySelector(".typenav");
+   const analysisContent = document.querySelector(".analysisnav");
 
+   analysisContent.classList.remove("open");
    typeContent.classList.remove("open");
    hsContent.classList.remove("open");
    k8Content.classList.remove("open");

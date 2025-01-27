@@ -201,11 +201,11 @@ div[data-tab].active {
   /* line-height: 1.3 !important; */
 }
 
-.typenav, .k8nav, .hsnav, .k8nav.close, .hsnav.close, .typenav.close {
+.typenav, .k8nav, .hsnav, .analysisnav, .k8nav.close, .hsnav.close, .typenav.close, .analysisnav.close {
   display: none;
 }
 
-.k8nav.open, .hsnav.open, .typenav.open {
+.k8nav.open, .hsnav.open, .typenav.open, .analysisnav.open {
   z-index: 99;
   margin: 0;
   padding: 0;
@@ -241,8 +241,6 @@ div[data-tab].active {
   display:inline;
   width: 165px;
 }
-
-
 
 .tab:hover {
   text-transform: uppercase;
@@ -287,6 +285,9 @@ div[data-tab].active {
   width: 65px;
 }
 
+.tab.analysis, .tab.analysis.active, .tab.analysis:hover {
+  width: 105px;
+}
 
 .tab.k8info, .tab.k8info.active, .tab.k8info:hover {
   width: 85px;

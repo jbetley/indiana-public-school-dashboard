@@ -630,7 +630,7 @@ def check_for_insufficient_n_size(data: pd.DataFrame) -> str:
             df["Year"] >= 0, df["Year"].map(dict(enumerate(data["Year"].tolist())))
         )
 
-        df["Category"] = df["Category"].str.replace("\|.*$", "", regex=True)
+        df["Category"] = df["Category"].str.replace(r"|.*$", "", regex=True)
 
         df = df.sort_values(by=["Year"], ascending=True)
 
@@ -695,6 +695,7 @@ def find_nearest(
     """
     data = values.copy()
 
+    print("FIND NEAREST")
     # number of schools to return (add 1 to account for the fact that the selected school
     # is included in the return set) - number needs to be high enough to ensure there are
     # enough left once non-comparable grades are filtered out.
@@ -716,9 +717,6 @@ def find_nearest(
     data["x"] = R * np.cos(phi) * np.cos(theta)
     data["y"] = R * np.cos(phi) * np.sin(theta)
     data["z"] = R * np.sin(phi)
-
-    # filename99 = "kdtree_data.csv"
-    # data.to_csv(filename99, index=False)
 
     tree = spatial.KDTree(data[["x", "y", "z"]])
 
