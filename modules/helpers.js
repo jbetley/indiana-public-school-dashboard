@@ -88,7 +88,50 @@ function processBarData(data) {
 };
 
 
-// create Ag Grid table
+// Analysis Table
+function createAnalysisTable(data, tableID) {
+
+  let keys = Object.keys(data.reduce(function(result, obj) {
+     return Object.assign(result, obj);
+  }, {}));
+
+  // Move "Category" to front of Array
+  keys = keys.filter(item => item != "Category");
+  keys.unshift("Category")
+
+  let columns = keys.map(field => ({field}));
+
+  columns.forEach(function(e) {
+     if (e.field == "Category") {
+        e.valueFormatter = "";
+        e.resizable = false;
+        e.autoHeight = true;
+        e.wrapText = true;
+        e.minWidth = 200;
+        e.maxWidth = 220;
+        e.cellClass = "ag-left-aligned-cell";
+        e.headerClass = "text-center";
+     }
+     else {
+        e.valueFormatter = percentageFormatter;
+        e.flex = 1;
+        e.resizable = false;
+        e.cellClass = "ag-center-aligned-cell";
+        e.headerClass = "text-center";
+     }
+  });
+
+  let options = {
+     columnDefs: columns,
+     rowData: data,
+     gridId: tableID,
+     domLayout : "autoHeight"
+  };
+  return options
+}
+
+
+// Basic Ag Grid table
 function createBasicTable(data, tableID) {
   let keys = Object.keys(data.reduce(function(result, obj) {
      return Object.assign(result, obj);
@@ -166,15 +209,16 @@ function initializeTable(tableID) {
   });
 
   let options = {
-     columnDefs: columns,
-     rowData: data,
-     gridId: tableID
+    columnDefs: columns,
+    rowData: data,
+    gridId: tableID,
+    domLayout : "autoHeight"
   };
   return options
 }
 
 
-// create Ag Grid enrollment table
+// enrollment table
 function createEnrollmentTable(data) {
 
   let keys = getKeys(data);
@@ -243,15 +287,17 @@ function transposeData(data, onKey) {
   }
   
   let transposed = []
+
   for (let a = 0; a < category.length; a++) {
     let obj = {}
     for (let b = 0; b < data.length; b++) {
 
-      // console.log(data[b][category[a]])
-      // TODO: test change null to 0 here? will that break other charts?
-      // TODO: should have left a better note, no idea what Im ta;king aobut
-      obj[data[b][onKey]] = data[b][category[a]]
-      obj["Category"] = category[a]
+      // TODO: Testing not including any undefined categories (as opposed to
+      // TODO: converting to 0) Which is better?
+      if (typeof data[b][category[a]] != "undefined") {
+        obj[data[b][onKey]] = data[b][category[a]]
+        obj["Category"] = category[a]
+      }
     }
     transposed.push(obj)
   }
@@ -267,27 +313,169 @@ function calcProficiency (data, proficient, tested) {
 }
 
 
-// process data for Ag Grid tables
-function getTableData(data, category, subject, selection) {
+function getAnalysisTableData(data, category, subject, selection) {
 
-  const location = selection.location;
-  const pageTab = selection.page_tab
+  // Analysis Data Format - Single Year
+  // Black|ELA: 0.015873015873015872
+  // White|ELA: 0.013333333333333334
+  // Hispanic|ELA: 0.0273972602739726
+  // Category: "Schooly McSchool1"
+
+  // academic analysis data - single year - comes in as an array of objects for multiple schools,
+  // each representing a single year of data. Final table format is school names on the left with
+  // categories as column names. 
+
+  const schoolID = selection.school_id
+  const schoolName = data.find(d => d["School ID"] === schoolID)["School Name"];
+
   const k8Tab = selection.k8_tab
   const hsTab = selection.hs_tab
   const typeTab = selection.type_tab
-  // const schoolType = selection.school_type
-  // const schoolSubtype = selection.school_subtype
 
   let proficienctSuffix;
   let testedSuffix;
   
-  // console.log("TABLE SECLETION")
-  // console.log(selection)
-  // console.log(data)
-  // console.log(subject)
-  // console.log(category)
+  console.log("ANALYSIS TABLE SECLETION")
 
-  // include demoTab 
+  if (typeTab == "k8Tab") {
+    if (k8Tab == "ireadTab") {
+
+      proficienctSuffix = "Pass N";
+      testedSuffix = "Test N";
+    }
+    else {
+      proficienctSuffix = "Total Proficient";
+      testedSuffix = "Total Tested";
+    }
+
+  }
+  else if (typeTab == "hsTab") {
+    
+    if (hsTab == "gradTab") {
+      proficienctSuffix = "Graduates";
+      testedSuffix = "Cohort Count"; 
+    }
+    else {
+      proficienctSuffix = "At Benchmark";
+      testedSuffix = "Total Tested"; 
+    }
+  }
+
+  // identify string of data for school
+  // 1) loop through subject|category proficient % - any value that is either *** or not existent goes in:
+  //    "Selected school has insufficient n-size or no data for: [list of categoires]".
+  // 2) get list of school categories remaining and drop all other categories from ALL objects
+  // 3) go through other schools, any remaining categories that are either *** or non-existent goes in:
+  //    Schools with insufficient n-size or no data: school name (category(ies))
+
+
+  const categoryProficient = [];
+  const categoryTested = [];
+
+  for (let a = 0; a < category.length; a++) {
+    if (subject == "Graduation") {
+      categoryProficient.push(category[a] + "|" + proficienctSuffix);
+      categoryTested.push(category[a] + "|" + testedSuffix);
+    }
+    else {
+      categoryProficient.push(category[a] + "|" + subject + " " + proficienctSuffix);
+      categoryTested.push(category[a] + "|" + subject + " " + testedSuffix);
+    }
+  }
+
+  let filteredData = []
+
+  // Selected School: White, Black, Hispanic
+  var noneTested = []
+
+  // Schools with insufficient n-size or no data:Mary Nicholson School 70 Center for Inquiry (Black), Merle Sidener Academy 59 (Black).
+  var insufficientN = []
+
+  for (let i = 0; i < data.length; ++i) {
+
+    let eachYear = {}
+    let eachNoneTested = []
+    let eachinsufficientN = {}
+
+    if (data[i] != undefined) {
+
+      for (let a = 0; a < category.length; a++) {
+
+        let proficient = categoryProficient[a];
+        let tested = categoryTested[a]; 
+        let proficiency = category[a]
+
+        // if tested value is greater than 0 and not NaN - calculate Proficiency
+        if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
+
+          result = calcProficiency(data[i], proficient, tested)
+
+          // if result is NaN then TotalProficient was '***' (insufficient N-Size)
+          if (result != result) {
+            eachinsufficientN[data[i]["Year"]] = proficiency
+          }
+          // otherwise add result for the category
+          else {
+            eachYear[proficiency] = result
+          }
+        }
+        // if Tested is 0 or Nan then no students were tested for that category and subject
+        else {
+          eachNoneTested[data[i]["Year"]] = tested
+        }
+      };
+    }
+    else {
+      console.log("ERROR")
+    }
+
+    // add relevant year to obj and then push to array
+    eachYear["Category"] = data[i]["School Name"]
+
+    filteredData.push(eachYear);
+
+    noneTested.push(eachNoneTested);
+
+    insufficientN.push(eachinsufficientN);
+  };
+
+  // filter out all categories where the school has no data
+  let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
+
+  let finalData = filterKeys(filteredData, schoolColumns)
+
+  // Get a list of the categories where school has no data
+  let schoolCategories = schoolColumns.filter(i => i !== "Category")
+  let missingCategories = category.filter((e) => !schoolCategories.includes(e));
+
+  // Get categories for which school has data, but comparison schools do not
+  // TODO: FIX AFTER FIXING COMPARISON SHCOOLS
+
+
+    // console.log(finalData)
+    // console.log(insufficientN)
+    // console.log(missingCategories)
+
+  return finalData
+}
+
+
+
+// process data for Ag Grid tables
+function getTableData(data, category, subject, selection) {
+
+  // academic info data comes in as an array of objects for a single selected school, with each
+  // object representing a single year of data. Final table format is category names on the left
+  // with years years as column names.
+
+  const pageTab = selection.page_tab
+  const k8Tab = selection.k8_tab
+  const hsTab = selection.hs_tab
+  const typeTab = selection.type_tab
+
+  let proficienctSuffix;
+  let testedSuffix;
+
   if (pageTab == "infoTab") { 
     if (typeTab == "k8Tab") {
       if (k8Tab == "ireadTab") {
@@ -322,20 +510,11 @@ function getTableData(data, category, subject, selection) {
       categoryProficient.push(category[a] + "|" + proficienctSuffix);
       categoryTested.push(category[a] + "|" + testedSuffix);
     }
-    // else if (subject == "SAT") {
-    //   categoryProficient.push(category[a] + "|" + "EBRW " + proficienctSuffix);
-    //   categoryProficient.push(category[a] + "|" + "Math " + proficienctSuffix);
-    //   categoryTested.push(category[a] + "|" + "EBRW " + testedSuffix);
-    //   categoryTested.push(category[a] + "|" + "Math " + testedSuffix);
-    // }
     else {
       categoryProficient.push(category[a] + "|" + subject + " " + proficienctSuffix);
       categoryTested.push(category[a] + "|" + subject + " " + testedSuffix);
     }
   }
-
-  // console.log(categoryProficient)
-  // console.log(categoryTested)
 
   // TODO: Fix This
   let filteredData = []
@@ -411,15 +590,7 @@ function getTableData(data, category, subject, selection) {
     return finalData
 }
 
- /**
-   * Find any given number of keys and remove them
-   * @param {array<object>} data - An array of objects (academic data)
-   * @param {array<string>} category - list of categories
-   * @param {array<string>} subject - List of subjects
-   * @param {string} type - school type (K8, HS, K12, AHS)
-   * @return {array<object>} The array with filtered/processed data
-   */
-  // TODO: What is the above?
+
  /**
    * Find any given number of keys and remove them
    * @param {array<object>} array - An array of objects
@@ -450,6 +621,7 @@ function filterData(array, search_str, keys) {
       return delete obj[key];
     });
   }
+
   return clone;
 
 }
@@ -458,9 +630,13 @@ function getK8LineData(data, category, subject, selection) {
 
   const type = selection.school_type;
   const subtype = selection.school_subtype;
-  // console.log("GETTING K8LINEDATA")
-  // console.log(selection)
-  if (type == "K8" || (type == "K12" && subtype == "K8")) {
+
+  if (
+      type == "K8" ||
+      (type == "K12" && (subtype == "K8" || subtype == "K12")) ||
+      (typeof type === "undefined" && typeof subtype === "undefined")
+  ) {
+
     if (['ELA', 'Math'].includes(subject)) {
         search_str = "|" + subject + " Proficient %"
     }
@@ -500,8 +676,6 @@ function getK8LineData(data, category, subject, selection) {
   // add Column Names to data array
   filteredData['columns'] = remaining
 
-  // console.log("XXXXXXXXXXX")
-  // console.log(filteredData)
   return filteredData
 }
 

@@ -1865,7 +1865,7 @@ function horizontalStackedBar() {
       var title = svg.append("g");
 
       let actualSvg = d3.select(svg._groups[0][0]) /// GET WIDTH
-      console.log(actualSvg)
+
       title.append("rect")
         .attr("width", (width + margin.left + margin.right)/2)
         .attr("x", function(d) {
@@ -1936,7 +1936,7 @@ function horizontalStackedBar() {
         .style("border-width", "1px")
         .style("border-radius", "5px")
         .style("padding", "10px");
-
+      
       const mouseOver = function(d) {
 
         focus.style("display", null);

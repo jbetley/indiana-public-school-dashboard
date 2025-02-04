@@ -162,9 +162,10 @@
                   <div class="nav-container twelve columns">
                      <div class="grid">
                         <!-- <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div> -->
-                        <div class="stack-box tab3-a-group"><div id="elaComparisonByEthnicity"></div></div>
-                        <div class="table-box tab3-table-1" id="analysis-container-table-1"><div id="analysis-table1" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                        <!-- <div class="stack-box tab3-b-group"><div id="elaComparisonBySubgroup"></div></div> -->
+                        <div class="stack-box tab3-chart-1"><div id="elaComparisonByEthnicity"></div></div>
+                        <div class="table-box tab3-table-1" id="analysis-container-table-1"><div id="analysis-table1" style="width: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="stack-box tab3-chart-2"><div id="elaComparisonBySubgroup"></div></div>
+                        <div class="table-box tab3-table-2" id="analysis-container-table-2"><div id="analysis-table2" style="width: 100%" class="ag-theme-quartz"></div></div>
                         <!-- <div class="stack-box tab3-c-group"><div id="elaComparisonByGrade"></div></div> -->
                      </div>
                   </div>
@@ -175,7 +176,6 @@
       </div>
    </div>
 </body>
-
 <script type="module">
 
 // Indiana Public School Academic Dashboard
@@ -323,23 +323,27 @@ schoolSelection.addEventListener("change", function () {
 
       analysisContent.classList.add("open");
 
+      // this populates the selecetedValues dict with a list of comparison
+      // school ids
       getComparisonSchools(selectedValues);
-      let comparisonValues = getComparisonValues();
-      getAcademicAnalysisData(comparisonValues);
+
+      selectedValues.comparison_schools = getComparisonSchoolIDs();
+      // let comparisonValues = getComparisonSchoolIDs();
+      console.log("SCHOOL SELECTION")
+      // console.log(comparisonValues)
+      console.log(selectedValues)
+      getAcademicAnalysisData(selectedValues);
+
    }
    else if (mainSelection === "infoTab")  {
-
       analysisContent.classList.remove("open");
-
       getAcademicInfoData(selectedValues);
    }
    else {
-
       analysisContent.classList.remove("open");
-
       getDemographicData(selectedValues)
-
    }
+
 });
 
 function getSchoolSelection() {
@@ -363,8 +367,11 @@ yearSelection.addEventListener("change", function () {
    let selectedValues = getSelectedValues();
 
    if (selectedValues.page_tab === "Academic Analysis") {
-      let comparisonValues = getComparisonValues()
-      getAcademicAnalysisData(comparisonValues);
+
+      selectedValues.comparison_schools = getComparisonSchoolIDs();
+      // let comparisonValues = getComparisonSchoolIDs()
+
+      getAcademicAnalysisData(selectedValues);
    }
    else if (selectedValues.page_tab === "Academic Information")  {
       getAcademicInfoData(selectedValues);
@@ -388,18 +395,20 @@ comparisonSelection.addEventListener("change", function () {
    let selectedValues = getSelectedValues();
 
    if (selectedValues.page_tab === "Academic Analysis") {
-      let comparisonValues = getComparisonValues();
-      getAcademicAnalysisData(comparisonValues);
+
+      selectedValues.comparison_schools = getComparisonSchoolIDs();
+
+      // let comparisonValues = getComparisonSchoolIDs();
+      getAcademicAnalysisData(selectedValues);
    }
    });
 
-function getComparisonValues() {
+function getComparisonSchoolIDs() {
 
    let selectedValues = getSelectedValues();
    let comparisonSchools = comparisonSelect.getSelected();
-   selectedValues.comparison_schools = comparisonSchools;
-   
-   return selectedValues
+   // selectedValues.comparison_schools = comparisonSchools;
+   return comparisonSchools
 }
 
 // Selection: Corporation
@@ -463,6 +472,12 @@ function getSelectedValues() {
    selectedValues.analysis_tab = analysisTab; 
 
    return selectedValues
+}
+
+function setSelectedValue(key, value) {
+   selectedValues[key] = value;
+   console.log("setSelected")
+   console.log(selectedValues)
 }
 
 // var activeMainTab = document.querySelectorAll(".tab.active")[0].innerHTML;
@@ -659,7 +674,7 @@ function setComparisonList(data) {
 
 // demographic data
 async function getDemographicData(select) {
-   const jiggy = await fetch(`${window.origin}/demographic`, {
+   const fetchedData = await fetch(`${window.origin}/demographic`, {
       method: "POST",
          credentials: "include",
          cache: "no-cache",
@@ -676,13 +691,13 @@ async function getDemographicData(select) {
          }
       });
 
-   let demData = jiggy[0];
+   let demData = fetchedData[0];
    demographicsPage(demData, select);
 }
 
 // academic information data
 async function getAcademicInfoData(select) {
-   const meat = await fetch(`${window.origin}/academic`, {
+   const fetchedData = await fetch(`${window.origin}/academic`, {
       method: "POST",
          credentials: "include",
          cache: "no-cache",
@@ -699,14 +714,14 @@ async function getAcademicInfoData(select) {
          }
       })
 
-      let infoData = meat[0];
+      let infoData = fetchedData[0];
       academicInfoPage(infoData);
 }
 
 // academic analysis Data
 async function getAcademicAnalysisData(select) {
 
-   const chips = await fetch(`${window.origin}/academic`, {
+   const fetchedData = await fetch(`${window.origin}/academic`, {
       method: "POST",
       headers: {
             "Content-type": "application/json",
@@ -722,7 +737,7 @@ async function getAcademicAnalysisData(select) {
       }
    });
 
-   let analysisData = chips[0]
+   let analysisData = fetchedData[0]
    academicAnalysisPage(analysisData)
 };
 
@@ -742,6 +757,7 @@ async function getComparisonSchools(select) {
             alert("Network Error: Could not load data.")
          }
       })
+
       setComparisonList(comparisonSchoolList)
 }
 
@@ -797,6 +813,7 @@ function demographicsPage(data, select) {
 
    // enrollment chart
    let keep = ["Year","Total Enrollment"];
+
    var enrollmentChartData = filterObj(schoolData, keep);
 
    // attendance and chronic absenteeism
@@ -1256,18 +1273,22 @@ function academicAnalysisPage(data) {
    const year = selection.year;
    const schoolType = selection.school_type
    const schoolSubtype = selection.school_subtype
+   const schoolID = selection.school_id
    const pageTab = selection.page_tab
    const typeTab = selection.type_tab
    const k8Tab = selection.k8_tab
    const hsTab = selection.hs_tab
 
    let subject;
-   console.log(" ACADEMIC ANALYSIS Comparison Year Data")
-   console.log(selection)
-
+   console.log("ACADEMIC ANALYSIS Comparison Year Data")
    
    // set subject, type, and chart labels
-   if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
+   if (
+      schoolType == "K8" ||
+      (schoolType == "K12" && (schoolSubtype == "K8" || schoolSubtype == "K12")) ||
+      (typeof schoolType === "undefined" && typeof schoolSubtype === "undefined")
+  ) {
+
       if (k8Tab == "ireadTab") {  
 
          subject =  subjectIread
@@ -1359,15 +1380,22 @@ function academicAnalysisPage(data) {
    //Comparison: Math Proficiency by Subgroup
 
    let yearData = data.filter(o => o.Year == Number(year));
+   const schoolName = yearData.find(d => d["School ID"] === schoolID)["School Name"];
 
-   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], schoolType)
-   let elaComparisonByEthnicityTransposed = transposeData(ecbeData, "School Name");
-   
+   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], selection)
+   // filter out categories where the school has no data
+   let ecbeSchoolColumns = Object.keys(ecbeData.find(d => d["School Name"] === schoolName));
+   let ecbeFilteredData = filterKeys(ecbeData, ecbeSchoolColumns)
+   let elaComparisonByEthnicityTransposed = transposeData(ecbeFilteredData, "School Name");
+
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonByEthnicityChartData = processBarData(elaComparisonByEthnicityTransposed);
 
-   let ecbsData = getK8LineData(yearData, subgroup, subject[0], schoolType)
-   let elaComparisonBySubGroupTransposed = transposeData(ecbsData, "School Name");
+
+   let ecbsData = getK8LineData(yearData, subgroup, subject[0], selection)
+   let ecbsSchoolColumns = Object.keys(ecbsData.find(d => d["School Name"] === schoolName));
+   let ecbsFilteredData = filterKeys(ecbsData, ecbsSchoolColumns)
+   let elaComparisonBySubGroupTransposed = transposeData(ecbsFilteredData, "School Name");
 
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonBySubgroupChartData = processBarData(elaComparisonBySubGroupTransposed);
@@ -1377,77 +1405,116 @@ function academicAnalysisPage(data) {
       elaComparisonByEthnicity = verticalGroupBar().data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
       d3.select("#elaComparisonByEthnicity").call(elaComparisonByEthnicity);
 
-   // Initialize all nine tables on-load (empty)
-   // for (let k = 0; k < 9; k++) {
-   //    let tableName = "table" + (k+1);
-   //    let tableID = "#" + tableName
+      elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+      d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
 
-   //    let tableOptions = initializeTable(tableID)
-   //    var analysisGridDiv = document.querySelector(tableID)
-   //    analysisGridApi[k] = agGrid.createGrid(gridDiv, tableOptions);
-   // }
-      let tableID = "#analysis-table1"
-      let tableOptions = initializeTable(tableID)
-      console.log(tableOptions)
-      let analysisGridDiv = document.querySelector(tableID)
-      console.log(analysisGridDiv)
-      analysisGridApi[0] = agGrid.createGrid(analysisGridDiv, tableOptions);
+   // Initialize analysis tables on-load (as empty)
+   for (let k = 0; k < 2; k++) {
+      let analysisTableName = "analysis-table" + (k+1);
+      let analysisTableID = "#" + analysisTableName
 
-   // elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
-   //    d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
+      let analysisTableOptions = initializeTable(analysisTableID)
+      var analysisGridDiv = document.querySelector(analysisTableID)
+      analysisGridApi[k] = agGrid.createGrid(analysisGridDiv, analysisTableOptions);
+   }
+      // let analysisTableID = "#analysis-table1"
+      // let analysisTableOptions = initializeTable(analysisTableID)
+      // let analysisGridDiv = document.querySelector(analysisTableID)
+      // analysisGridApi[0] = agGrid.createGrid(analysisGridDiv, analysisTableOptions);
 
    academicAnalysisPage.initialize = true;
-   }
-   else {
-      elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
-      // elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+   
+   } else {
 
-      let analysisTableData, analysisTableID, catList;
+      elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
+      elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+
+
+      // get colors from chart so we can add to table
+      let tst, fill;
+      let colorArray = [];
+
+      let colorList = d3.select("#elaComparisonBySubgroup").selectAll("g.legend").select("rect");
+
+      colorList.each(function() {
+         name = this.__data__
+         fill = this.style.fill.slice(3)
+         const z = fill.slice(1, -1).split(",").map(Number);
+         let clr = rgbToHex(z[0],z[1],z[2])
+         colorArray.push({
+            school: name,
+            color: clr
+         });
+      });
+
+      console.log(colorArray)
+
+      //TODO: TEST THIS
+      function SquareIconRenderer() {}
+
+      SquareIconRenderer.prototype.init = function (params) {
+      this.eGui = document.createElement('div');
+      this.eGui.innerHTML = `<i class="fa fa-square"></i>`; // Use the appropriate icon class
+      // this.eGui.color = ""
+      };
+
+      SquareIconRenderer.prototype.getGui = function () {
+      return this.eGui;
+      };
+
+      // columnDefs: [
+      //    {
+      //       field: 'yourFieldName',
+      //       cellRenderer: 'SquareIconRenderer', // Use the name of your renderer function
+      //    },
+      //    // ... other column definitions
+      //    ]
+
+      /* Update Tables */
+
+      let analysisTableData, analysisTableID, analysisCatList;
+      let tableNum = 2;
+      let tableShift = 0;
 
       // Remove objects with years > the selected year
-      const yeardata = data.filter((obj, index) => !(obj.Year > Number(year)));
+      const tabledata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
+      //TODO: TEMP
+      let subject = ["ELA", "ELA"]
 
-      console.log("ANALYSIS TABLE")
-      console.log(yeardata)
-      // catList = [grade, ethnicity, subgroup]
-      // catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
+      for (let i=0; i<tableNum; i++) {
 
-      analysisTableID = analysisGridApi[0].getGridId()
+         let index = i + tableShift;
+         const sub = i % 2;
 
-      analysisTableData = getTableData(yeardata, ethnicity, "ELA", selection)
+         if (tableShift == 0) {
+            analysisCatList = [ethnicity, subgroup] //             catList = [grade, ethnicity, subgroup]
+         }
+         else {
+            analysisCatList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
+         }
 
-      let analysisTableOptions = createBasicTable(analysisTableData)
+         analysisTableID = analysisGridApi[index].getGridId()
 
-      // need to reset columndefs as well as rowdata or else table
-      // will have empty cols.
-      analysisGridApi[0].setGridOption("columnDefs", analysisTableOptions.columnDefs);
-      analysisGridApi[0].setGridOption("rowData", analysisTableData);
+         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[sub], selection)
 
+         let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
 
-      // for (let i=0; i<tableNum; i++) {
-
-      //    let index = i + tableShift;
-      //    const sub = i % 2;
-
-      //    if (tableShift == 0) {
-      //       catList = [grade, ethnicity, subgroup]
-      //    }
-      //    else {
-      //       catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
-      //    }
-
-      //    tableID = infoGridApi[index].getGridId()
+         // need to reset columndefs as well as rowdata or else table
+         // will have empty cols.
+         analysisGridApi[index].setGridOption("columnDefs", analysisTableOptions.columnDefs);
+         analysisGridApi[index].setGridOption("rowData", analysisTableData);
+      };
 
 
-      //    tableData = getTableData(tabledata, catList[i], subject[sub], selection)
 
-      //    let tableOptions = createBasicTable(tableData)
+      // Remove objects with years > the selected year
+      // let yeardata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
+      // analysisTableID = analysisGridApi[0].getGridId()
+      // analysisTableData = getAnalysisTableData(yeardata, ethnicity, "ELA", selection)
+      // let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
+      // analysisGridApi[0].setGridOption("columnDefs", analysisTableOptions.columnDefs);
+      // analysisGridApi[0].setGridOption("rowData", analysisTableData);
 
-      //    // need to reset columndefs as well as rowdata or else table
-      //    // will have empty cols.
-      //    infoGridApi[index].setGridOption("columnDefs", tableOptions.columnDefs);
-      //    infoGridApi[index].setGridOption("rowData", tableData);
-      // };      
    }
    // TODO: Multi-Year Analysis Page
 };
@@ -1507,10 +1574,6 @@ function navigateHandler(e) {
       k8Content.classList.add("open");
       hsContent.classList.remove("open");
    }
-
-   console.log(selectedValues)
-   console.log("target")
-   console.log(target.id)
 
    if (target.id.match("demoTab")) {
 
@@ -1624,7 +1687,6 @@ function navigateHandler(e) {
          hsContent.classList.add("open");
       }      
 
-
       setYearList(allSchoolsObj,"academic");
 
       if (strYear == "2020") {
@@ -1690,15 +1752,16 @@ function navigateHandler(e) {
       yearSelection.value = yearValue;
       yearSelection.setAttribute("value", yearValue);
 
-      selectedValues["year"] = yearValue;
-
-      getAcademicAnalysisData(getComparisonValues());
+      selectedValues.year = yearValue;
+      selectedValues.comparison_schools = getComparisonSchoolIDs()
+      console.log("Tracking Selected - NAV HANDLER")
+      console.log(selectedValues)
+      getAcademicAnalysisData(selectedValues);
    }
 }
 
 /* Main Block */
 
-console.log(document.readyState)
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
    setYearList(allSchoolsObj,"demographic");
@@ -1719,8 +1782,16 @@ if (document.readyState !== "loading") {
    getAcademicInfoData(selectedValues);
 
    getComparisonSchools(selectedValues);
+   // set selectedValues with initial values
+   // let schoolIDs = comparisonSchoolList.map(obj => obj["School ID"]);
+   // schoolIDs = schoolIDs.slice(0, 5);
+   // setSelectedValue("comparison_schools", schoolIDs)
 
-   getAcademicAnalysisData(getComparisonValues());
+   // NOTE: at this point getComparisonSchoolIDs() returns [] because comparisonSelect
+   // isn't yet initialized
+   selectedValues.comparison_schools = getComparisonSchoolIDs()
+
+   getAcademicAnalysisData(selectedValues);
 }
 
 // initialize page by setting the corp list
@@ -1740,11 +1811,6 @@ function resize() {
    let windowWidth = window.innerWidth/2 - 125;
    
    if (windowWidth >= 290) {
-
-      // if (activeMainTab === "Academic Analysis") {
-      
-      // }
-      // else if (activeMainTab === "Academic Information") {
 
       if (selectedValues.page_tab === "Academic Analysis") {
       

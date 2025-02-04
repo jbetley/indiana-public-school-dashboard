@@ -652,12 +652,13 @@ def clean_academic_data(
 
             ## K8 academic_analysis_single
             else:
-                k8_data = processed_data.copy()
-
-                analysis_data = k8_data.filter(
-                    regex=r"\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
-                    axis=1,
-                )
+                # TODO: testing unfiltered data
+                # k8_data = processed_data.copy()
+                analysis_data = processed_data.copy()
+                # analysis_data = k8_data.filter(
+                #     regex=r"\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
+                #     axis=1,
+                # )
                 analysis_data = analysis_data.sort_values("Year").reset_index(drop=True)
 
                 analysis_data = analysis_data[

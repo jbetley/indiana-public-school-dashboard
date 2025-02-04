@@ -170,6 +170,7 @@ def load_academic_data():
     else:
         school_type = data["school_type"]
 
+    print("GETTING DATA")
     print(data)
     raw_data = get_academic_data(schools, school_type)
 

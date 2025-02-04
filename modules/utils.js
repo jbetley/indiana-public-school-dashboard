@@ -51,6 +51,18 @@ function filterObj(list, kept) {
   return list.map(o => Object.fromEntries(kept.map(k => [k, o[k]])))
 }
 
+// remove keys from an array of objects if they are not present in array
+function filterKeys(arr, keepKeys) {
+  return arr.map(obj => {
+    const newObj = {};
+    for (const key in obj) {
+      if (keepKeys.includes(key)) {
+        newObj[key] = obj[key];
+      }
+    }
+    return newObj;
+  });
+}
 
 // filter data by the key values present in categories array
 function filterCategories(data, categories) {
@@ -130,3 +142,9 @@ function removeItemsByValue(obj, value) {
     }
   }
 }
+
+// converts RGB values to their hex equivalent
+const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+  const hex = x.toString(16)
+  return hex.length === 1 ? '0' + hex : hex
+}).join('')
