@@ -366,14 +366,14 @@ let yearSelection = document.getElementById("yearSelect");
 yearSelection.addEventListener("change", function () {
    let selectedValues = getSelectedValues();
 
-   if (selectedValues.page_tab === "Academic Analysis") {
+   if (selectedValues.page_tab === "analysisTab") {
 
       selectedValues.comparison_schools = getComparisonSchoolIDs();
       // let comparisonValues = getComparisonSchoolIDs()
 
       getAcademicAnalysisData(selectedValues);
    }
-   else if (selectedValues.page_tab === "Academic Information")  {
+   else if (selectedValues.page_tab === "infoTab")  {
       getAcademicInfoData(selectedValues);
    }
    else {
@@ -394,10 +394,11 @@ const comparisonSelection = document.getElementById("comparisonSelect");
 comparisonSelection.addEventListener("change", function () {
    let selectedValues = getSelectedValues();
 
-   if (selectedValues.page_tab === "Academic Analysis") {
+   if (selectedValues.page_tab === "analysisTab") {
 
+      console.log(selectedValues)
       selectedValues.comparison_schools = getComparisonSchoolIDs();
-
+      console.log(selectedValues)
       // let comparisonValues = getComparisonSchoolIDs();
       getAcademicAnalysisData(selectedValues);
    }
@@ -1430,7 +1431,7 @@ function academicAnalysisPage(data) {
       elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
 
 
-      // get colors from chart so we can add to table
+      // take colors from chart to match to table
       let tst, fill;
       let colorArray = [];
 
@@ -1442,33 +1443,11 @@ function academicAnalysisPage(data) {
          const z = fill.slice(1, -1).split(",").map(Number);
          let clr = rgbToHex(z[0],z[1],z[2])
          colorArray.push({
-            school: name,
+            schoolname: name,
             color: clr
          });
       });
 
-      console.log(colorArray)
-
-      //TODO: TEST THIS
-      function SquareIconRenderer() {}
-
-      SquareIconRenderer.prototype.init = function (params) {
-      this.eGui = document.createElement('div');
-      this.eGui.innerHTML = `<i class="fa fa-square"></i>`; // Use the appropriate icon class
-      // this.eGui.color = ""
-      };
-
-      SquareIconRenderer.prototype.getGui = function () {
-      return this.eGui;
-      };
-
-      // columnDefs: [
-      //    {
-      //       field: 'yourFieldName',
-      //       cellRenderer: 'SquareIconRenderer', // Use the name of your renderer function
-      //    },
-      //    // ... other column definitions
-      //    ]
 
       /* Update Tables */
 
@@ -1478,6 +1457,7 @@ function academicAnalysisPage(data) {
 
       // Remove objects with years > the selected year
       const tabledata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
+
       //TODO: TEMP
       let subject = ["ELA", "ELA"]
 
@@ -1495,10 +1475,11 @@ function academicAnalysisPage(data) {
 
          analysisTableID = analysisGridApi[index].getGridId()
 
-         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[sub], selection)
+         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[sub], selection, colorArray)
 
          let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
 
+         console.log(analysisTableOptions)
          // need to reset columndefs as well as rowdata or else table
          // will have empty cols.
          analysisGridApi[index].setGridOption("columnDefs", analysisTableOptions.columnDefs);
@@ -1812,10 +1793,10 @@ function resize() {
    
    if (windowWidth >= 290) {
 
-      if (selectedValues.page_tab === "Academic Analysis") {
+      if (selectedValues.page_tab === "analysisTab") {
       
       }
-      else if (selectedValues.page_tab === "Academic Information") {
+      else if (selectedValues.page_tab === "infoTab") {
 
          infoChart1.width(windowWidth);
          infoChart2.width(windowWidth);

@@ -688,6 +688,21 @@ section#tab-three .grid  {
   text-align: left;
 }
 
+/* Currently affecting all headers */ 
+/* TODO: Center header text not working */
+
+.ag-theme-quartz .ag-header {
+  font-family: 'Inter', sans-serif;
+}
+.ag-theme-quartz .ag-header-group-cell {
+  font-weight: normal;
+  font-size: 12px;
+}
+.ag-theme-quartz .ag-header-cell {
+  font-weight: 600;
+  font-size: 10px;
+}
+
 /* adjusts font size for ag-grid header once it hits
   a certain size */
 @media (max-width: 940px) 

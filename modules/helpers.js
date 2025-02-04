@@ -95,30 +95,42 @@ function createAnalysisTable(data, tableID) {
      return Object.assign(result, obj);
   }, {}));
 
-  // Move "Category" to front of Array
-  keys = keys.filter(item => item != "Category");
+  // Move "Category" to front of Array (and remove color from cols)
+  keys = keys.filter(item => item != "Category" && item != "Color");
   keys.unshift("Category")
 
   let columns = keys.map(field => ({field}));
 
+  //TODO: Adjust size of category depending on number of cols
+  // cell-renderer adds the appropriately colored sqaure in front of school name
   columns.forEach(function(e) {
-     if (e.field == "Category") {
-        e.valueFormatter = "";
-        e.resizable = false;
-        e.autoHeight = true;
-        e.wrapText = true;
-        e.minWidth = 200;
-        e.maxWidth = 220;
-        e.cellClass = "ag-left-aligned-cell";
-        e.headerClass = "text-center";
+    if (e.field == "Category") {
+      e.cellRenderer = function(params) {
+        let name = params.value;
+        let color = params.data.Color
+        let cellValue = 
+        `<span style='font-size: 1em; color:${color};'><i class='fa fa-square center-icon'></i></span>&nbsp&nbsp${name}`;
+        return cellValue;
+    }
+      e.headerName = "",
+      e.valueFormatter = "";
+      e.resizable = false;
+      e.autoHeight = true;
+      e.wrapText = true;
+      e.minWidth = 260;
+      e.maxWidth = 270;
+      e.cellClass = "ag-left-aligned-cell";
+      e.headerClass = "text-center",
+      e.cellStyle = {fontSize: '10px'}
      }
-     else {
-        e.valueFormatter = percentageFormatter;
-        e.flex = 1;
-        e.resizable = false;
-        e.cellClass = "ag-center-aligned-cell";
-        e.headerClass = "text-center";
-     }
+    else {
+      e.valueFormatter = percentageFormatter;
+      e.flex = 1;
+      e.wrapHeaderText = true;
+      e.resizable = false;
+      e.cellClass = "ag-center-aligned-cell";
+      e.headerClass = "text-center";
+    }
   });
 
   let options = {
@@ -127,6 +139,7 @@ function createAnalysisTable(data, tableID) {
      gridId: tableID,
      domLayout : "autoHeight"
   };
+  console.log(options)
   return options
 }
 
@@ -313,7 +326,7 @@ function calcProficiency (data, proficient, tested) {
 }
 
 
-function getAnalysisTableData(data, category, subject, selection) {
+function getAnalysisTableData(data, category, subject, selection, colors) {
 
   // Analysis Data Format - Single Year
   // Black|ELA: 0.015873015873015872
@@ -442,7 +455,17 @@ function getAnalysisTableData(data, category, subject, selection) {
   // filter out all categories where the school has no data
   let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
 
-  let finalData = filterKeys(filteredData, schoolColumns)
+  let academicData = filterKeys(filteredData, schoolColumns)
+
+  // Add color as separate column to table
+  const finalData = academicData.map(item1 => {
+    const matchingItem = colors.find(item2 => item2.schoolname === item1.Category);
+    if (matchingItem) {
+      return { ...item1, Color: matchingItem.color };
+    } else {
+      return item1;
+    }
+  });
 
   // Get a list of the categories where school has no data
   let schoolCategories = schoolColumns.filter(i => i !== "Category")
