@@ -124,6 +124,19 @@ label {
   font-weight: 600;
   color:  steelblue;
 }
+/* .bartooltip {
+  background: blue;
+  border: 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  height: 20px;
+  padding: 2px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  width: 120px;
+} */
 
 #comparisonLabel {
   font-size: .7rem;

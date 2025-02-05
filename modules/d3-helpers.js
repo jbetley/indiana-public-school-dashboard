@@ -2232,7 +2232,7 @@ function horizontalStackedBar() {
 // https://nocommandline.com/blog/building-a-responsive-d3-js-chart/
 function verticalGroupBar() {
   var margin = {top: 45, right: 20, bottom: 25, left: 40},
-    width = 800 - margin.left - margin.right,
+    width = 1000 - margin.left - margin.right,
     height = 360 - margin.top - margin.bottom,
     updateData,
     y = d3.scaleLinear().range([height, 0]),
@@ -2266,9 +2266,8 @@ function verticalGroupBar() {
 
       let chartData = data
 
+      // TODO: IS this doing anything at all?
       // TODO: Tmp fix to deal with removal of undefined values
-      // TODO: Check to see if there is a way to do this when the
-      // TODO: Array is being created instead - but may break other charts
       // const missingString = data[1] // not currently needed
       for (let a = 0; a < chartData.length; a++) {
         let cnt = [];
@@ -2320,6 +2319,24 @@ function verticalGroupBar() {
           .style("font-family", "Inter, sans-serif")
           .attr("color", "#6783a9");
 
+      var tooltipContainer = d3.select(this);
+
+      var tooltip = tooltipContainer.append("div")
+        .attr('class', 'bartooltip')
+        .style("position", "absolute")
+        .style('display', 'none')
+        .style("background-color", "white")
+        .style("font-size", "10px")
+        .style("font-weight", "500")
+        .style("width", "180px")
+        .style("height", "20px")
+        .style("font-family", "Inter, sans-serif")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        // .style("border-radius", "5px")
+        .style("padding", "6px");
+
+      // TODO: test color algo and then remove legend
       var legendContainer = svg.append('g')
         .attr('class', 'legendcontainer')
         .attr('transform', "translate(" + -(margin.left/4) + "," + -(margin.top) +")")
@@ -2379,6 +2396,7 @@ function verticalGroupBar() {
         svg.select("#" + id)
 
         const chartData = data
+        // TODO: Add insufficient and missing n-size strings
         // const missingString = data[1]
 
         const categoryKeys = Array.from(chartData).map(d => d[0]);
@@ -2526,14 +2544,76 @@ function verticalGroupBar() {
           .selectAll("rect")
           .attr('class', 'bars')
           .data(function (d) { return d[1] })
-          .join("rect")
-            .transition(t)
+          .join("rect");
+
+        bars.transition(t)
             .attr("x", function (d) { return x1(d[0]) })
             .attr("y", function(d) { return y(d[1]) })
             .attr("width", x1.bandwidth())
             .attr("height", function (d) { return height - y(d[1])} )
             .attr("fill", function(d) {return color(d[0])});
+        
+        console.log(bars)
 
+        // Tooltip Path
+        // Right: M xStart yStart l 4 3 l 4 10 l 140 10 l 140 -10 l 4 -10 l 4 -3 l 0 0
+        // var xStart = x
+        // var yStart = y
+        // var bottomArrowH = 4
+        // var bottomArrowV = 3
+        // var bottomFrontH = 4
+        // var bottomFrontV = 10
+        // var bottomH = 140
+        // var bottomV = 10
+        // var rightH = 140
+        // var rightV = -10
+        // var topH = 4
+        // var topV = -10
+        // var bottomFrontH = 4
+        // var bottomFrontV = -3
+        // var bottomArrowH = x
+        // var bottomArrowV = y
+
+        // Left: M xStart yStart l -4 3 l -4 10 l -140 10 l -140 -10 l -4 -10 l -4 -3 l 0 0
+        // var xStart = x
+        // var yStart = y
+        // var bottomArrowH = -4
+        // var bottomArrowV = 3
+        // var bottomFrontH = -4
+        // var bottomFrontV = 10
+        // var bottomH = -140
+        // var bottomV = 10
+        // var leftH = -140
+        // var leftV = -10
+        // var topH = -4
+        // var topV = -10
+        // var topFrontH = -4
+        // var topFrontV = -3
+        // var topArrowH = x
+        // var topArrowV = y
+// TODO: bandwidth not working for skinnier bars
+// TODO: wrapping pushing proficiency out of box
+// TODO: errors updating bars - Too many bars causing them to overlap. Increase width? or
+// TODO: decrease bandwidth of bars 
+// TODO: Getting data errors as well (hs?)
+        bars
+          .on("mouseover", function(d) {
+
+            var matrix = this.getScreenCTM()
+              .translate(+ this.getAttribute("x"), + this.getAttribute("y"));
+
+            tooltip.transition().duration(200).style('display', 'block');
+            tooltip.html(`${d[0]}<br>Proficiency: <span>${d3.format(".0%")(d[1])}</span>`)
+              .style("left", (window.scrollX + matrix.e + 20 + x1.bandwidth()/2) + "px")
+              .style("top", (window.scrollY + matrix.f - 20) + "px");
+
+            })
+          .on('mouseout', function(d) {
+            tooltip.transition().duration(500).style('display', "none");
+          })
+
+        // NOTE: All of the if/else blocks are to ensure that labels look consistent regardless
+        // of how high or wide they are. Note, 0% appears as text with no bar
         labels = barUpdate.selectAll("g")
           .data(chartData)
           .join("g")
@@ -2541,19 +2621,40 @@ function verticalGroupBar() {
           .attr('class', 'label')
           .data(function (d) { return d[1] })
           .join("text")
+          .attr("text-anchor", "middle")
           .attr("y", function(d) {
-            return y(d[1]) -5;
+            if (d[1] < .06) {
+              return y(d[1]) - 5
+            } else if ((d[1] < .08)) {
+              return y(d[1]) + 11
+            } else
+            {
+              return y(d[1]) + 12
+            }
           })
           .attr("fill", function(d) {
-            return color(d[0])
+            if (d[1] < .06) {
+              return color(d[0])
+            } else {
+              return "#ffffff"
+            }
           })
           .attr("x", function(d, i) {
-            return x1(d[0]) - 5;// + x0.bandwidth();
+            return x1(d[0]) + x1.bandwidth()/2 + 0.5;
           })
-          .style("font-size", 10)
+          .style("font-size", function(d, i) {
+            console.log(x1.bandwidth())
+            if (x1.bandwidth() < 27) {
+              return 8
+            }
+            else {
+              return 9
+            }
+          })
+          .style("font-weight", 600)
           .style("font-family", "Inter, sans-serif")
           .text(function(d, i) {
-            return d3.format(".2%")(d[1]);
+            return d3.format(".0%")(d[1]);
           });
 // TODO: ADD
         // svg.selectAll("text.endtext").remove();
@@ -2575,35 +2676,35 @@ function verticalGroupBar() {
         //       .call(wrap, width + margin.right);
         // };
 
-          // uupdate title
-          let selectedYear = document.getElementById("yearSelect").value
-          let yearString = longYear(selectedYear);
+        // uupdate title
+        let selectedYear = document.getElementById("yearSelect").value
+        let yearString = longYear(selectedYear);
 
-          if (exists(data[0], 'Free or Reduced Price Meals')) {
-            groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
-          }
-          else {
-            groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
-          }
+        if (exists(data[0], 'Free or Reduced Price Meals')) {
+          groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
+        }
+        else {
+          groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
+        }
 
-          svg.selectAll("text.titletext").remove();
+        svg.selectAll("text.titletext").remove();
 
-          groupTitle.selectAll("text.titletext")
-            .data(groupTitleText, function(d) { return d })
-            .enter()
-            .append("text")
-              .attr('class', 'titletext')
-              .attr("fill", "white")
-              .style("font-weight", 700)
-              .attr("font-size", "12px")
-              .style("font-family", "Inter, sans-serif")
-              .style('text-anchor','middle')
-              .style('alignment-baseline', 'middle')
-              .attr('dx', function(d) {
-                return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-              })
-              .attr('y', -55)
-              .text(function(d) { return d })
+        groupTitle.selectAll("text.titletext")
+          .data(groupTitleText, function(d) { return d })
+          .enter()
+          .append("text")
+            .attr('class', 'titletext')
+            .attr("fill", "white")
+            .style("font-weight", 700)
+            .attr("font-size", "12px")
+            .style("font-family", "Inter, sans-serif")
+            .style('text-anchor','middle')
+            .style('alignment-baseline', 'middle')
+            .attr('dx', function(d) {
+              return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+            })
+            .attr('y', -55)
+            .text(function(d) { return d })
       }; // end update Function
     }); // end each
 
