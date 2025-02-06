@@ -204,13 +204,17 @@ allSchoolsObj.forEach(function (obj) {
 // chart variables
 const subjectIlearn = ["ELA", "Math"];
 const subjectGrad = ["Graduation", "Graduation"];
-const subjectIread = ["IREAD", "IREAD"]
-const subjectSAT = ["EBRW", "Math"]
+const subjectIread = ["IREAD", "IREAD"];
+const subjectSAT = ["EBRW", "Math"];
 const grade = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Total"];
 const ethnicity = ["American Indian","Asian","Black","Hispanic","Multiracial","Native Hawaiian or Other Pacific Islander","White"];
-const subgroup = ["Special Education","General Education","Paid Meals","Free or Reduced Price Meals","English Language Learners","Non English Language Learners"];
+const subgroup = ["Special Education","General Education","Paid Meals","Free or Reduced Price Meals","English Language Learners",
+   "Non English Language Learners"];
 const categoryList = [grade, ethnicity, subgroup];
 const allCategories = ethnicity + subgroup + grade;
+const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
+   "#83941f", "#f0c33b", "#bc986a", "#96b8db"];
+let colorState = [];
 
 var enrollmentChart;
 var attendanceChart;
@@ -1281,6 +1285,10 @@ function academicAnalysisPage(data) {
    const hsTab = selection.hs_tab
 
    let subject;
+   let newColors = [];
+   let usedColors = [];
+   let remainingColors = [];
+
    console.log("ACADEMIC ANALYSIS Comparison Year Data")
    
    // set subject, type, and chart labels
@@ -1288,7 +1296,7 @@ function academicAnalysisPage(data) {
       schoolType == "K8" ||
       (schoolType == "K12" && (schoolSubtype == "K8" || schoolSubtype == "K12")) ||
       (typeof schoolType === "undefined" && typeof schoolSubtype === "undefined")
-  ) {
+   ) {
 
       if (k8Tab == "ireadTab") {  
 
@@ -1383,7 +1391,60 @@ function academicAnalysisPage(data) {
    let yearData = data.filter(o => o.Year == Number(year));
    const schoolName = yearData.find(d => d["School ID"] === schoolID)["School Name"];
 
+   // add color to each school dict
+   yearData.forEach((obj, idx) => {
+      obj.color = colorList[idx];
+   });
+
+   // NOTE: Because the user can add and remove schools, we need a way to ensure that
+   // colors remain consistent both from chart to chart and between updates- we do
+   // this by using a global variable ("colorState") which stores the school:color
+   // pairs immediately prior to an update and then using it to determine which
+   // schools were added or dropped.
+   newColors = yearData.map(function (obj) {
+      return  {
+         school: obj["School Name"],
+         color: obj.color
+      }
+   });
+
+   // See: https://stackoverflow.com/questions/21987909/how-to-get-the-difference-between-two-arrays-of-objects-in-javascript
+   // using answer provided by "pantaflex44"
+   const addSchool = newColors.filter(({ school: id1 }) => !colorState.some(({ school: id2 }) => id2 === id1));
+   const removeSchool = colorState.filter(({ school: id1 }) => !newColors.some(({ school: id2 }) => id2 === id1));
+   
+   usedColors = colorState.map(function (obj) { return  obj.color});
+   remainingColors = colorList.filter(x => !usedColors.includes(x));
+
+   // on first load of academic page (initial load of app is
+   // single school- initial load of academic tab adds 4 more schools, only
+   // time addSchool should be more than 1)
+   if (Array.isArray(addSchool) && addSchool.length > 1) {
+      colorState = newColors;
+   } 
+   // school added
+   else if (Array.isArray(addSchool) && addSchool.length) {
+      colorState.push({school: addSchool[0].school, color: remainingColors[0]}) 
+   }
+   // school removed
+   else if (Array.isArray(removeSchool) && removeSchool.length) {
+      const pos = colorState.findIndex(el => el.school === removeSchool[0].school);
+      if (pos >= 0)
+         colorState.splice(pos, 1);
+   };
+
+   // the selected school is always the same color- hopefully one that
+   // stands out- currently using #1c39bb (Persian Blue)
+   // other options: #0033aa (UA Blue); #002fa7 (International Klein Blue);
+   // #0047ab (Cobalt); #002147 (Oxford Blue)
+   Object.assign(
+      colorState.find(({school, color}) => school === schoolName),
+         {school: schoolName, color: "#1c39bb"}
+   );
+
+   // TODO: BETTER OR EASIER TO ADD COLORS HERE??
    let ecbeData = getK8LineData(yearData, ethnicity, subject[0], selection)
+
    // filter out categories where the school has no data
    let ecbeSchoolColumns = Object.keys(ecbeData.find(d => d["School Name"] === schoolName));
    let ecbeFilteredData = filterKeys(ecbeData, ecbeSchoolColumns)
@@ -1391,7 +1452,10 @@ function academicAnalysisPage(data) {
 
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonByEthnicityChartData = processBarData(elaComparisonByEthnicityTransposed);
-
+   
+   // Add colors to Data
+   elaComparisonByEthnicityChartData.push(colorState)
+   console.log(elaComparisonByEthnicityChartData)
 
    let ecbsData = getK8LineData(yearData, subgroup, subject[0], selection)
    let ecbsSchoolColumns = Object.keys(ecbsData.find(d => d["School Name"] === schoolName));
@@ -1400,6 +1464,7 @@ function academicAnalysisPage(data) {
 
    // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonBySubgroupChartData = processBarData(elaComparisonBySubGroupTransposed);
+   elaComparisonBySubgroupChartData.push(colorState)
 
    if (!academicAnalysisPage.initialize){
 
@@ -1409,15 +1474,15 @@ function academicAnalysisPage(data) {
       elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
       d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
 
-   // Initialize analysis tables on-load (as empty)
-   for (let k = 0; k < 2; k++) {
-      let analysisTableName = "analysis-table" + (k+1);
-      let analysisTableID = "#" + analysisTableName
+      // Initialize analysis tables on-load (as empty)
+      for (let k = 0; k < 2; k++) {
+         let analysisTableName = "analysis-table" + (k+1);
+         let analysisTableID = "#" + analysisTableName
 
-      let analysisTableOptions = initializeTable(analysisTableID)
-      var analysisGridDiv = document.querySelector(analysisTableID)
-      analysisGridApi[k] = agGrid.createGrid(analysisGridDiv, analysisTableOptions);
-   }
+         let analysisTableOptions = initializeTable(analysisTableID)
+         var analysisGridDiv = document.querySelector(analysisTableID)
+         analysisGridApi[k] = agGrid.createGrid(analysisGridDiv, analysisTableOptions);
+      }
       // let analysisTableID = "#analysis-table1"
       // let analysisTableOptions = initializeTable(analysisTableID)
       // let analysisGridDiv = document.querySelector(analysisTableID)
@@ -1430,24 +1495,24 @@ function academicAnalysisPage(data) {
       elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
       elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
 
-
       // take colors from chart to match to table
-      let tst, fill;
-      let colorArray = [];
+      // let tst, fill;
+      // let colorArray = [];
 
-      let colorList = d3.select("#elaComparisonBySubgroup").selectAll("g.legend").select("rect");
+      // let colorList = d3.select("#elaComparisonBySubgroup").selectAll("g.legend").select("rect");
 
-      colorList.each(function() {
-         name = this.__data__
-         fill = this.style.fill.slice(3)
-         const z = fill.slice(1, -1).split(",").map(Number);
-         let clr = rgbToHex(z[0],z[1],z[2])
-         colorArray.push({
-            schoolname: name,
-            color: clr
-         });
-      });
-
+      // colorList.each(function() {
+      //    name = this.__data__
+      //    fill = this.style.fill.slice(3)
+      //    const z = fill.slice(1, -1).split(",").map(Number);
+      //    let clr = rgbToHex(z[0],z[1],z[2])
+      //    colorArray.push({
+      //       schoolname: name,
+      //       color: clr
+      //    });
+      // });
+      // console.log(colorArray)
+      console.log(colorState)
 
       /* Update Tables */
 
@@ -1475,7 +1540,7 @@ function academicAnalysisPage(data) {
 
          analysisTableID = analysisGridApi[index].getGridId()
 
-         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[sub], selection, colorArray)
+         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[sub], selection, colorState)
 
          let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
 

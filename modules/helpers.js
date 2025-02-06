@@ -459,7 +459,7 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
 
   // Add color as separate column to table
   const finalData = academicData.map(item1 => {
-    const matchingItem = colors.find(item2 => item2.schoolname === item1.Category);
+    const matchingItem = colors.find(item2 => item2.school === item1.Category);
     if (matchingItem) {
       return { ...item1, Color: matchingItem.color };
     } else {
@@ -471,10 +471,7 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
   let schoolCategories = schoolColumns.filter(i => i !== "Category")
   let missingCategories = category.filter((e) => !schoolCategories.includes(e));
 
-  // Get categories for which school has data, but comparison schools do not
-  // TODO: FIX AFTER FIXING COMPARISON SHCOOLS
-
-
+  // TODO: Get categories for which school has data, but comparison schools do not
     // console.log(finalData)
     // console.log(insufficientN)
     // console.log(missingCategories)

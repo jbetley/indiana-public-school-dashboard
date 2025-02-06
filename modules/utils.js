@@ -143,6 +143,7 @@ function removeItemsByValue(obj, value) {
   }
 }
 
+
 // converts RGB values to their hex equivalent
 const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
   const hex = x.toString(16)

@@ -719,9 +719,6 @@ function multiLine() {
           yStart = y(dataByCategory.proficiency);
           xStart = x(dataByCategory.year);
 
-          // TODO: Got a weird freeze where rightmost year isn't working
-          // TODO: Have not been able to reporduce.
-
           // if the closest "year" to mouse position is equal to the
           // rightmost year (the closest to the right edge), flip the
           // tipbox to the left
@@ -976,13 +973,8 @@ function singleLine() {
     selection.each(function () {
 
       const years = data.map(el => el.Year);
-      // let yearRange = [parseInt(years[0]),parseInt(years[years.length-1])];
-      // x.domain(yearRange);
 
       x.domain(years);
-
-      // const minEnrollment = parseInt(d3.min(data, function (d) { return d["Total Enrollment"];}));
-      // const maxEnrollment = parseInt(d3.max(data, function (d) { return d["Total Enrollment"];}));
 
       const minEnrollment = d3.min(data, function (d) { 
         return +d["Total Enrollment"];
@@ -1043,8 +1035,6 @@ function singleLine() {
       updateData = function() {
 
         const years = data.map(el => el.Year);
-        // let yearRange = [parseInt(years[0]),parseInt(years[years.length-1])];
-        // x.domain(yearRange);
 
         x.domain(years);
 
@@ -2234,6 +2224,7 @@ function verticalGroupBar() {
   var margin = {top: 45, right: 20, bottom: 25, left: 40},
     width = 1000 - margin.left - margin.right,
     height = 360 - margin.top - margin.bottom,
+    fontSize = 10,
     updateData,
     y = d3.scaleLinear().range([height, 0]),
     x0 = d3.scaleBand().range([0, width]).padding(.1),
@@ -2252,8 +2243,8 @@ function verticalGroupBar() {
     .tickPadding(6)
     .tickFormat(d3.format(".0%"));
 
-  const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
-    "#83941f", "#f0c33b", "#bc986a", "#96b8db"]
+  // const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
+  //   "#83941f", "#f0c33b", "#bc986a", "#96b8db"]
 
   function chart(selection) {
 
@@ -2264,26 +2255,26 @@ function verticalGroupBar() {
       let yearString;
       let groupTitleText = "";
 
-      let chartData = data
+      let chartData = data;
 
       // TODO: IS this doing anything at all?
       // TODO: Tmp fix to deal with removal of undefined values
       // const missingString = data[1] // not currently needed
-      for (let a = 0; a < chartData.length; a++) {
-        let cnt = [];
-        // get index of all array items that have an "undefined" value
-        for (let b = 0; b < chartData[a][1].length; b++) {
-          if (chartData[a][1][b].some(item => item === undefined)) {
-            cnt.push(b);
-            }
-          }
-          if (cnt) {
-            // remove items in reverse order to as not to mess up index
-            for (let c = cnt.length -1; c >= 0; c--) {
-              chartData[a][1].splice(cnt[c],1);
-            }
-          }
-        }
+      // for (let a = 0; a < chartData.length; a++) {
+      //   let cnt = [];
+      //   // get index of all array items that have an "undefined" value
+      //   for (let b = 0; b < chartData[a][1].length; b++) {
+      //     if (chartData[a][1][b].some(item => item === undefined)) {
+      //       cnt.push(b);
+      //       }
+      //     }
+      //     if (cnt) {
+      //       // remove items in reverse order to as not to mess up index
+      //       for (let c = cnt.length -1; c >= 0; c--) {
+      //         chartData[a][1].splice(cnt[c],1);
+      //       }
+      //     }
+      //   }
 
       const categoryKeys = Array.from(chartData).map(d => d[0]);
       const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
@@ -2326,20 +2317,21 @@ function verticalGroupBar() {
         .style("position", "absolute")
         .style('display', 'none')
         .style("background-color", "white")
-        .style("font-size", "10px")
+        .style("font-size", fontSize + "px")
         .style("font-weight", "500")
-        .style("width", "180px")
         .style("height", "20px")
         .style("font-family", "Inter, sans-serif")
         .style("border", "solid")
         .style("border-width", "1px")
         // .style("border-radius", "5px")
-        .style("padding", "6px");
+        .style("padding-right", "4px")
+        .style("padding-left", "5px")
+        .style("padding-top", "2px")
+        .style("padding-bottom", "8px");
 
-      // TODO: test color algo and then remove legend
-      var legendContainer = svg.append('g')
-        .attr('class', 'legendcontainer')
-        .attr('transform', "translate(" + -(margin.left/4) + "," + -(margin.top) +")")
+      // var legendContainer = svg.append('g')
+      //   .attr('class', 'legendcontainer')
+      //   .attr('transform', "translate(" + -(margin.left/4) + "," + -(margin.top) +")")
 
       // chart end-note
       var endtext = svg.append("g")
@@ -2355,8 +2347,8 @@ function verticalGroupBar() {
         .classed("title", true);
 
       // NOTE: Is there a better way to do this?
-      const svgWidth = width + margin.left + margin.right
-      const xVal = ((svgWidth - width) - (margin.left/3)) /2
+      const svgWidth = width + margin.left + margin.right;
+      const xVal = ((svgWidth - width) - (margin.left/3))/2;
 
       groupTitle.append("rect")
         .classed("titlebox", true)
@@ -2393,14 +2385,20 @@ function verticalGroupBar() {
 
       updateData = function() {
 
-        svg.select("#" + id)
+        chartData = data;
 
-        const chartData = data
+        const colorObject = chartData.pop()
+        
         // TODO: Add insufficient and missing n-size strings
         // const missingString = data[1]
 
         const categoryKeys = Array.from(chartData).map(d => d[0]);
-        const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
+        // const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
+
+        // const entityKeys = colorObject.map(function (obj) { return  obj.school });
+        const entityKeys = colorObject.map(obj => obj.school);
+        // const colorList = colorObject.map(function (obj) { return  obj.color });
+        const colorList = colorObject.map(obj => obj.color);
 
         y.domain([0, 1]).nice();
         x0.domain(categoryKeys);
@@ -2436,102 +2434,145 @@ function verticalGroupBar() {
             .call(wrap, 60);
         }, 0);
 
-        legendContainer.selectAll('.legend').remove()
-        legendContainer.attr('display', 'block');
+        // legendContainer.selectAll('.legend').remove()
+        // legendContainer.attr('display', 'block');
 
-        // transform is handled below to allow for legend to wrap
-        const fontWidth = 6;
-        const offset = 12;
+        // // transform is handled below to allow for legend to wrap
+        // const fontWidth = 6;
+        // const offset = 12;
 
-        var legend = legendContainer.selectAll('.legend')
-          .data(entityKeys)
-          .enter().append('g')
-          .attr('class', 'legend')
+        // var legend = legendContainer.selectAll('.legend')
+        //   .data(entityKeys)
+        //   .enter().append('g')
+        //   .attr('class', 'legend')
 
-        legend.append('rect')
-          .attr("x", function(d, i) {
-            const xPost = legendXPosition(d, i, fontWidth);
-            return xPost;
-          })
-          .attr('y', 20)
-          .attr('width', 8)
-          .attr('height', 8)
-          .style('fill', function (d) {
-            return color(d);
-          });
+        // legend.append('rect')
+        //   .attr("x", function(d, i) {
+        //     const xPost = legendXPosition(d, i, fontWidth);
+        //     return xPost;
+        //   })
+        //   .attr('y', 20)
+        //   .attr('width', 8)
+        //   .attr('height', 8)
+        //   .style('fill', function (d) {
+        //     return color(d);
+        //   });
 
-        legend.append("text")
-          .attr("x", function(d, i) {
-            const xPost = legendXPositionText(d, i, offset, fontWidth);
-            return xPost;
-          })
-          .attr('y', 27) // shifts text to middle of rect
-          .style("font-size", 10)
-          .style('fill', "#6783a9")
-          .text(function (d) {
-            return d;
-          })
+        // legend.append("text")
+        //   .attr("x", function(d, i) {
+        //     const xPost = legendXPositionText(d, i, offset, fontWidth);
+        //     return xPost;
+        //   })
+        //   .attr('y', 27) // shifts text to middle of rect
+        //   .style("font-size", 10)
+        //   .style('fill', "#6783a9")
+        //   .text(function (d) {
+        //     return d;
+        //   })
 
-        // offset legend labels from one another
-        var xOffset = 0
-        var row = 1;
-        var y_pos = 0;
-        const fontSize = 10;
+        // // offset legend labels from one another
+        // var xOffset = 0
+        // var row = 1;
+        // var y_pos = 0;
 
-        svg.selectAll("g.legend")
-          .attr("transform", function (d, i) {
+        // svg.selectAll("g.legend")
+        //   .attr("transform", function (d, i) {
 
-            var x_pos = d3.select(this).select("text").node().getComputedTextLength();
+        //     var x_pos = d3.select(this).select("text").node().getComputedTextLength();
 
-            if (x_pos == 0) {
-              x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
-            }
+        //     if (x_pos == 0) {
+        //       x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
+        //     }
 
-            // width of svg
-            const svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
+        //     // width of svg
+        //     const svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
 
-            // offset is the length of the string plus the previous offset value
-            xOffset = xOffset + x_pos;
+        //     // offset is the length of the string plus the previous offset value
+        //     xOffset = xOffset + x_pos;
 
-            // if the length of the string + the current xposition exceeds
-            // the width of the svg, we want to wrap to next line - the first
-            // condition only triggers if the length of the string measured from
-            // the current offset is longer than total width of svg.
-            if ((svgWidth - xOffset) <= x_pos ) {
+        //     // if the length of the string + the current xposition exceeds
+        //     // the width of the svg, we want to wrap to next line - the first
+        //     // condition only triggers if the length of the string measured from
+        //     // the current offset is longer than total width of svg.
+        //     if ((svgWidth - xOffset) <= x_pos ) {
 
-              // reset xOffset to 0 (back to left side)
-              xOffset = 0
-              xOffset = xOffset + x_pos;
+        //       // reset xOffset to 0 (back to left side)
+        //       xOffset = 0
+        //       xOffset = xOffset + x_pos;
 
-              // shift down 15 pixels
-              y_pos = row * 15
+        //       // shift down 15 pixels
+        //       y_pos = row * 15
 
-              // NOTE: because this is a "group" translation, it doesn't directly impact
-              // the rec/text position (x values) determined by legendXPosition functions.
-              // Set x value back to left edge
-              d3.select(this).select("rect").attr("x", 0)
-              d3.select(this).select("text").attr("x", offset)
+        //       // NOTE: because this is a "group" translation, it doesn't directly impact
+        //       // the rec/text position (x values) determined by legendXPosition functions.
+        //       // Set x value back to left edge
+        //       d3.select(this).select("rect").attr("x", 0)
+        //       d3.select(this).select("text").attr("x", offset)
 
-              row+=1
-            }
-            else {
-              // First row is at boxPosition 0
-              if (row == 1) {
-                  y_pos = 0
-              }
-              else {
+        //       row+=1
+        //     }
+        //     else {
+        //       // First row is at boxPosition 0
+        //       if (row == 1) {
+        //           y_pos = 0
+        //       }
+        //       else {
 
-                let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
+        //         let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
 
-                // account for rect size and 12 pixel offset between rect and text
-                // add twice to text to account for prior and current offset
-                d3.select(this).select("rect").attr("x", rectWidth + offset)
-                d3.select(this).select("text").attr("x", rectWidth + offset + offset)
-              }
-            };
-            return "translate(" + (xOffset - x_pos) + "," + y_pos + ")"
-          });
+        //         // account for rect size and 12 pixel offset between rect and text
+        //         // add twice to text to account for prior and current offset
+        //         d3.select(this).select("rect").attr("x", rectWidth + offset)
+        //         d3.select(this).select("text").attr("x", rectWidth + offset + offset)
+        //       }
+        //     };
+        //     return "translate(" + (xOffset - x_pos) + "," + y_pos + ")"
+        //   });
+        // END LEGEND
 
+        // TODO: Trying to nest groups -> entire chart -> by category -> by school -> text, rect, tooltip
+        // TODO: Cannot seem to figure it out
+        // let allBars = svg.selectAll(".allbars")
+        //   .data([chartData])
+        //   .join('g')
+        //   .attr('class', 'allbars');
+
+        // // each category of bars
+        // let categoryBars = allBars.selectAll(".barcategory")
+        //   .data(chartData)
+        //   .join("g")
+        //   .attr('class', 'barcategory');
+
+        // let barx  = categoryBars.selectAll(".barx")
+        //   .data(function(d, i) {
+        //     return d[1]
+        //   })
+        //   .join("g")
+        //     .attr("transform", function(d) { return `translate(${x0(d[0])},0)` })
+        //   .attr('class', 'barx');
+
+        // barx.append("rect")
+        //   .attr('class', 'rect')
+        //   .data(function (d,i) { 
+        //       console.log("WTF")
+        //       console.log(d[1])
+        //       return d[1] 
+        //   })
+        //   .join("rect");
+
+        // barx.append("text")
+        //   .attr('class', 'text')
+        //   .text(function (d,i) {
+        //     console.log(d[0])
+        //     return d[0]
+        //   })
+        //   .join("text");
+
+        // console.log("TESTING")
+        // console.log(barx)
+        // TODO: TEST 
+
+        // all bars on the page
         let barUpdate = svg.selectAll(".groupedbar")
           .data([chartData])
           .join('g')
@@ -2552,65 +2593,53 @@ function verticalGroupBar() {
             .attr("width", x1.bandwidth())
             .attr("height", function (d) { return height - y(d[1])} )
             .attr("fill", function(d) {return color(d[0])});
-        
-        console.log(bars)
+      
 
-        // Tooltip Path
-        // Right: M xStart yStart l 4 3 l 4 10 l 140 10 l 140 -10 l 4 -10 l 4 -3 l 0 0
-        // var xStart = x
-        // var yStart = y
-        // var bottomArrowH = 4
-        // var bottomArrowV = 3
-        // var bottomFrontH = 4
-        // var bottomFrontV = 10
-        // var bottomH = 140
-        // var bottomV = 10
-        // var rightH = 140
-        // var rightV = -10
-        // var topH = 4
-        // var topV = -10
-        // var bottomFrontH = 4
-        // var bottomFrontV = -3
-        // var bottomArrowH = x
-        // var bottomArrowV = y
-
-        // Left: M xStart yStart l -4 3 l -4 10 l -140 10 l -140 -10 l -4 -10 l -4 -3 l 0 0
-        // var xStart = x
-        // var yStart = y
-        // var bottomArrowH = -4
-        // var bottomArrowV = 3
-        // var bottomFrontH = -4
-        // var bottomFrontV = 10
-        // var bottomH = -140
-        // var bottomV = 10
-        // var leftH = -140
-        // var leftV = -10
-        // var topH = -4
-        // var topV = -10
-        // var topFrontH = -4
-        // var topFrontV = -3
-        // var topArrowH = x
-        // var topArrowV = y
-// TODO: bandwidth not working for skinnier bars
-// TODO: wrapping pushing proficiency out of box
 // TODO: errors updating bars - Too many bars causing them to overlap. Increase width? or
 // TODO: decrease bandwidth of bars 
 // TODO: Getting data errors as well (hs?)
+
         bars
+          // .on("mouseover", mouseOver)
+          // .on("mouseout", mouseOut)
+          // .on("mousemove", mouseMove)
           .on("mouseover", function(d) {
 
             var matrix = this.getScreenCTM()
               .translate(+ this.getAttribute("x"), + this.getAttribute("y"));
 
-            tooltip.transition().duration(200).style('display', 'block');
-            tooltip.html(`${d[0]}<br>Proficiency: <span>${d3.format(".0%")(d[1])}</span>`)
-              .style("left", (window.scrollX + matrix.e + 20 + x1.bandwidth()/2) + "px")
-              .style("top", (window.scrollY + matrix.f - 20) + "px");
+            // gets width of text string
+            boxwidth = BrowserText.getWidth(d[0], fontSize, "Inter, sans-serif")
 
+            tooltip.transition().duration(200).style('display', 'block');
+            tooltip.html(`${d[0]}<br>Proficiency: ${d3.format(".0%")(d[1])}`)
+              .style("left", (window.scrollX + matrix.e + x1.bandwidth()) + "px")
+              .style("top", (window.scrollY + matrix.f - 15) + "px") // 15 is half of box height + top/bottom padding
+              .style("width",boxwidth + 4 + "px");
             })
           .on('mouseout', function(d) {
             tooltip.transition().duration(500).style('display', "none");
-          })
+          });
+
+      //   // TODO: TESTING
+      //   let tipBox = bars.selectAll(".tipbox")
+      //     // .data(chartData)
+      //     .enter().append('g')
+      //     .attr('class', 'tipbox');
+
+      //   tipBox.append('path')
+      //     .style("fill", function (d,i) { return "blue"}) //colors[d.id]})
+      //     .attr('class', 'path');
+
+      //   tipBox.append("text")
+      //     .style("fill", "white")
+      //     .style("font-size", 9)
+      //     .style("font-weight", "500")
+      //     .style("font-family", "font-family: 'Open Sans', verdana, arial, sans-serif")
+      //     .attr("z-index", 99)
+      //     .attr("dy", "0.35em")   // anchor text close to middle vertically
+      //     .attr('class', 'text');
+      //  // TODO: TESTING
 
         // NOTE: All of the if/else blocks are to ensure that labels look consistent regardless
         // of how high or wide they are. Note, 0% appears as text with no bar
@@ -2643,7 +2672,6 @@ function verticalGroupBar() {
             return x1(d[0]) + x1.bandwidth()/2 + 0.5;
           })
           .style("font-size", function(d, i) {
-            console.log(x1.bandwidth())
             if (x1.bandwidth() < 27) {
               return 8
             }
@@ -2710,6 +2738,299 @@ function verticalGroupBar() {
 
     updateData();
 
+  // TODO: TESTING TIPBOX PATH WITH WEE LITTLE ARROW
+  // function mouseOver() {
+  //   focus.style("display", null);
+  //   d3.select(this).selectAll('.tipbox')
+  //     .style("display", null);
+  // }
+
+  // function mouseOut() {
+  //   focus.style("display", "none");
+  //   d3.select(this).selectAll('.tipbox')
+  //     .style("display", "none");
+  // }
+
+  // function mouseMove() {
+
+  //   // used later for tipBox positioning
+  //   var boxPosition = []
+
+  //   // "that" is the svg; "those" is the transformed "g" element
+  //   // that = d3.select(this.parentNode)
+  //   // those = d3.select(this.parentNode)._groups[0][0]
+  //   console.log("TESTINGGGG")
+  //   console.log(this)
+
+  //   // get combined data from all path elements in the selection
+  //   box = d3.select(this)
+  //   console.log(box)
+  //   rawData = d3.select(this).data()
+  //   // console.log(rawData)
+
+  //   // get list of categories to add to dataByYear array
+  //   // columns = rawData.map(function(d) { return d.id });
+
+  //   // // function to convert into data by year
+  //   // var dataByYear = unprocessData(rawData)
+
+  //   // dataByYear['columns'] = columns
+
+  //   // uses scaleQuantize() to create an inverse scale of an ordinal
+  //   // scale (scalePoint in this case) - returns the element from the
+  //   // scale that is closest to the mouse's x-position, even if the value
+  //   // is out of bounds.
+  //   // https://stackoverflow.com/questions/20758373/inversion-with-ordinal-scale
+  //   // var inverseModeScale = d3.scaleQuantize()
+  //   //   .domain(x.range())
+  //   //   .range(x.domain())
+
+  //   // var year = inverseModeScale(d3.mouse(those)[0]);
+  //   // var years = dataByYear.map(function(d) { return d.Year; });
+
+  //   // // data for the targeted year
+  //   // var yearData = dataByYear.find(obj => obj.Year === year)
+
+  //   // focus.attr("transform", "translate(" + x(year) + ",0)");
+
+  //   /// tipbox with connecting arrow using svg path
+  //   console.log(box)
+  //   box.selectAll('.tipbox path')
+  //     .style("opacity", 1)
+  //     .attr( 'd', function(d) {
+        
+  //       console.log(d)
+  //       // dataByCategory is the year, proficiency, and id for the selected
+  //       // category. dataByCategory is undefined if there is no data for the
+  //       // category for the year
+  //       // YearData is "year, categories..." for all years
+  //       dataByCategory = d.values.filter(d => d.year == year)[0];
+
+  //       // let tipboxRectOffset = 0,
+  //       //     path = [],
+  //       //     yStart,
+  //       //     xStart;
+
+  //       // changing these values shouldn't break anything
+  //       var boxHeight = 26;
+  //       var boxWidth = 36;
+
+  //       // dataByYear does not have an ID field. DataCategory does except
+  //       // when undefined, so we need to check.
+  //       if (dataByCategory != undefined) {
+
+  //         yStart = y(dataByCategory.proficiency);
+  //         xStart = x(dataByCategory.year);
+
+  //         // if the closest "year" to mouse position is equal to the
+  //         // rightmost year (the closest to the right edge), flip the
+  //         // tipbox to the left
+
+            
+  //       // Tooltip Path
+  //       // Right: M xStart yStart l 4 3 l 4 10 l 140 10 l 140 -10 l 4 -10 l 4 -3 l 0 0
+  //       // var xStart = x
+  //       // var yStart = y
+  //       // var bottomArrowH = 4
+  //       // var bottomArrowV = 3
+  //       // var bottomFrontH = 4
+  //       // var bottomFrontV = 10
+  //       // var bottomH = 140
+  //       // var bottomV = 10
+  //       // var rightH = 140
+  //       // var rightV = -10
+  //       // var topH = 4
+  //       // var topV = -10
+  //       // var bottomFrontH = 4
+  //       // var bottomFrontV = -3
+  //       // var bottomArrowH = x
+  //       // var bottomArrowV = y
+
+  //       // https://yqnn.github.io/svg-path-editor/
+  //       // Left: M xStart yStart l -4 3 l -4 10 l -140 10 l -140 -10 l -4 -10 l -4 -3 l 0 0
+  //         var xStart = x
+  //         var yStart = y
+  //         var bottomArrowH = -4
+  //         var bottomArrowV = 3
+  //         var bottomFrontH = -4
+  //         var bottomFrontV = 10
+  //         var bottomH = -140
+  //         var bottomV = 10
+  //         var leftH = -140
+  //         var leftV = -10
+  //         var topH = -4
+  //         var topV = -10
+  //         var topFrontH = -4
+  //         var topFrontV = -3
+  //         var topArrowH = x
+  //         var topArrowV = y
+
+  //         // if (year == years[years.length-1]) {
+
+  //         //   // left-> M xStart yStart l -8 3 l 0 10 l -36 0 l -0 -26 l 36 -0 l 0 10 l 8 3
+  //         //   var topArrowH = -8
+  //         //   var topArrowV = 3
+  //         //   var topFrontH = 0
+  //         //   var topFrontV = 10
+  //         //   var topH = -boxWidth
+  //         //   var topV = 0
+  //         //   var rightH = 0
+  //         //   var rightV = -boxHeight
+  //         //   var bottomH = boxWidth
+  //         //   var bottomV = 0
+  //         //   var bottomFrontH = 0
+  //         //   var bottomFrontV = 10
+  //         //   var bottomArrowH = 8
+  //         //   var bottomArrowV = 3
+  //         // }
+  //         // else {
+  //         //   // right->  M xStart yStart l 8 -3 l 0 -10 l 36 0 l 0 26 l -36  0 l 0 -10 l -8 -3
+  //         //   var topArrowH = 8
+  //         //   var topArrowV = -3
+  //         //   var topFrontH = 0
+  //         //   var topFrontV = -10
+  //         //   var topH = boxWidth
+  //         //   var topV = 0
+  //         //   var rightH = 0
+  //         //   var rightV = boxHeight
+  //         //   var bottomH = -boxWidth
+  //         //   var bottomV = 0
+  //         //   var bottomFrontH = 0
+  //         //   var bottomFrontV = -10
+  //         //   var bottomArrowH = -8
+  //         //   var bottomArrowV = -3
+  //         // }
+
+  //         // we don't want tipboxes to overlap, so we need to check the y position
+  //         // of each point and determine if an offset is necessary given the height
+  //         // of the tipbox (26px) and desired spacing (3px).
+  //         boxPosition = []
+
+  //         Object.keys(yearData).forEach((k, i) => {
+  //           if (k != "Year") {
+  //             positionInfo = {}
+  //             positionInfo.id = k
+  //             positionInfo.i = i
+  //             positionInfo.y = y(yearData[k])
+  //             positionInfo.shift = 0
+  //             boxPosition.push(positionInfo)
+  //             }
+  //         });
+
+  //         boxPosition.sort(function(a,b) {return a.y - b.y; });
+
+  //         // https://stackoverflow.com/questions/35757899/how-to-avoid-overlapping-tooltips-of-multi-series-line-chart-d3-js
+  //         // NOTE: this shifts everything down. It would take a more complicated algorithm
+  //         // to shift the boxes either up or down depending on their vertical position
+  //         const tipboxSpacing = 3;
+
+  //         const tipboxTotalHeight = boxHeight + tipboxSpacing;
+
+  //         boxPosition.forEach (function(p,i) {
+  //           if (i > 0) {
+  //             var last = boxPosition[i-1].y;
+  //             boxPosition[i].shift = Math.max (0, (last + tipboxTotalHeight) - boxPosition[i].y);
+  //             boxPosition[i].y += boxPosition[i].shift;
+  //           }
+  //         })
+
+  //         boxPosition.sort(function(a,b) { return a.i - b.i; })
+
+  //         tipboxRectOffset = boxPosition.filter(d => d.id == dataByCategory.id)[0].shift
+
+  //         // build tooltip path shifting the y position of the tooltip up
+  //         // or down based on the topArrow vertical position
+  //         path = "M " + xStart + " " + yStart +
+  //           " l " + topArrowH + " " + (topArrowV + tipboxRectOffset) +
+  //           " l " + topFrontH + " " + topFrontV +
+  //           " l " + topH + " " + topV +
+  //           " l " + rightH + " " + rightV +
+  //           " l " + bottomH + " " + bottomV +
+  //           " l " + bottomFrontH + " " + bottomFrontV +
+  //           " l " + bottomArrowH + " " + (bottomArrowV - tipboxRectOffset);
+
+  //         return path
+  //       }
+  //     })
+  //     .style('fill', function (d,i) {
+  //       if (d) {
+  //         return colors[d.id]
+  //       }
+  //     });
+
+  //     that.selectAll('.tipbox text')
+  //       .attr("x", function(d) {
+
+  //         data = d.values.filter(d => d.year == year)[0];
+
+  //         if (data != undefined) {
+
+  //           // determine x position of the text based on the x position
+  //           // of the left side of the tipbox path (the arrow), the width
+  //           // of the tipbox (44 pixels), and the length of the str value
+  //           // in pixels
+  //           const tipboxPath = d3.select(this.parentNode).select("path.path");
+  //           var tipboxLeftEdge = tipboxPath.node().getBBox().x
+
+  //           // add 8 pixels to the width calculation to account for the
+  //           // length of the connecting arrow (leftEdge is measured from
+  //           // the tip of the arrow, not the edge of the first horizontal)
+  //           var tipboxWidth = tipboxPath.node().getBBox().width + 8
+
+  //           // get total pixel width of text string as it appears
+  //           // in the text box (e.g., "52.1%","25.0%"")
+  //           let num = (data.proficiency * 100).toFixed(1);
+  //           const txtWidth = BrowserText.getWidth(`${num}%`, 9, "Inter, sans-serif")
+
+  //           tipboxRectOffset = (tipboxWidth - txtWidth) / 2
+
+  //           // adjustment when tipbox has been flipped to left
+  //           if (year == years[years.length-1]) {
+  //             var pathX = tipboxLeftEdge + tipboxRectOffset - 8;
+  //           }
+  //           // normal right-side tipbox
+  //           else {
+  //             var pathX = tipboxLeftEdge + tipboxRectOffset;
+  //           }
+
+  //           return pathX
+
+  //         } else {
+  //           return null
+  //         }
+  //       })
+  //       .attr("y", function(d) {
+  //         data = d.values.filter(d => d.year == year)[0];
+
+  //         // shift the y position of the text
+  //         if (data != undefined) {
+
+  //           // boxPosition.y should give us the middle of the tipBox as adjusted
+  //           // by any shifting. note, this assumes that dy is shifted to ensure
+  //           // the text is middle anchored vertically
+  //           let pathY = boxPosition.filter(d => d.id == data.id)[0].y;
+
+  //           return pathY
+
+  //         } else {
+
+  //           return null
+
+  //         }
+  //       })
+  //       .text(function(d) {
+  //         data = d.values.filter(d => d.year == year)[0];
+  //         if (data != undefined) {
+  //           return d3.format(",.1%")(data.proficiency);
+  //         }
+  //         else {
+  //           return null
+  //         }
+  //       });
+  //     } // end mouseMove
+       // TODO: TESTING
+
+    
   }; // end selection
 
   chart.data = function(value) {
@@ -2723,6 +3044,13 @@ function verticalGroupBar() {
     if (!arguments.length) return id;
     id = value;
     if (typeof updateId === 'function') updateId();
+    return chart;
+  };
+
+  chart.setcolor = function(value){
+    if (!arguments.length) return setcolor;
+    setcolor = value;
+    if (typeof updateColors === 'function') updateColors();
     return chart;
   };
 
