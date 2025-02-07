@@ -546,7 +546,18 @@ section#tab-three .grid  {
 .tab3-table-2 { 
   grid-column: 1 / span 1; 
 }
-
+.tab3-chart-3 {
+  grid-column: 1 / span 1;  
+}
+.tab3-table-3 { 
+  grid-column: 1 / span 1; 
+}
+.tab3-chart-4 {
+  grid-column: 1 / span 1;  
+}
+.tab3-table-4 { 
+  grid-column: 1 / span 1; 
+}
 /* .tab3-b-label { 
   grid-column: 1 / span 1; 
 }

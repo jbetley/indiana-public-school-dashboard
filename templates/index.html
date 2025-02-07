@@ -163,11 +163,14 @@
                   <div class="nav-container twelve columns">
                      <div class="grid">
                         <!-- <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div> -->
-                        <div class="stack-box tab3-chart-1"><div id="elaComparisonByEthnicity"></div></div>
+                        <div class="stack-box tab3-chart-1"><div id="elaComparisonByTotal"></div></div>
                         <div class="table-box tab3-table-1" id="analysis-container-table-1"><div id="analysis-table1" style="width: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="stack-box tab3-chart-2"><div id="elaComparisonBySubgroup"></div></div>
+                        <div class="stack-box tab3-chart-2"><div id="elaComparisonByGrade"></div></div>
                         <div class="table-box tab3-table-2" id="analysis-container-table-2"><div id="analysis-table2" style="width: 100%" class="ag-theme-quartz"></div></div>
-                        <!-- <div class="stack-box tab3-c-group"><div id="elaComparisonByGrade"></div></div> -->
+                        <div class="stack-box tab3-chart-3"><div id="elaComparisonByEthnicity"></div></div>
+                        <div class="table-box tab3-table-3" id="analysis-container-table-3"><div id="analysis-table3" style="width: 100%" class="ag-theme-quartz"></div></div>
+                        <div class="stack-box tab3-chart-4"><div id="elaComparisonBySubgroup"></div></div>
+                        <div class="table-box tab3-table-4" id="analysis-container-table-4"><div id="analysis-table4" style="width: 100%" class="ag-theme-quartz"></div></div>
                      </div>
                   </div>
                </div>
@@ -207,7 +210,9 @@ const subjectIlearn = ["ELA", "Math"];
 const subjectGrad = ["Graduation", "Graduation"];
 const subjectIread = ["IREAD", "IREAD"];
 const subjectSAT = ["EBRW", "Math"];
-const grade = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Total"];
+const gradeAll = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Total"];
+const grade = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8"];
+const total = ["Total"];
 const ethnicity = ["American Indian","Asian","Black","Hispanic","Multiracial","Native Hawaiian or Other Pacific Islander","White"];
 const subgroup = ["Special Education","General Education","Paid Meals","Free or Reduced Price Meals","English Language Learners",
    "Non English Language Learners"];
@@ -217,12 +222,18 @@ const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d47
    "#83941f", "#f0c33b", "#bc986a", "#96b8db"];
 let colorState = [];
 
-var enrollmentChart;
-var attendanceChart;
-var ethnicityDemoChart;
-var statusDemoChart;
-var enrollmentTableGridApi;
-var attendanceTableGridApi;
+// Demographic Page
+var enrollmentChart,
+   attendanceChart,
+   ethnicityDemoChart,
+   statusDemoChart,
+   enrollmentTableGridApi,
+   attendanceTableGridApi;
+// var attendanceChart;
+// var ethnicityDemoChart;
+// var statusDemoChart;
+// var enrollmentTableGridApi;
+// var attendanceTableGridApi;
 var infoChart1;
 var infoChart2;
 var infoChart3;
@@ -243,8 +254,13 @@ var infoStack8;
 var infoStack9;
 var infoGridApi = [];
 var analysisGridApi = [];
-var elaComparisonByEthnicity;
-var elaComparisonBySubgroup;
+var elaComparisonByTotal,
+   elaComparisonByGrade,
+   elaComparisonByEthnicity,
+   elaComparisonBySubgroup;
+// var elaComparisonByGrade;
+// var elaComparisonByEthnicity;
+// var elaComparisonBySubgroup;
 
 // https://www.pluralsight.com/resources/blog/guides/handling-nested-http-requests-using-the-fetch-api
 // https://dev.to/alexmercedcoder/making-multiple-api-calls-in-javascript-kip
@@ -1064,7 +1080,7 @@ function academicInfoPage(data) {
 
       // chart1: IREAD Total / Graduation Rate Total
       infoChart1 = multiLine()
-         .data(getK8LineData(data, grade, subject[0], selection))
+         .data(getK8LineData(data, gradeAll, subject[0], selection))
          .id("chart1");
       d3.select("#chart1")
          .call(infoChart1);
@@ -1085,28 +1101,28 @@ function academicInfoPage(data) {
 
       // chart4: ILEARN ELA By Grade / SAT EBRW Overview
       infoChart4 = multiLine()
-         .data(getK8LineData(data, grade, subject[0], selection))
+         .data(getK8LineData(data, gradeAll, subject[0], selection))
          .id("chart4");
       d3.select("#chart4")
          .call(infoChart4);
 
       // stack4
       infoStack4 = horizontalStackedBar()
-         .data(getProficiencyBreakdown(data, grade, subject[0], selection))
+         .data(getProficiencyBreakdown(data, gradeAll, subject[0], selection))
          .id("stack4");
       d3.select("#stack4")
          .call(infoStack4);
 
       // chart5: ILEARN Math By Grade / SAT Math Overview
       infoChart5 = multiLine()
-         .data(getK8LineData(data, grade, subject[1], selection))
+         .data(getK8LineData(data, gradeAll, subject[1], selection))
          .id("chart5");
       d3.select("#chart5")
          .call(infoChart5);
 
       // stack5
       infoStack5 = horizontalStackedBar()
-         .data(getProficiencyBreakdown(data, grade, subject[1], selection))
+         .data(getProficiencyBreakdown(data, gradeAll, subject[1], selection))
          .id("stack5");
       d3.select("#stack5")
          .call(infoStack5);
@@ -1200,15 +1216,15 @@ function academicInfoPage(data) {
             tableShift = 3;
             subject = subjectIlearn
 
-            infoChart4.data(getK8LineData(data, grade, subject[0], selection)).id("chart4")
-            infoChart5.data(getK8LineData(data, grade, subject[1], selection)).id("chart5")
+            infoChart4.data(getK8LineData(data, gradeAll, subject[0], selection)).id("chart4")
+            infoChart5.data(getK8LineData(data, gradeAll, subject[1], selection)).id("chart5")
             infoChart6.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart6")
             infoChart7.data(getK8LineData(data, ethnicity, subject[1], selection)).id("chart7")
             infoChart8.data(getK8LineData(data, subgroup, subject[0], selection)).id("chart8")
             infoChart9.data(getK8LineData(data, subgroup, subject[1], selection)).id("chart9")
 
-            infoStack4.data(getProficiencyBreakdown(data, grade, subject[0], selection)).id("stack4")
-            infoStack5.data(getProficiencyBreakdown(data, grade, subject[1], selection)).id("stack5")
+            infoStack4.data(getProficiencyBreakdown(data, gradeAll, subject[0], selection)).id("stack4")
+            infoStack5.data(getProficiencyBreakdown(data, gradeAll, subject[1], selection)).id("stack5")
             infoStack6.data(getProficiencyBreakdown(data, ethnicity, subject[0], selection)).id("stack6")
             infoStack7.data(getProficiencyBreakdown(data, ethnicity, subject[1], selection)).id("stack7")
             infoStack8.data(getProficiencyBreakdown(data, subgroup, subject[0], selection)).id("stack8")
@@ -1220,7 +1236,7 @@ function academicInfoPage(data) {
             tableShift = 0;
             subject = subjectIread;
             
-            const total = ["Total"];
+            // const total = ["Total"];
 
             infoChart1.data(getK8LineData(data, total, subject[0], selection)).id("chart1")
             infoChart2.data(getK8LineData(data, ethnicity, subject[0], selection)).id("chart2")
@@ -1229,7 +1245,7 @@ function academicInfoPage(data) {
       }
       else if (typeTab == "hsTab") {
          
-         const total = ["Total"];
+         // const total = ["Total"];
 
          if (hsTab == "gradTab") {
             tableNum = 3;
@@ -1269,10 +1285,10 @@ function academicInfoPage(data) {
          const sub = i % 2;
 
          if (tableShift == 0) {
-            catList = [grade, ethnicity, subgroup]
+            catList = [gradeAll, ethnicity, subgroup]
          }
          else {
-            catList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
+            catList = [gradeAll, gradeAll, ethnicity, ethnicity, subgroup, subgroup]
          }
 
          tableID = infoGridApi[index].getGridId()
@@ -1398,15 +1414,6 @@ function academicAnalysisPage(data) {
    //    }
 
    // Single Year Analysis Page //
-   //Comparison: Current Year ELA Proficiency
-   //Comparison: Current Year Math Proficiency
-   //Comparison: Current Year IREAD Proficiency
-   //Comparison: ELA Proficiency by Ethnicity
-   //Comparison: IREAD Proficiency by Ethnicity
-   //Comparison: Math Proficiency by Ethnicity
-   //Comparison: ELA Proficiency by Subgroup
-   //Comparison: IREAD Proficiency by Subgroup
-   //Comparison: Math Proficiency by Subgroup
 
    let yearData = data.filter(o => o.Year == Number(year));
    const schoolName = yearData.find(d => d["School ID"] === schoolID)["School Name"];
@@ -1462,30 +1469,76 @@ function academicAnalysisPage(data) {
          {school: schoolName, color: "#1c39bb"}
    );
 
-   // TODO: BETTER OR EASIER TO ADD COLORS HERE??
-   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], selection)
+   // TODO: Make this process more efficient for each chart
+   //Comparison: Current Year ELA Proficiency
+   //Comparison: Current Year Math Proficiency
+   //Comparison: Current Year IREAD Proficiency
 
-   // filter out categories where the school has no data
+   //Comparison: IREAD Proficiency by Ethnicity
+   //Comparison: Math Proficiency by Ethnicity
+
+   //Comparison: IREAD Proficiency by Subgroup
+   //Comparison: Math Proficiency by Subgroup
+
+// TODO: Just use gr
+   // Single Year Comparison: ELA Proficiency by Total and by Grade
+   // get data in proper format, filter out categories where the selected school has
+   // no data, and add colorState array
+   // let ecbgtData = getK8LineData(yearData, gradeAll, subject[0], selection)
+   // let ecbgtSchoolColumns = Object.keys(ecbgtData.find(d => d["School Name"] === schoolName));
+   // let ecbgtFilteredData = filterKeys(ecbgtData, ecbgtSchoolColumns)
+
+   // // split "Total" and rest of grades into two separate arrays ob objects
+   // let ecbtFilteredData = ecbgtFilteredData.map(function (obj) {
+   //    return  {
+   //       "School Name": obj["School Name"],
+   //       Year: obj.Year,
+   //       Total: obj.Total
+   //    }
+   // });
+
+   // uses deconstruction to create a new array without the named attribute(s)
+   // let ecbgFilteredData = ecbgtFilteredData.map(({ Total, ...item }) => item)
+
+   // Single Year Comparison: ELA Proficiency by Total
+   let ecbtData = getK8LineData(yearData, total, subject[0], selection)
+   let ecbtSchoolColumns = Object.keys(ecbtData.find(d => d["School Name"] === schoolName));
+   let ecbtFilteredData = filterKeys(ecbtData, ecbtSchoolColumns)
+   let elaComparisonByTotalTransposed = transposeData(ecbtFilteredData, "School Name");
+   var elaComparisonByTotalChartData = processBarData(elaComparisonByTotalTransposed);
+   elaComparisonByTotalChartData.push(colorState)
+
+   // Single Year Comparison: ELA Proficiency by Grade
+   let ecbgData = getK8LineData(yearData, grade, subject[0], selection)
+   let ecbgSchoolColumns = Object.keys(ecbgData.find(d => d["School Name"] === schoolName));
+   let ecbgFilteredData = filterKeys(ecbgData, ecbgSchoolColumns)
+   let elaComparisonByGradeTransposed = transposeData(ecbgFilteredData, "School Name");
+   var elaComparisonByGradeChartData = processBarData(elaComparisonByGradeTransposed);
+   elaComparisonByGradeChartData.push(colorState)
+
+   // Single Year Comparison: ELA Proficiency by Ethnicity
+   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], selection)
    let ecbeSchoolColumns = Object.keys(ecbeData.find(d => d["School Name"] === schoolName));
    let ecbeFilteredData = filterKeys(ecbeData, ecbeSchoolColumns)
    let elaComparisonByEthnicityTransposed = transposeData(ecbeFilteredData, "School Name");
-
-   // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonByEthnicityChartData = processBarData(elaComparisonByEthnicityTransposed);
-   
-   // Add colors to Data
    elaComparisonByEthnicityChartData.push(colorState)
 
+   //Single Year Comparison: ELA Proficiency by Subgroup
    let ecbsData = getK8LineData(yearData, subgroup, subject[0], selection)
    let ecbsSchoolColumns = Object.keys(ecbsData.find(d => d["School Name"] === schoolName));
    let ecbsFilteredData = filterKeys(ecbsData, ecbsSchoolColumns)
    let elaComparisonBySubGroupTransposed = transposeData(ecbsFilteredData, "School Name");
-
-   // TODO:GET INSUFFICIENT N HERE ?- val is not 0 it is non-existent
    var elaComparisonBySubgroupChartData = processBarData(elaComparisonBySubGroupTransposed);
    elaComparisonBySubgroupChartData.push(colorState)
 
    if (!academicAnalysisPage.initialize){
+
+      elaComparisonByTotal = verticalGroupBar().data(elaComparisonByTotalChartData).id("elaComparisonByTotal");
+      d3.select("#elaComparisonByTotal").call(elaComparisonByTotal);
+
+      elaComparisonByGrade = verticalGroupBar().data(elaComparisonByGradeChartData).id("elaComparisonByGrade");
+      d3.select("#elaComparisonByGrade").call(elaComparisonByGrade);
 
       elaComparisonByEthnicity = verticalGroupBar().data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
       d3.select("#elaComparisonByEthnicity").call(elaComparisonByEthnicity);
@@ -1493,8 +1546,8 @@ function academicAnalysisPage(data) {
       elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
       d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
 
-      // Initialize analysis tables on-load (as empty)
-      for (let k = 0; k < 2; k++) {
+      // Initialize (empty) analysis tables on-load
+      for (let k = 0; k < 4; k++) {
          let analysisTableName = "analysis-table" + (k+1);
          let analysisTableID = "#" + analysisTableName
 
@@ -1502,21 +1555,19 @@ function academicAnalysisPage(data) {
          var analysisGridDiv = document.querySelector(analysisTableID)
          analysisGridApi[k] = agGrid.createGrid(analysisGridDiv, analysisTableOptions);
       }
-      // let analysisTableID = "#analysis-table1"
-      // let analysisTableOptions = initializeTable(analysisTableID)
-      // let analysisGridDiv = document.querySelector(analysisTableID)
-      // analysisGridApi[0] = agGrid.createGrid(analysisGridDiv, analysisTableOptions);
 
    academicAnalysisPage.initialize = true;
    
    } else {
 
+      elaComparisonByTotal.data(elaComparisonByTotalChartData).id("elaComparisonByTotal");
+      elaComparisonByGrade.data(elaComparisonByGradeChartData).id("elaComparisonByGrade");
       elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
       elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
 
       /* Update Tables */
       let analysisTableData, analysisTableID, analysisCatList;
-      let tableNum = 2;
+      let tableNum = 4;
       let tableShift = 0;
 
       // Remove objects with years > the selected year
@@ -1531,7 +1582,7 @@ function academicAnalysisPage(data) {
          const sub = i % 2;
 
          if (tableShift == 0) {
-            analysisCatList = [ethnicity, subgroup] //             catList = [grade, ethnicity, subgroup]
+            analysisCatList = [total, grade, ethnicity, subgroup]
          }
          else {
             analysisCatList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
