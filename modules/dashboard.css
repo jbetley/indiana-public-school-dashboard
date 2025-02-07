@@ -131,6 +131,13 @@ label {
   color:  steelblue;
 }
 
+.ss-max-selection-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+
 /* turns off pointer events to prevent tooltip flicker (as mouse
   moves from rect to text and back - not ideal */
 .bartext {

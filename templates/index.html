@@ -156,6 +156,7 @@
                   <div class="nav-container twelve columns">
                      <label id="comparisonLabel">Add or Remove Schools:</label>
                      <select id="comparisonSelect" multiple></select>
+                     <div id="max-message"></div>
                   </div>
                </div>
                <div class="row">
@@ -259,7 +260,7 @@ var elaComparisonBySubgroup;
 // https://github.com/brianvoe/slim-select
 
 /* Navigation */
-var comparisonSelect = new SlimSelect({
+const comparisonSelect = new SlimSelect({
   select: "#comparisonSelect",
   settings: {
     alwaysOpen: false,
@@ -272,6 +273,7 @@ var comparisonSelect = new SlimSelect({
     hideSelected: true
   }
 });
+
 
 /* Event Listeners */
 
@@ -332,10 +334,7 @@ schoolSelection.addEventListener("change", function () {
       getComparisonSchools(selectedValues);
 
       selectedValues.comparison_schools = getComparisonSchoolIDs();
-      // let comparisonValues = getComparisonSchoolIDs();
-      console.log("SCHOOL SELECTION")
-      // console.log(comparisonValues)
-      console.log(selectedValues)
+
       getAcademicAnalysisData(selectedValues);
 
    }
@@ -373,7 +372,6 @@ yearSelection.addEventListener("change", function () {
    if (selectedValues.page_tab === "analysisTab") {
 
       selectedValues.comparison_schools = getComparisonSchoolIDs();
-      // let comparisonValues = getComparisonSchoolIDs()
 
       getAcademicAnalysisData(selectedValues);
    }
@@ -395,15 +393,37 @@ function getSelectedYear() {
 
 // Selection: Comparison Schools
 const comparisonSelection = document.getElementById("comparisonSelect");
+const msgDiv = document.getElementById("max-message");
+
 comparisonSelection.addEventListener("change", function () {
+
+   // show message when maximum # of schools have been selected
+   const numX = comparisonSelect.getSelected()
+   if (numX.length === comparisonSelect.settings.maxSelected) {
+
+      const msgElement = document.createElement('div');
+      msgElement.classList.add('ss-max-selection-message');
+      msgElement.textContent = 'Maximum number of schools (8) reached.';
+      msgDiv.appendChild(msgElement);
+
+      // Automatically hide the message after 5 seconds
+      setTimeout(() => {
+         msgElement.remove();
+      }, 4000);
+      } else {
+         // remove if selections are reduced
+         const msgElement = msgDiv.querySelector('.ss-max-selection-message');
+         if (msgElement) {
+            msgElement.remove();
+         }
+   }
+
    let selectedValues = getSelectedValues();
 
    if (selectedValues.page_tab === "analysisTab") {
 
-      console.log(selectedValues)
       selectedValues.comparison_schools = getComparisonSchoolIDs();
-      console.log(selectedValues)
-      // let comparisonValues = getComparisonSchoolIDs();
+
       getAcademicAnalysisData(selectedValues);
    }
    });
@@ -412,7 +432,7 @@ function getComparisonSchoolIDs() {
 
    let selectedValues = getSelectedValues();
    let comparisonSchools = comparisonSelect.getSelected();
-   // selectedValues.comparison_schools = comparisonSchools;
+
    return comparisonSchools
 }
 
@@ -1455,7 +1475,6 @@ function academicAnalysisPage(data) {
    
    // Add colors to Data
    elaComparisonByEthnicityChartData.push(colorState)
-   console.log(elaComparisonByEthnicityChartData)
 
    let ecbsData = getK8LineData(yearData, subgroup, subject[0], selection)
    let ecbsSchoolColumns = Object.keys(ecbsData.find(d => d["School Name"] === schoolName));
@@ -1495,27 +1514,7 @@ function academicAnalysisPage(data) {
       elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
       elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
 
-      // take colors from chart to match to table
-      // let tst, fill;
-      // let colorArray = [];
-
-      // let colorList = d3.select("#elaComparisonBySubgroup").selectAll("g.legend").select("rect");
-
-      // colorList.each(function() {
-      //    name = this.__data__
-      //    fill = this.style.fill.slice(3)
-      //    const z = fill.slice(1, -1).split(",").map(Number);
-      //    let clr = rgbToHex(z[0],z[1],z[2])
-      //    colorArray.push({
-      //       schoolname: name,
-      //       color: clr
-      //    });
-      // });
-      // console.log(colorArray)
-      console.log(colorState)
-
       /* Update Tables */
-
       let analysisTableData, analysisTableID, analysisCatList;
       let tableNum = 2;
       let tableShift = 0;
@@ -1523,7 +1522,7 @@ function academicAnalysisPage(data) {
       // Remove objects with years > the selected year
       const tabledata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
 
-      //TODO: TEMP
+      //TODO: TEMP - add all other tables
       let subject = ["ELA", "ELA"]
 
       for (let i=0; i<tableNum; i++) {
@@ -1800,8 +1799,7 @@ function navigateHandler(e) {
 
       selectedValues.year = yearValue;
       selectedValues.comparison_schools = getComparisonSchoolIDs()
-      console.log("Tracking Selected - NAV HANDLER")
-      console.log(selectedValues)
+
       getAcademicAnalysisData(selectedValues);
    }
 }
