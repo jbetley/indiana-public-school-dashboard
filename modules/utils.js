@@ -79,6 +79,40 @@ function filterCategories(data, categories) {
   return filtered
  }
 
+/**
+   * Find any given number of keys and remove them
+   * @param {array<object>} array - An array of objects
+   * @param {string} search_str - string suffix to add to keys (if applicable)
+   * @param {array<string>} keys - List of keys to keep
+   * @return {array<object>} The array with filtered keys
+   */
+function filterData(array, search_str, keys) {
+  // TODO: SHould I always clone?
+  let clone = structuredClone(array);
+
+  for (let obj of clone) {
+    Object.keys(obj).flatMap(key => {
+      if (keys.some(function(v) {
+        if ((v == "Year") || (v == "School Name")) {
+          str = v
+        }
+        else {
+            str = v + search_str
+        }
+        if (obj[str] != "***") {
+          return key.indexOf(str) >= 0; 
+        }
+       }))
+      {
+        return [];
+      }
+      return delete obj[key];
+    });
+  }
+
+  return clone;
+
+}
 
  // get ?array? of object keys
  function getKeys(data) {
@@ -87,6 +121,14 @@ function filterCategories(data, categories) {
   }, {}))
 
   return keys
+}
+
+
+// convert 4 digit year to six digit (2024 -> 2023-24)
+function longYear(year) {
+  let prevYear = Number(year) - 1;
+  let fullYear = toString(prevYear) + "-" + year.slice(2);
+  return fullYear
 }
 
 

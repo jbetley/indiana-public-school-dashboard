@@ -139,7 +139,6 @@ function createAnalysisTable(data, tableID) {
      gridId: tableID,
      domLayout : "autoHeight"
   };
-  console.log(options)
   return options
 }
 
@@ -348,10 +347,8 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
   let proficienctSuffix;
   let testedSuffix;
   
-  console.log("ANALYSIS TABLE SECLETION")
-
   if (typeTab == "k8Tab") {
-    if (k8Tab == "ireadTab") {
+    if (k8Tab == "ireadTab" || subject == "IREAD") {
 
       proficienctSuffix = "Pass N";
       testedSuffix = "Test N";
@@ -611,41 +608,6 @@ function getTableData(data, category, subject, selection) {
 }
 
 
- /**
-   * Find any given number of keys and remove them
-   * @param {array<object>} array - An array of objects
-   * @param {string} search_str - string suffix to add to keys (if applicable)
-   * @param {array<string>} keys - List of keys to keep
-   * @return {array<object>} The array with filtered keys
-   */
-function filterData(array, search_str, keys) {
-  // TODO: SHould I always clone?
-  let clone = structuredClone(array);
-
-  for (let obj of clone) {
-    Object.keys(obj).flatMap(key => {
-      if (keys.some(function(v) {
-        if ((v == "Year") || (v == "School Name")) {
-          str = v
-        }
-        else {
-            str = v + search_str
-        }
-        if (obj[str] != "***") {
-          return key.indexOf(str) >= 0; 
-        }
-       }))
-      {
-        return [];
-      }
-      return delete obj[key];
-    });
-  }
-
-  return clone;
-
-}
-
 function getK8LineData(data, category, subject, selection) {
 
   const type = selection.school_type;
@@ -745,13 +707,6 @@ function getHSLineData(data, category, subject, type) {
 
 }
 
-
-// convert 4 digit year to six digit (2024 -> 2023-24)
-function longYear(year) {
-  let prevYear = Number(year) - 1;
-  let fullYear = toString(prevYear) + "-" + year.slice(2);
-  return fullYear
-}
 
 // process data for stackedBarCharts
 function getProficiencyBreakdown(data, categoryList, subject, selection) {

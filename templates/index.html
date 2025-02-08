@@ -5,14 +5,11 @@
    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
    <title>Indiana School Academic Dashboard</title>
    
+   <!-- Imported Fonts -->
    <link  rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-   <!-- <script src="https://d3js.org/d3.v5.js"></script> -->
-   <!-- <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script> -->
-   <!-- <script src="https://unpkg.com/slim-select@latest/dist/slimselect.min.js"></script> -->
-   <!-- <link rel="stylesheet" href="https://unpkg.com/slim-select@latest/dist/slimselect.css" /> -->
    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-zrnmn8R8KkWl12rAZFt4yKjxplaDaT7/EUkKm7AovijfrQItFWR7O/JJn4DAa/gx" crossorigin="anonymous">
    
-   <!-- Imported Modules (Local) -->
+   <!-- Third-Party Modules -->
    <script src="{{ url_for('static', filename='slimselect.min.js')}}"></script>
    <script src="{{ url_for('static', filename='d3.v5.js')}}"></script>
    <script src="{{ url_for('static', filename='ag-grid-community.min.js')}}"></script>
@@ -22,11 +19,10 @@
    <script src="{{ url_for('static', filename='helpers.js')}}"></script>
    <script src="{{ url_for('static', filename='utils.js')}}"></script>
    <script src="{{ url_for('static', filename='d3-utils.js')}}"></script>   
-   <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
 
-   <!-- Imported Stylesheets (Local) -->
+   <!-- Imported Stylesheets -->
+   <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='slim-select.css')}}">
-   <!-- <link rel="stylesheet" media="all" href="{{ url_for('static', filename='all.css')}}"> -->
 </head>
 <body>
    <h3>Indiana Public School Academic Dashboard</h3>
@@ -162,15 +158,50 @@
                <div class="row">
                   <div class="nav-container twelve columns">
                      <div class="grid">
-                        <!-- <div class="empty-box tab3-a-label"><div class="label__header">Comparison: ELA Proficiency By Ethnicity</div></div> -->
-                        <div class="stack-box tab3-chart-1"><div id="elaComparisonByTotal"></div></div>
+                        <div class="empty-box tab3-label-1" id="analysis-container-label-1"><div id="analysis-label1" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-1"><div id="ireadComparisonTotal"></div></div>
                         <div class="table-box tab3-table-1" id="analysis-container-table-1"><div id="analysis-table1" style="width: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="stack-box tab3-chart-2"><div id="elaComparisonByGrade"></div></div>
+
+                        <div class="empty-box tab3-label-2" id="analysis-container-label-2"><div id="analysis-label2" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-2"><div id="ireadComparisonEthnicity"></div></div>
                         <div class="table-box tab3-table-2" id="analysis-container-table-2"><div id="analysis-table2" style="width: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="stack-box tab3-chart-3"><div id="elaComparisonByEthnicity"></div></div>
+                        
+                        <div class="empty-box tab3-label-3" id="analysis-container-label-3"><div id="analysis-label3" class="label__header"></div></div>                        
+                        <div class="stack-box tab3-chart-3"><div id="ireadComparisonSubgroup"></div></div>
                         <div class="table-box tab3-table-3" id="analysis-container-table-3"><div id="analysis-table3" style="width: 100%" class="ag-theme-quartz"></div></div>
-                        <div class="stack-box tab3-chart-4"><div id="elaComparisonBySubgroup"></div></div>
+
+                        <div class="empty-box tab3-label-4" id="analysis-container-label-4"><div id="analysis-label4" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-4"><div id="elaComparisonTotal"></div></div>
                         <div class="table-box tab3-table-4" id="analysis-container-table-4"><div id="analysis-table4" style="width: 100%" class="ag-theme-quartz"></div></div>
+                        
+                        <div class="empty-box tab3-label-5" id="analysis-container-label-5"><div id="analysis-label5" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-5"><div id="elaComparisonGrade"></div></div>
+                        <div class="table-box tab3-table-5" id="analysis-container-table-5"><div id="analysis-table5" style="width: 100%" class="ag-theme-quartz"></div></div>
+
+                        <div class="empty-box tab3-label-6" id="analysis-container-label-6"><div id="analysis-label6" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-6"><div id="elaComparisonEthnicity"></div></div>
+                        <div class="table-box tab3-table-6" id="analysis-container-table-6"><div id="analysis-table6" style="width: 100%" class="ag-theme-quartz"></div></div>
+
+                        <div class="empty-box tab3-label-7" id="analysis-container-label-7"><div id="analysis-label7" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-7"><div id="elaComparisonSubgroup"></div></div>
+                        <div class="table-box tab3-table-7" id="analysis-container-table-7"><div id="analysis-table7" style="width: 100%" class="ag-theme-quartz"></div></div>
+                     
+                        <div class="empty-box tab3-label-8" id="analysis-container-label-8"><div id="analysis-label8" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-8"><div id="mathComparisonTotal"></div></div>
+                        <div class="table-box tab3-table-8" id="analysis-container-table-8"><div id="analysis-table8" style="width: 100%" class="ag-theme-quartz"></div></div>
+
+                        <div class="empty-box tab3-label-9" id="analysis-container-label-9"><div id="analysis-label9" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-9"><div id="mathComparisonGrade"></div></div>
+                        <div class="table-box tab3-table-9" id="analysis-container-table-9"><div id="analysis-table9" style="width: 100%" class="ag-theme-quartz"></div></div>
+
+                        <div class="empty-box tab3-label-10" id="analysis-container-label-10"><div id="analysis-label10" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-10"><div id="mathComparisonEthnicity"></div></div>
+                        <div class="table-box tab3-table-10" id="analysis-container-table-10"><div id="analysis-table10" style="width: 100%" class="ag-theme-quartz"></div></div>
+
+                        <div class="empty-box tab3-label-11" id="analysis-container-label-11"><div id="analysis-label11" class="label__header"></div></div>
+                        <div class="stack-box tab3-chart-11"><div id="mathComparisonSubgroup"></div></div>
+                        <div class="table-box tab3-table-11" id="analysis-container-table-11"><div id="analysis-table11" style="width: 100%" class="ag-theme-quartz"></div></div>
+                     
                      </div>
                   </div>
                </div>
@@ -218,49 +249,62 @@ const subgroup = ["Special Education","General Education","Paid Meals","Free or 
    "Non English Language Learners"];
 const categoryList = [grade, ethnicity, subgroup];
 const allCategories = ethnicity + subgroup + grade;
+const ilearnLabelSuffixes = ["by Grade", "by Ethnicity", "by Subgroup"];
+const IREADLabelSuffixes = ["Total", "by Ethnicity", "by Subgroup"];
+const analysisLabelSuffixes = ["Total", "Total", "Total", "by Ethnicity", "by Subgroup", "by Grade", "by Ethnicity", "by Subgroup"];
+const hsLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup"];
+
 const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
    "#83941f", "#f0c33b", "#bc986a", "#96b8db"];
 let colorState = [];
 
-// Demographic Page
+// Demographic Page globals
 var enrollmentChart,
    attendanceChart,
    ethnicityDemoChart,
    statusDemoChart,
    enrollmentTableGridApi,
    attendanceTableGridApi;
-// var attendanceChart;
-// var ethnicityDemoChart;
-// var statusDemoChart;
-// var enrollmentTableGridApi;
-// var attendanceTableGridApi;
-var infoChart1;
-var infoChart2;
-var infoChart3;
-var infoChart4;
-var infoChart5;
-var infoChart6;
-var infoChart7;
-var infoChart8;
-var infoChart9;
-var infoStack1;
-var infoStack2;
-var infoStack3;
-var infoStack4;
-var infoStack5;
-var infoStack6;
-var infoStack7;
-var infoStack8;
-var infoStack9;
+
+// Academic Info Page globals
+var infoChart1,
+   infoChart2,
+   infoChart3,
+   infoChart4,
+   infoChart5,
+   infoChart6,
+   infoChart7,
+   infoChart8,
+   infoChart9,
+   infoStack1,
+   infoStack2,
+   infoStack3,
+   infoStack4,
+   infoStack5,
+   infoStack6,
+   infoStack7,
+   infoStack8,
+   infoStack9;
 var infoGridApi = [];
-var analysisGridApi = [];
-var elaComparisonByTotal,
-   elaComparisonByGrade,
-   elaComparisonByEthnicity,
-   elaComparisonBySubgroup;
+
+// Analysis Page globals
+var elaComparisonTotal,
+   elaComparisonGrade,
+   elaComparisonEthnicity,
+   elaComparisonSubgroup,
+   ireadComparisonTotal,
+   ireadComparisonEthnicity,
+   ireadComparisonSubgroup,
+   mathComparisonTotal,
+   mathComparisonGrade,
+   mathComparisonEthnicity,
+   mathComparisonSubgroup;
+
+var analysisGridApi = [];   
+
 // var elaComparisonByGrade;
-// var elaComparisonByEthnicity;
-// var elaComparisonBySubgroup;
+// var elaComparisonEthnicity;
+// var elaComparisonSubgroup;
 
 // https://www.pluralsight.com/resources/blog/guides/handling-nested-http-requests-using-the-fetch-api
 // https://dev.to/alexmercedcoder/making-multiple-api-calls-in-javascript-kip
@@ -517,8 +561,6 @@ function getSelectedValues() {
 
 function setSelectedValue(key, value) {
    selectedValues[key] = value;
-   console.log("setSelected")
-   console.log(selectedValues)
 }
 
 // var activeMainTab = document.querySelectorAll(".tab.active")[0].innerHTML;
@@ -982,15 +1024,6 @@ function academicInfoPage(data) {
    let labelsSm = document.querySelectorAll('[id^="info-container-sm-label"]');
    let labelsLg = document.querySelectorAll('[id^="info-container-lg-label"]');
 
-   // Subject: "ELA" & "Math"
-   let ilearnLabelSuffixes = ["by Grade", "by Ethnicity", "by Subgroup"]
-
-   // Subject: "IREAD"
-   const IREADLabelSuffixes = ["Total", "by Ethnicity", "by Subgroup"]
-
-   // Subject: "Graduation Rate" & "SAT"
-   let hsLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup"]
-
    // set subject, type, and chart labels
    if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
       if (k8Tab == "ireadTab") {  
@@ -1306,6 +1339,7 @@ function academicInfoPage(data) {
    }
 };
 
+
 // Chart Academic Information
 function academicAnalysisPage(data) {
 
@@ -1325,14 +1359,22 @@ function academicAnalysisPage(data) {
    let usedColors = [];
    let remainingColors = [];
 
-   console.log("ACADEMIC ANALYSIS Comparison Year Data")
+   console.log("ACADEMIC ANALYSIS Main Function")
    
+   // TODO: Not doing anything at the moment
+
    // set subject, type, and chart labels
    if (
       schoolType == "K8" ||
       (schoolType == "K12" && (schoolSubtype == "K8" || schoolSubtype == "K12")) ||
       (typeof schoolType === "undefined" && typeof schoolSubtype === "undefined")
    ) {
+
+      // labelsSm.forEach((el, i) => {
+      //    let ireadLabel = subject[0] + " " + IREADLabelSuffixes[i];
+      //    el.firstChild.textContent = ireadLabel;
+
+      // });
 
       if (k8Tab == "ireadTab") {  
 
@@ -1469,85 +1511,157 @@ function academicAnalysisPage(data) {
          {school: schoolName, color: "#1c39bb"}
    );
 
-   // TODO: Make this process more efficient for each chart
-   //Comparison: Current Year ELA Proficiency
-   //Comparison: Current Year Math Proficiency
-   //Comparison: Current Year IREAD Proficiency
+   // TODO: Make this process more efficient
 
-   //Comparison: IREAD Proficiency by Ethnicity
-   //Comparison: Math Proficiency by Ethnicity
+   const yearString = longYear(year);
 
-   //Comparison: IREAD Proficiency by Subgroup
-   //Comparison: Math Proficiency by Subgroup
+   // Single Year Comparison: IREAD Proficiency by Total
+   let ireadTotalData = getK8LineData(yearData, total, "IREAD", selection)
+   let ireadTotalColumns = Object.keys(ireadTotalData.find(d => d["School Name"] === schoolName));
+   let ireadTotalFilteredData = filterKeys(ireadTotalData, ireadTotalColumns)
+   let itreadTotalTransposedData = transposeData(ireadTotalFilteredData, "School Name");
+   var ireadTotalChartData = processBarData(itreadTotalTransposedData);
+   ireadTotalChartData.push(colorState)
+   let ireadTotalLabel = document.getElementById("analysis-container-label-1");
+   ireadTotalLabel.firstChild.textContent = "Current Year IREAD Proficiency (" + yearString + ")"
 
-// TODO: Just use gr
-   // Single Year Comparison: ELA Proficiency by Total and by Grade
-   // get data in proper format, filter out categories where the selected school has
-   // no data, and add colorState array
-   // let ecbgtData = getK8LineData(yearData, gradeAll, subject[0], selection)
-   // let ecbgtSchoolColumns = Object.keys(ecbgtData.find(d => d["School Name"] === schoolName));
-   // let ecbgtFilteredData = filterKeys(ecbgtData, ecbgtSchoolColumns)
+   // Single Year Comparison: IREAD Proficiency by Ethnicity
+   let ireadEthnicityData = getK8LineData(yearData, ethnicity, "IREAD", selection)
+   let ireadEthnicityColumns = Object.keys(ireadEthnicityData.find(d => d["School Name"] === schoolName));
+   let ireadEthnicityFilteredData = filterKeys(ireadEthnicityData, ireadEthnicityColumns)
+   let ireadEthnicityTransposedData = transposeData(ireadEthnicityFilteredData, "School Name");
+   var ireadEthnicityChartData = processBarData(ireadEthnicityTransposedData);
+   ireadEthnicityChartData.push(colorState)
+   let ireadEthnicityLabel = document.getElementById("analysis-container-label-2");
+   ireadEthnicityLabel.firstChild.textContent = "Current Year IREAD Proficiency by Ethnicity(" + yearString + ")"
 
-   // // split "Total" and rest of grades into two separate arrays ob objects
-   // let ecbtFilteredData = ecbgtFilteredData.map(function (obj) {
-   //    return  {
-   //       "School Name": obj["School Name"],
-   //       Year: obj.Year,
-   //       Total: obj.Total
-   //    }
-   // });
-
-   // uses deconstruction to create a new array without the named attribute(s)
-   // let ecbgFilteredData = ecbgtFilteredData.map(({ Total, ...item }) => item)
+   // Single Year Comparison: IREAD Proficiency by Subgroup
+   let ireadSubgroupData = getK8LineData(yearData, subgroup, "IREAD", selection)
+   let ireadSubgroupColumns = Object.keys(ireadSubgroupData.find(d => d["School Name"] === schoolName));
+   let ireadSubgroupFilteredData = filterKeys(ireadSubgroupData, ireadSubgroupColumns)
+   let ireadSubgroupTransposedData = transposeData(ireadSubgroupFilteredData, "School Name");
+   var ireadSubgroupChartData = processBarData(ireadSubgroupTransposedData);
+   ireadSubgroupChartData.push(colorState)
+   let ireadSubgroupLabel = document.getElementById("analysis-container-label-3");
+   ireadSubgroupLabel.firstChild.textContent = "Current Year IREAD Proficiency by Subgroup (" + yearString + ")"
 
    // Single Year Comparison: ELA Proficiency by Total
-   let ecbtData = getK8LineData(yearData, total, subject[0], selection)
-   let ecbtSchoolColumns = Object.keys(ecbtData.find(d => d["School Name"] === schoolName));
-   let ecbtFilteredData = filterKeys(ecbtData, ecbtSchoolColumns)
-   let elaComparisonByTotalTransposed = transposeData(ecbtFilteredData, "School Name");
-   var elaComparisonByTotalChartData = processBarData(elaComparisonByTotalTransposed);
-   elaComparisonByTotalChartData.push(colorState)
+   let elaTotalData = getK8LineData(yearData, total, subject[0], selection)
+   let elaTotalColumns = Object.keys(elaTotalData.find(d => d["School Name"] === schoolName));
+   let elaTotalFilteredData = filterKeys(elaTotalData, elaTotalColumns)
+   let elaTotalTransposedData = transposeData(elaTotalFilteredData, "School Name");
+   var elaTotalChartData = processBarData(elaTotalTransposedData);
+   elaTotalChartData.push(colorState)
+   let elaTotalLabel = document.getElementById("analysis-container-label-4");
+   elaTotalLabel.firstChild.textContent = "Current Year ELA Proficiency (" + yearString + ")"
 
    // Single Year Comparison: ELA Proficiency by Grade
-   let ecbgData = getK8LineData(yearData, grade, subject[0], selection)
-   let ecbgSchoolColumns = Object.keys(ecbgData.find(d => d["School Name"] === schoolName));
-   let ecbgFilteredData = filterKeys(ecbgData, ecbgSchoolColumns)
-   let elaComparisonByGradeTransposed = transposeData(ecbgFilteredData, "School Name");
-   var elaComparisonByGradeChartData = processBarData(elaComparisonByGradeTransposed);
-   elaComparisonByGradeChartData.push(colorState)
+   let elaGradeData = getK8LineData(yearData, grade, subject[0], selection)
+   let elaGradeColumns = Object.keys(elaGradeData.find(d => d["School Name"] === schoolName));
+   let elaGradeFilteredData = filterKeys(elaGradeData, elaGradeColumns)
+   let elaGradeTransposedData = transposeData(elaGradeFilteredData, "School Name");
+   var elaGradeChartData = processBarData(elaGradeTransposedData);
+   elaGradeChartData.push(colorState)
+   let elaGradeLabel = document.getElementById("analysis-container-label-5");
+   elaGradeLabel.firstChild.textContent = "Current Year ELA Proficiency by Grade (" + yearString + ")"
 
    // Single Year Comparison: ELA Proficiency by Ethnicity
-   let ecbeData = getK8LineData(yearData, ethnicity, subject[0], selection)
-   let ecbeSchoolColumns = Object.keys(ecbeData.find(d => d["School Name"] === schoolName));
-   let ecbeFilteredData = filterKeys(ecbeData, ecbeSchoolColumns)
-   let elaComparisonByEthnicityTransposed = transposeData(ecbeFilteredData, "School Name");
-   var elaComparisonByEthnicityChartData = processBarData(elaComparisonByEthnicityTransposed);
-   elaComparisonByEthnicityChartData.push(colorState)
+   let elaEthnicityData = getK8LineData(yearData, ethnicity, subject[0], selection)
+   let elaEthnicityColumns = Object.keys(elaEthnicityData.find(d => d["School Name"] === schoolName));
+   let elaEthnicityFilteredData = filterKeys(elaEthnicityData, elaEthnicityColumns)
+   let elaEthnicityTransposedData = transposeData(elaEthnicityFilteredData, "School Name");
+   var elaEthnicityChartData = processBarData(elaEthnicityTransposedData);
+   elaEthnicityChartData.push(colorState)
+   let elaEthnicityLabel = document.getElementById("analysis-container-label-6");
+   elaEthnicityLabel.firstChild.textContent = "Current Year ELA Proficiency by Ethnicity (" + yearString + ")"
 
    //Single Year Comparison: ELA Proficiency by Subgroup
-   let ecbsData = getK8LineData(yearData, subgroup, subject[0], selection)
-   let ecbsSchoolColumns = Object.keys(ecbsData.find(d => d["School Name"] === schoolName));
-   let ecbsFilteredData = filterKeys(ecbsData, ecbsSchoolColumns)
-   let elaComparisonBySubGroupTransposed = transposeData(ecbsFilteredData, "School Name");
-   var elaComparisonBySubgroupChartData = processBarData(elaComparisonBySubGroupTransposed);
-   elaComparisonBySubgroupChartData.push(colorState)
+   let elaSubgroupData = getK8LineData(yearData, subgroup, subject[0], selection)
+   let elaSubgroupColumns = Object.keys(elaSubgroupData.find(d => d["School Name"] === schoolName));
+   let elaSubgroupFilteredData = filterKeys(elaSubgroupData, elaSubgroupColumns)
+   let elaSubgroupTransposedData = transposeData(elaSubgroupFilteredData, "School Name");
+   var elaSubgroupChartData = processBarData(elaSubgroupTransposedData);
+   elaSubgroupChartData.push(colorState)
+   let elaSubgroupLabel = document.getElementById("analysis-container-label-7");
+   elaSubgroupLabel.firstChild.textContent = "Current Year ELA Proficiency by Subgroup (" + yearString + ")"
+
+   // Single Year Comparison: Math Proficiency by Total
+   let mathTotalData = getK8LineData(yearData, total, subject[1], selection)
+   let mathTotalColumns = Object.keys(mathTotalData.find(d => d["School Name"] === schoolName));
+   let mathTotalFilteredData = filterKeys(mathTotalData, mathTotalColumns)
+   let mathTotalTransposedData = transposeData(mathTotalFilteredData, "School Name");
+   var mathTotalChartData = processBarData(mathTotalTransposedData);
+   mathTotalChartData.push(colorState)
+   let mathTotalLabel = document.getElementById("analysis-container-label-8");
+   mathTotalLabel.firstChild.textContent = "Current Year Math Proficiency (" + yearString + ")"
+
+   // Single Year Comparison: Math Proficiency by Grade
+   let mathGradeData = getK8LineData(yearData, grade, subject[0], selection)
+   let mathGradeColumns = Object.keys(mathGradeData.find(d => d["School Name"] === schoolName));
+   let mathGradeFilteredData = filterKeys(mathGradeData, mathGradeColumns)
+   let mathGradeTransposedData = transposeData(mathGradeFilteredData, "School Name");
+   var mathGradeChartData = processBarData(mathGradeTransposedData);
+   mathGradeChartData.push(colorState)
+   let mathGradeLabel = document.getElementById("analysis-container-label-9");
+   mathGradeLabel.firstChild.textContent = "Current Year Math Proficiency by Grade (" + yearString + ")"
+
+   // Single Year Comparison: ELA Proficiency by Ethnicity
+   let mathEthnicityData = getK8LineData(yearData, ethnicity, subject[0], selection)
+   let mathEthnicityColumns = Object.keys(mathEthnicityData.find(d => d["School Name"] === schoolName));
+   let mathEthnicityFilteredData = filterKeys(mathEthnicityData, mathEthnicityColumns)
+   let mathEthnicityTransposedData = transposeData(mathEthnicityFilteredData, "School Name");
+   var mathEthnicityChartData = processBarData(mathEthnicityTransposedData);
+   mathEthnicityChartData.push(colorState)
+   let mathEthnicityLabel = document.getElementById("analysis-container-label-10");
+   mathEthnicityLabel.firstChild.textContent = "Current Year Math Proficiency by Ethnicity (" + yearString + ")"
+
+   //Single Year Comparison: ELA Proficiency by Subgroup
+   let mathSubgroupData = getK8LineData(yearData, subgroup, subject[0], selection)
+   let mathSubgroupColumns = Object.keys(mathSubgroupData.find(d => d["School Name"] === schoolName));
+   let mathSubgroupFilteredData = filterKeys(mathSubgroupData, mathSubgroupColumns)
+   let mathSubgroupTransposedData = transposeData(mathSubgroupFilteredData, "School Name");
+   var mathSubgroupChartData = processBarData(mathSubgroupTransposedData);
+   mathSubgroupChartData.push(colorState)
+   let mathSubgroupLabel = document.getElementById("analysis-container-label-11");
+   mathSubgroupLabel.firstChild.textContent = "Current Year Math Proficiency by Subgroup (" + yearString + ")"   
 
    if (!academicAnalysisPage.initialize){
 
-      elaComparisonByTotal = verticalGroupBar().data(elaComparisonByTotalChartData).id("elaComparisonByTotal");
-      d3.select("#elaComparisonByTotal").call(elaComparisonByTotal);
+      ireadComparisonTotal = verticalGroupBar().data(ireadTotalChartData).id("ireadComparisonTotal");
+      d3.select("#ireadComparisonTotal").call(ireadComparisonTotal);
 
-      elaComparisonByGrade = verticalGroupBar().data(elaComparisonByGradeChartData).id("elaComparisonByGrade");
-      d3.select("#elaComparisonByGrade").call(elaComparisonByGrade);
+      ireadComparisonEthnicity = verticalGroupBar().data(ireadEthnicityChartData).id("ireadComparisonEthnicity");
+      d3.select("#ireadComparisonEthnicity").call(ireadComparisonEthnicity);
 
-      elaComparisonByEthnicity = verticalGroupBar().data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
-      d3.select("#elaComparisonByEthnicity").call(elaComparisonByEthnicity);
+      ireadComparisonSubgroup = verticalGroupBar().data(ireadSubgroupChartData).id("ireadComparisonSubgroup");
+      d3.select("#ireadComparisonSubgroup").call(ireadComparisonSubgroup);
 
-      elaComparisonBySubgroup = verticalGroupBar().data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
-      d3.select("#elaComparisonBySubgroup").call(elaComparisonBySubgroup);
+      elaComparisonTotal = verticalGroupBar().data(elaTotalChartData).id("elaComparisonTotal");
+      d3.select("#elaComparisonTotal").call(elaComparisonTotal);
+
+      elaComparisonGrade = verticalGroupBar().data(elaGradeChartData).id("elaComparisonGrade");
+      d3.select("#elaComparisonGrade").call(elaComparisonGrade);
+
+      elaComparisonEthnicity = verticalGroupBar().data(elaEthnicityChartData).id("elaComparisonEthnicity");
+      d3.select("#elaComparisonEthnicity").call(elaComparisonEthnicity);
+
+      elaComparisonSubgroup = verticalGroupBar().data(elaSubgroupChartData).id("elaComparisonSubgroup");
+      d3.select("#elaComparisonSubgroup").call(elaComparisonSubgroup);
+
+      mathComparisonTotal = verticalGroupBar().data(mathTotalChartData).id("mathComparisonTotal");
+      d3.select("#mathComparisonTotal").call(mathComparisonTotal);
+
+      mathComparisonGrade = verticalGroupBar().data(mathGradeChartData).id("mathComparisonGrade");
+      d3.select("#mathComparisonGrade").call(mathComparisonGrade);
+
+      mathComparisonEthnicity = verticalGroupBar().data(mathEthnicityChartData).id("mathComparisonEthnicity");
+      d3.select("#mathComparisonEthnicity").call(mathComparisonEthnicity);
+
+      mathComparisonSubgroup = verticalGroupBar().data(mathSubgroupChartData).id("mathComparisonSubgroup");
+      d3.select("#mathComparisonSubgroup").call(mathComparisonSubgroup);
 
       // Initialize (empty) analysis tables on-load
-      for (let k = 0; k < 4; k++) {
+      for (let k = 0; k < 11; k++) {
          let analysisTableName = "analysis-table" + (k+1);
          let analysisTableID = "#" + analysisTableName
 
@@ -1560,57 +1674,60 @@ function academicAnalysisPage(data) {
    
    } else {
 
-      elaComparisonByTotal.data(elaComparisonByTotalChartData).id("elaComparisonByTotal");
-      elaComparisonByGrade.data(elaComparisonByGradeChartData).id("elaComparisonByGrade");
-      elaComparisonByEthnicity.data(elaComparisonByEthnicityChartData).id("elaComparisonByEthnicity");
-      elaComparisonBySubgroup.data(elaComparisonBySubgroupChartData).id("elaComparisonBySubgroup");
+
+      ireadComparisonTotal.data(ireadTotalChartData).id("ireadComparisonTotal");
+      ireadComparisonEthnicity.data(ireadEthnicityChartData).id("ireadComparisonEthnicity");
+      ireadComparisonSubgroup.data(ireadSubgroupChartData).id("ireadComparisonSubgroup");
+
+      elaComparisonTotal.data(elaTotalChartData).id("elaComparisonTotal");
+      elaComparisonGrade.data(elaGradeChartData).id("elaComparisonGrade");
+      elaComparisonEthnicity.data(elaEthnicityChartData).id("elaComparisonEthnicity");
+      elaComparisonSubgroup.data(elaSubgroupChartData).id("elaComparisonSubgroup");
+
+      mathComparisonTotal.data(mathTotalChartData).id("mathComparisonTotal");
+      mathComparisonGrade.data(mathGradeChartData).id("mathComparisonGrade");
+      mathComparisonEthnicity.data(mathEthnicityChartData).id("mathComparisonEthnicity");
+      mathComparisonSubgroup.data(mathSubgroupChartData).id("mathComparisonSubgroup");
 
       /* Update Tables */
       let analysisTableData, analysisTableID, analysisCatList;
-      let tableNum = 4;
+      let tableNum = 11;
       let tableShift = 0;
 
       // Remove objects with years > the selected year
       const tabledata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
 
       //TODO: TEMP - add all other tables
-      let subject = ["ELA", "ELA"]
+      let subject = ["IREAD", "IREAD", "IREAD", "ELA", "ELA", "ELA", "ELA", "Math", "Math", "Math", "Math"]
+      let sub;
 
       for (let i=0; i<tableNum; i++) {
 
          let index = i + tableShift;
-         const sub = i % 2;
+
+         // if (index == 2 || index == 4 || index == 5) {
+         //    sub = 2
+         // }
+         // else {
+         //    sub = i % 2;
+         // }
 
          if (tableShift == 0) {
-            analysisCatList = [total, grade, ethnicity, subgroup]
+            analysisCatList = [total, ethnicity, subgroup, total, grade, ethnicity, subgroup, total, grade, ethnicity, subgroup]
          }
          else {
             analysisCatList = [grade, grade, ethnicity, ethnicity, subgroup, subgroup]
          }
 
          analysisTableID = analysisGridApi[index].getGridId()
-
-         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[sub], selection, colorState)
-
+         analysisTableData = getAnalysisTableData(tabledata, analysisCatList[i], subject[i], selection, colorState)
          let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
 
-         console.log(analysisTableOptions)
          // need to reset columndefs as well as rowdata or else table
          // will have empty cols.
          analysisGridApi[index].setGridOption("columnDefs", analysisTableOptions.columnDefs);
          analysisGridApi[index].setGridOption("rowData", analysisTableData);
       };
-
-
-
-      // Remove objects with years > the selected year
-      // let yeardata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
-      // analysisTableID = analysisGridApi[0].getGridId()
-      // analysisTableData = getAnalysisTableData(yeardata, ethnicity, "ELA", selection)
-      // let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
-      // analysisGridApi[0].setGridOption("columnDefs", analysisTableOptions.columnDefs);
-      // analysisGridApi[0].setGridOption("rowData", analysisTableData);
-
    }
    // TODO: Multi-Year Analysis Page
 };
@@ -1636,9 +1753,6 @@ function navigateHandler(e) {
    const hsContent = document.querySelector(".hsnav");
    const typeContent = document.querySelector(".typenav");
    const analysisContent = document.querySelector(".analysisnav");
-
-   // let singleYearTab = document.getElementById("singleTab");
-   // let multiYearTab = document.getElementById("multiTab");
 
    // target is the button triggering the onClick
    // mainSelection is the main nav (demoTab, infoTab, analysisTab)
@@ -1830,8 +1944,30 @@ function navigateHandler(e) {
          target.id.match("gradTab") ||
          target.id.match("satTab"))
    ) {
-   
-      analysisContent.classList.add("open");
+//TODO: Fix this logis
+      if (schoolType == "K12") {
+         typeContent.classList.add("open");
+      }
+      else {
+         typeContent.classList.remove("open");
+      }
+
+      if (
+         (schoolType == "K8" && schoolSubtype != "MS") ||
+         (schoolType == "K12" && schoolSubtype == "K8") ||
+         schoolSubtype == "K8"
+      ) {      
+
+         k8Content.classList.add("open");
+       } else if (
+         (schoolType == "K12" && schoolSubtype == "HS") ||
+         schoolType == "HS"
+      ) {
+         
+         k8Content.classList.remove("open");
+         hsContent.classList.remove("open");
+      }
+         analysisContent.classList.add("open");
 
       setYearList(allSchoolsObj,"academic");
 

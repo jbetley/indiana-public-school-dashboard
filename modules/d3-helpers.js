@@ -2,7 +2,7 @@
 // d3.js charting functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     01.21.25
+// date:     02.07.25
 
 // https://datawanderings.com/2019/10/28/tutorial-making-a-line-chart-in-d3-js-v-5/
 // https://observablehq.com/@greenafrican/grouped-bar-chart
@@ -2251,9 +2251,9 @@ function verticalGroupBar() {
     selection.each(function () {
 
       // Organized by Category and then School
-      let selectedYear;
-      let yearString;
-      let groupTitleText = "";
+      // let selectedYear;
+      // let yearString;
+      // let groupTitleText = "";
 
       let chartData = data;
 
@@ -2343,45 +2343,45 @@ function verticalGroupBar() {
         .style("font-size", 10);
 
       // chart title
-      var groupTitle = svg.append("g")
-        .classed("title", true);
+      // var groupTitle = svg.append("g")
+      //   .classed("title", true);
 
       // NOTE: Is there a better way to do this?
       const svgWidth = width + margin.left + margin.right;
       const xVal = ((svgWidth - width) - (margin.left/3))/2;
 
-      groupTitle.append("rect")
-        .classed("titlebox", true)
-        .attr("width", (width))
-        .attr("x", -xVal)
-        .attr("y", -70)
-        .attr("rx", 5)
-        .style("fill", "#6783a9")
-        .attr("height", "30px");
+      // groupTitle.append("rect")
+      //   .classed("titlebox", true)
+      //   .attr("width", (width))
+      //   .attr("x", -xVal)
+      //   .attr("y", -70)
+      //   .attr("rx", 5)
+      //   .style("fill", "#6783a9")
+      //   .attr("height", "30px");
 
-      selectedYear = document.getElementById("yearSelect").value
-      yearString = longYear(selectedYear);
+      // selectedYear = document.getElementById("yearSelect").value
+      // yearString = longYear(selectedYear);
 
-      if (exists(data[0], 'Free or Reduced Price Meals')) {
-        groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
-      }
-      else {
-        groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
-      }
+      // if (exists(data[0], 'Free or Reduced Price Meals')) {
+      //   groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
+      // }
+      // else {
+      //   groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
+      // }
 
-      groupTitle.append("text")
-        .classed("titletext", true)
-        .attr("fill", "white")
-        .style("font-weight", 700)
-        .attr("font-size", "12px")
-        .style("font-family", "Inter, sans-serif")
-        .style('text-anchor','middle')
-        .style('alignment-baseline', 'middle')
-        .attr('dx', function(d) {
-          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-        })
-        .attr('y', -55)
-        .text(groupTitleText);
+      // groupTitle.append("text")
+      //   .classed("titletext", true)
+      //   .attr("fill", "white")
+      //   .style("font-weight", 700)
+      //   .attr("font-size", "12px")
+      //   .style("font-family", "Inter, sans-serif")
+      //   .style('text-anchor','middle')
+      //   .style('alignment-baseline', 'middle')
+      //   .attr('dx', function(d) {
+      //     return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+      //   })
+      //   .attr('y', -55)
+      //   .text(groupTitleText);
 
       updateData = function() {
 
@@ -2705,34 +2705,36 @@ function verticalGroupBar() {
         // };
 
         // uupdate title
-        let selectedYear = document.getElementById("yearSelect").value
-        let yearString = longYear(selectedYear);
+        // let selectedYear = document.getElementById("yearSelect").value
+        // let yearString = longYear(selectedYear);
 
-        if (exists(data[0], 'Free or Reduced Price Meals')) {
-          groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
-        }
-        else {
-          groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
-        }
+        // if (exists(data[0], 'Free or Reduced Price Meals')) {
+        //   groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
+        // }
+        // else {
+        //   groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
+        // }
 
-        svg.selectAll("text.titletext").remove();
+        // svg.selectAll("text.titletext").remove();
 
-        groupTitle.selectAll("text.titletext")
-          .data(groupTitleText, function(d) { return d })
-          .enter()
-          .append("text")
-            .attr('class', 'titletext')
-            .attr("fill", "white")
-            .style("font-weight", 700)
-            .attr("font-size", "12px")
-            .style("font-family", "Inter, sans-serif")
-            .style('text-anchor','middle')
-            .style('alignment-baseline', 'middle')
-            .attr('dx', function(d) {
-              return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-            })
-            .attr('y', -55)
-            .text(function(d) { return d })
+        // groupTitle.selectAll("text.titletext")
+        //   .data(groupTitleText, function(d) { return d })
+        //   .enter()
+        //   .append("text")
+        //     .attr('class', 'titletext')
+        //     .attr("fill", "white")
+        //     .style("font-weight", 700)
+        //     .attr("font-size", "12px")
+        //     .style("font-family", "Inter, sans-serif")
+        //     .style('text-anchor','middle')
+        //     .style('alignment-baseline', 'middle')
+        //     .attr('dx', function(d) {
+        //       return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
+        //     })
+        //     .attr('y', -55)
+        //     .text(function(d) { return d });
+
+
       }; // end update Function
     }); // end each
 
@@ -3047,12 +3049,12 @@ function verticalGroupBar() {
     return chart;
   };
 
-  chart.setcolor = function(value){
-    if (!arguments.length) return setcolor;
-    setcolor = value;
-    if (typeof updateColors === 'function') updateColors();
-    return chart;
-  };
+  // chart.setcolor = function(value){
+  //   if (!arguments.length) return setcolor;
+  //   setcolor = value;
+  //   if (typeof updateColors === 'function') updateColors();
+  //   return chart;
+  // };
 
   return chart;
 }; // end verticalBar
