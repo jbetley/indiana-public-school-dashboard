@@ -69,9 +69,6 @@ def load_school_dropdown():
         ["Corporation Name", "School Name"], ascending=[True, True]
     )
 
-    # filename99 = "school_df.csv"
-    # school_df.to_csv(filename99, index=False)
-
     dropdown_list = [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in school_df.to_dict(orient="records")
@@ -88,7 +85,7 @@ def load_school_coordinates():
     school_id = data["school_id"]
     year = int(data["year"])
     school_type = data["school_type"]
-
+    school_subtype = data["school_subtype"]
     # get coordinates for all schools for a year
     # TODO: hardcoded temporarily until all other errors fixed
     if year == 2024:
@@ -96,11 +93,13 @@ def load_school_coordinates():
 
     coordinates = get_school_coordinates(year, school_type)
 
+    print("LOAD SCHOOL COORP")
+    print(data)
+
     # Drop any school not testing at least 20 students. "Total|ELATotalTested"
     # is a proxy for school size here (probably only impacts ~20 schools)
     # the second condition ensures that the school is retained if it exists
-    if school_type == "K8":
-
+    if school_type == "K8" or (school_type == "K12" and school_subtype =="K8") :
         coordinates["Total|ELA Total Tested"] = coordinates[
             "Total|ELA Total Tested"
         ].replace("", np.nan)
@@ -115,6 +114,9 @@ def load_school_coordinates():
             (coordinates["Total|ELA Total Tested"].astype(int) >= 20)
             | (coordinates["School ID"] == int(school_id))
         ]
+    else:
+        # TODO: Add algo to get coordinates for HS
+        pass
 
     # NOTE: Before we do the distance check, we reduce the size of the df removing
     # schools where there is no or only one grade overlap between the comparison schools.
@@ -164,14 +166,16 @@ def load_academic_data():
     if data["school_type"] == "K12":
 
         if data["school_subtype"] == "K12":
-            school_type = "K8"
+            if data["type_tab"] == "hsTab":
+                school_type = "HS"
+            else:
+                school_type = "K8"
         else:
             school_type = data["school_subtype"]
+            
     else:
         school_type = data["school_type"]
 
-    print("GETTING DATA")
-    print(data)
     raw_data = get_academic_data(schools, school_type)
 
     data = clean_academic_data(

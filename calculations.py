@@ -795,11 +795,18 @@ def check_for_gradespan_overlap(school_id: str, schools: pd.DataFrame) -> pd.Dat
     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
     overlap = 1
 
+    
     schools = schools.replace({"Low Grade": {"PK": 0, "KG": 1}})
 
     schools["Low Grade"] = schools["Low Grade"].astype(int)
     schools["High Grade"] = schools["High Grade"].astype(int)
 
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_rows', None) 
+    # print(school_id)
+    # filename99 = "coordinates.csv"
+    # schools.to_csv(filename99, index=False)
+    
     school_grade_span = (
         schools.loc[schools["School ID"] == int(school_id)][["Low Grade", "High Grade"]]
         .values[0]
