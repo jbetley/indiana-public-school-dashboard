@@ -198,22 +198,18 @@ def get_school_coordinates(*args):
     keys = ["year", "type"]
     params = dict(zip(keys, args))
 
-    print("SCHOOL COORD PARAMS")
-    print(params)
-    
     if params["type"] == "HS":
         q = text(
             """
-            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade
+            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, TotalStudentCount
                 FROM academic_data_hs
                 WHERE Year = :year
         """
         )
     else:
-        print("LOADING k8 data")
         q = text(
             """
-            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, "Total|ELATotalTested"
+            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, TotalStudentCount, "Total|ELATotalTested"
                 FROM academic_data_k8
                 WHERE Year = :year
         """

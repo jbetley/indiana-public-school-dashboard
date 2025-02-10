@@ -32,7 +32,7 @@ from load_data import (
     get_school_coordinates,
     get_academic_data,
 )
-from calculations import calculate_comparison_school_list, check_for_gradespan_overlap
+from calculations import calculate_comparison_school_list
 from process_data import clean_academic_data
 
 # basedir = os.path.abspath(os.path.dirname(__file__))
@@ -80,56 +80,67 @@ def load_school_dropdown():
 # comparison schools list
 @app.route("/where", methods=["POST"])
 def load_school_coordinates():
-    data = request.get_json()
+    selections = request.get_json()
 
-    school_id = data["school_id"]
-    year = int(data["year"])
-    school_type = data["school_type"]
-    school_subtype = data["school_subtype"]
+    school_id = selections["school_id"]
+    year = int(selections["year"])
+    school_type = selections["school_type"]
+    # school_subtype = data["school_subtype"]
+    
     # get coordinates for all schools for a year
     # TODO: hardcoded temporarily until all other errors fixed
-    if year == 2024:
-        year = 2023
+    # if year == 2024:
+    #     year = 2023
 
     coordinates = get_school_coordinates(year, school_type)
 
-    print("LOAD SCHOOL COORP")
-    print(data)
+    # Drop any school not testing at least 20 students (probably only 
+    # impacts ~20 schools). the second condition ensures that the school
+    # is retained if it exists
+    coordinates["Total Student Count"] = coordinates[
+        "Total Student Count"
+    ].replace("", np.nan)
 
-    # Drop any school not testing at least 20 students. "Total|ELATotalTested"
-    # is a proxy for school size here (probably only impacts ~20 schools)
-    # the second condition ensures that the school is retained if it exists
-    if school_type == "K8" or (school_type == "K12" and school_subtype =="K8") :
-        coordinates["Total|ELA Total Tested"] = coordinates[
-            "Total|ELA Total Tested"
-        ].replace("", np.nan)
+    coordinates = coordinates.dropna(subset=["Total Student Count"])        
 
-        coordinates = coordinates.dropna(subset=["Total|ELA Total Tested"])
+    coordinates["Total Student Count"] = pd.to_numeric(
+        coordinates["Total Student Count"], errors="coerce"
+    )
 
-        coordinates["Total|ELA Total Tested"] = pd.to_numeric(
-            coordinates["Total|ELA Total Tested"], errors="coerce"
-        )
+    coordinates = coordinates[
+        (coordinates["Total Student Count"].astype(int) >= 30)
+        | (coordinates["School ID"] == int(school_id))
+    ]
+    
+    # if school_type == "K8" or (school_type == "K12" and school_subtype =="K8") :
+        
+    #     coordinates["Total|ELA Total Tested"] = coordinates[
+    #         "Total|ELA Total Tested"
+    #     ].replace("", np.nan)
+        
+    #     coordinates = coordinates.dropna(subset=["Total|ELA Total Tested"])
 
-        coordinates = coordinates[
-            (coordinates["Total|ELA Total Tested"].astype(int) >= 20)
-            | (coordinates["School ID"] == int(school_id))
-        ]
-    else:
-        # TODO: Add algo to get coordinates for HS
-        pass
+    #     coordinates["Total|ELA Total Tested"] = pd.to_numeric(
+    #         coordinates["Total|ELA Total Tested"], errors="coerce"
+    #     )
+        
+    #     coordinates = coordinates[
+    #         (coordinates["Total|ELA Total Tested"].astype(int) >= 20)
+    #         | (coordinates["School ID"] == int(school_id))
+    #     ]
+        
+    # else:
+    #     pass
 
     # NOTE: Before we do the distance check, we reduce the size of the df removing
     # schools where there is no or only one grade overlap between the comparison schools.
     # the variable "overlap" is one less than the the number of grades that we want as a
     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
-    coordinates = check_for_gradespan_overlap(school_id, coordinates)
+    # coordinates = check_for_gradespan_overlap(selections, coordinates)
 
+# TODO: Add School Type Here to filter out unrelated schools from the list
     # use scipy.spatial KDTree method to calculate distances from given school_id
-    comparison_list = calculate_comparison_school_list(school_id, coordinates, 20)
-
-    # Set default display selections to all schools in the list - want to return
-    # a list of school IDs
-    # default_options = [id for name, id in comparison_list.items()]
+    comparison_list = calculate_comparison_school_list(selections, coordinates, 20)
 
     return comparison_list
 
@@ -159,7 +170,7 @@ def load_academic_data():
 
     data = request.get_json()
 
-    schools = [data["school_id"]] + data["comparison_schools"]
+    schools = [int(data["school_id"])] + data["comparison_schools"]
 
     # school_subtype for K12 will either be K8 or HS, school_subtype
     # for K8 will be ES, MS, or K8

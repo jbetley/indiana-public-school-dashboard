@@ -350,6 +350,9 @@ schoolSelection.addEventListener("change", function () {
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".typenav");
 
+   let k8TypeTab = document.getElementById("k8Tab");
+   let hsTypeTab = document.getElementById("hsTab");
+
    if (selectedValues.school_type == "K12" && mainSelection != "demoTab") {
       typeCategories.classList.add("open");
    } else {
@@ -459,8 +462,7 @@ schoolSelection.addEventListener("change", function () {
    //    typeCategories.classList.remove("open");
    // }
 
-   // let k8TypeTab = document.getElementById("k8Tab");
-   // let hsTypeTab = document.getElementById("hsTab");
+
 
    // if (mainSelection == "infoTab" || mainSelection == "analysisTab") {
    //    if (selectedValues.school_type == "K8" ||
@@ -1542,11 +1544,9 @@ function academicAnalysisPage(data) {
    //    }
 
    // Single Year Analysis Page //
-
-   console.log(data)
    let yearData = data.filter(o => o.Year == Number(year));
-   console.log(yearData)
 
+   // TODO: ISSUE- school id is type int for HS and type string for K8 - whyyyyyyy
    const schoolName = yearData.find(d => d["School ID"] === schoolID)["School Name"];
 
    // add color to each school dict

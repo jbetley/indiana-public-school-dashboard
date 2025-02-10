@@ -375,9 +375,11 @@ def clean_academic_data(
         data (pd.DataFrame): processed dataframe
     """
     raw_data = df.copy()
-
-    corp_id = raw_data["GEO Corp"].unique()[0]
+    
     school_id = school_list[0]
+    
+    # note: corp_id needs to be a str
+    corp_id = raw_data[raw_data["School ID"] == school_id]["GEO Corp"].unique()[0].astype(str)
 
     is_analysis = False
 
@@ -616,12 +618,12 @@ def clean_academic_data(
                 if school_type == "AHS":
                     analysis_data = hs_data.filter(
                         regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name \
-                        |CCR Percentage|Grade 12|Total\|Graduation Rate|Graduation to Enrollment|Benchmark \%|^Year$",
+                        |CCR Percentage|Grade 12|Total\|Graduation Rate|Graduation to Enrollment|Total Student Count|Benchmark \%|^Year$",
                         axis=1,
                     ).copy()
                 else:
                     analysis_data = hs_data.filter(
-                        regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name|Graduation Rate$|Benchmark \%|^Year$",
+                        regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name|Graduation Rate$|Total Student Count|Benchmark \%|^Year$",
                         axis=1,
                     ).copy()
 
@@ -635,9 +637,12 @@ def clean_academic_data(
                     if c not in ["School Name", "Corporation Name"]
                 ]
 
-                # get index of rows where school_id matches selected school
+                pd.set_option('display.max_columns', None)
+                pd.set_option('display.max_rows', None) 
+
+                # get index of rows where school_id matches selected school (TODO: Just the first row?)
                 school_idx = analysis_data.index[
-                    analysis_data["School ID"] == school_id
+                    analysis_data["School ID"] == str(school_id)
                 ].tolist()[0]
 
                 for col in hs_cols:
@@ -648,6 +653,10 @@ def clean_academic_data(
                 # drop all columns where the row at school_name_idx has a NaN value
                 analysis_data = analysis_data.loc[:, ~hs_data.iloc[school_idx].isna()]
 
+                # want all IDs to be strings throughout the process
+                analysis_data["School ID"] = analysis_data["School ID"].astype(str)
+                analysis_data["Corporation ID"] = analysis_data["Corporation ID"].astype(str)
+                
                 return analysis_data
 
             ## K8 academic_analysis_single
@@ -659,6 +668,7 @@ def clean_academic_data(
                 #     regex=r"\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
                 #     axis=1,
                 # )
+                
                 analysis_data = analysis_data.sort_values("Year").reset_index(drop=True)
 
                 analysis_data = analysis_data[
@@ -690,11 +700,16 @@ def clean_academic_data(
                     (school_type == "K8" or school_type == "K12")
                     and len(analysis_data.index) > 0
                 ) and check_for_unchartable_data.isnull().all().all() == True:
+                    
                     analysis_data = pd.DataFrame()
-
                     return analysis_data
 
                 else:
+                    
+                    # want all IDs to be strings throughout the process
+                    analysis_data["School ID"] = analysis_data["School ID"].astype(str)
+                    analysis_data["Corporation ID"] = analysis_data["Corporation ID"].astype(str)
+                
                     return analysis_data
 
         # TODO: ORIGINAL AND NEW ARE IDENTICAL (EXCEPT M/F) for single school
@@ -705,18 +720,8 @@ def clean_academic_data(
                 processed_data["School ID"] == str(school_id)
             ].copy()
 
-            # if location == "ireadTab":
-            #     final_school_data = final_school_data.filter(
-            #         regex=r"\|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
-            #         axis=1,
-            #     )
-
-            # else:
-            #     final_school_data = final_school_data.filter(
-            #         regex=r"\|ELA Proficient %$|\|Math Proficient %$|^Year$|Low|High|School Name|School ID|Corporation ID",
-            #         axis=1,
-            #     )
-
-            # final_school_data = transpose_data(school_data, school_type)
-
+            # want all IDs to be strings throughout the process
+            final_school_data["School ID"] = final_school_data["School ID"].astype(str)
+            final_school_data["Corporation ID"] = final_school_data["Corporation ID"].astype(str)
+            
             return final_school_data

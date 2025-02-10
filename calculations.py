@@ -777,43 +777,147 @@ def get_distance(
     return combined
 
 
-def check_for_gradespan_overlap(school_id: str, schools: pd.DataFrame) -> pd.DataFrame:
-    """
-    Gets the Low and High grades (0-12) for a selected school and then removes all
-    schools from the supplied dataframe where there is no, or less than a specified
-    number of grades that overlap with the selected school.
+# def check_for_gradespan_overlap(selections: dict, schools: pd.DataFrame) -> pd.DataFrame:
+#     """
+#     Gets the Low and High grades (0-12) for a selected school and then removes all
+#     schools from the supplied dataframe where there is no, or less than a specified
+#     number of grades that overlap with the selected school.
 
-    Args:
-        school_id (string): numeric id of the selected school
-        schools (pd.DataFrame): a dataframe of all possible comparison schools
+#     Args:
+#         school_id (string): numeric id of the selected school
+#         schools (pd.DataFrame): a dataframe of all possible comparison schools
 
-    Returns:
-        schools (pd.DataFrame): a dataframe filtered by the above condition
-    """
+#     Returns:
+#         schools (pd.DataFrame): a dataframe filtered by the above condition
+#     """
 
+#     # "overlap" should be one less than the the number of grades that we want as a
+#     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
+#     overlap = 1
+
+#     school_id = selections["school_id"]
+#     selected_tab = selections["type_tab"]
+    
+#     schools = schools.replace({"Low Grade": {"PK": 0, "KG": 1}})
+#     schools["Low Grade"] = schools["Low Grade"].astype(int)
+#     schools["High Grade"] = schools["High Grade"].astype(int)
+    
+#     school_grade_span = (
+#         schools.loc[schools["School ID"] == int(school_id)][["Low Grade", "High Grade"]]
+#         .values[0]
+#         .tolist()
+#     )
+    
+#     # ensure the right grade span is being compared
+#     if selected_tab == "k8Tab":
+#         school_low = school_grade_span[0]
+        
+#         if school_grade_span[1] > 8:
+#             school_high = 8
+#         else:
+#             school_high = school_grade_span[1]
+            
+#     elif selected_tab == "hsTab":
+#         if school_grade_span[0] < 9:
+#             school_low = 9
+#         else:
+#             school_low = school_grade_span[0]
+
+#         if school_grade_span[1] < 12:
+#             school_high = school_grade_span[1]
+#         else:
+#             school_high = 12
+#     else:
+#         school_low = school_grade_span[0]
+#         school_high = school_grade_span[1]
+
+#     # In order to fit within the distance parameters, the tested school must:
+#     #   a)  have a low grade that is less than or equal to the selected school and
+#     #       a high grade minus the selected school's low grade that is greater than or
+#     #       eqaul to the overlap; or
+#     #   b) have a low grade that is greater than or equal to the selected school and
+#     #       a high grade minus the tested school's low grade that is greater than or
+#     #       equal to the overlap.
+#     # Examples -> assume a selected school with a gradespan of 5-8:
+#     #   i) a school with grades 3-7 -   [match]: low grade is less than selected school's
+#     #       low grade and high grade (7) minus selected school low grade (5) is greater (2)
+#     #       than the overlap (1).
+#     #   i) a school with grades 2-5 -   [No match]: low grade is less than selected school's
+#     #       low grade but high grade (5) minus selected school low grade (5) is not greater (0)
+#     #       than the overlap (1). In this case while there is an overlap, it is below our
+#     #       threshold (2 grades).
+#     #   c) a school with grades 6-12-   [match]: low grade is higher than selected school's
+#     #       low grade and high grade (12) minus the tested school low grade (5) is greater
+#     #       (7) than the overlap (1).
+#     #   d) a school with grades 3-4     [No match]: low grade is lower than selected school's
+#     #       low grade, but high grade (4) minus the selected school's low grade (5) is not greater
+#     #       (-1) than the overlap (1).
+
+#     schools = schools.loc[
+#         (
+#             (schools["Low Grade"] <= school_low)
+#             & (schools["High Grade"] - school_low >= overlap)
+#         )
+#         | (
+#             (schools["Low Grade"] >= school_low)
+#             & (school_high - schools["Low Grade"] >= overlap)
+#         ),
+#         :,
+#     ]
+
+#     schools = schools.reset_index(drop=True)
+
+#     return schools
+
+
+def calculate_comparison_school_list(
+    selections: dict,
+    schools: pd.DataFrame,
+    max: int,
+) -> pd.DataFrame:
+
+    school_id = selections["school_id"]
+    selected_tab = selections["type_tab"]
+    
+    # keep only schools which overlap a certain number of grades with
+    # the selected school
+    
     # "overlap" should be one less than the the number of grades that we want as a
     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
     overlap = 1
 
-    
     schools = schools.replace({"Low Grade": {"PK": 0, "KG": 1}})
-
     schools["Low Grade"] = schools["Low Grade"].astype(int)
     schools["High Grade"] = schools["High Grade"].astype(int)
-
-    # pd.set_option('display.max_columns', None)
-    # pd.set_option('display.max_rows', None) 
-    # print(school_id)
-    # filename99 = "coordinates.csv"
-    # schools.to_csv(filename99, index=False)
     
     school_grade_span = (
         schools.loc[schools["School ID"] == int(school_id)][["Low Grade", "High Grade"]]
         .values[0]
         .tolist()
     )
-    school_low = school_grade_span[0]
-    school_high = school_grade_span[1]
+    
+    # ensure the right grade span is being compared
+    if selected_tab == "k8Tab":
+        school_low = school_grade_span[0]
+        
+        if school_grade_span[1] > 8:
+            school_high = 8
+        else:
+            school_high = school_grade_span[1]
+            
+    elif selected_tab == "hsTab":
+        if school_grade_span[0] < 9:
+            school_low = 9
+        else:
+            school_low = school_grade_span[0]
+
+        if school_grade_span[1] < 12:
+            school_high = school_grade_span[1]
+        else:
+            school_high = 12
+    else:
+        school_low = school_grade_span[0]
+        school_high = school_grade_span[1]
 
     # In order to fit within the distance parameters, the tested school must:
     #   a)  have a low grade that is less than or equal to the selected school and
@@ -851,15 +955,7 @@ def check_for_gradespan_overlap(school_id: str, schools: pd.DataFrame) -> pd.Dat
 
     schools = schools.reset_index(drop=True)
 
-    return schools
-
-
-def calculate_comparison_school_list(
-    school_id: str,
-    schools: pd.DataFrame,
-    max: int,
-) -> pd.DataFrame:
-
+    # now find the comparison school list        
     school_idx = schools[schools["School ID"] == int(school_id)].index
 
     # NOTE: This should never ever happen because we've already determined
@@ -899,6 +995,9 @@ def calculate_comparison_school_list(
 
     comparison_set = comparison_set.head(num_schools_expanded)
 
+    # TODO: FIgure out why 21c Isnt displaying HS properly.
+    print("COMPARISON")
+    print(comparison_set)
     # convert for comparison dropdown
     comparison_dropdown = comparison_set[["School ID", "School Name"]].to_dict(
         "records"
