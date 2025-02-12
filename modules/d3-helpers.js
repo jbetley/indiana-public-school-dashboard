@@ -2243,41 +2243,15 @@ function verticalGroupBar() {
     .tickPadding(6)
     .tickFormat(d3.format(".0%"));
 
-  // const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
-  //   "#83941f", "#f0c33b", "#bc986a", "#96b8db"]
-
   function chart(selection) {
 
     selection.each(function () {
 
-      // Organized by Category and then School
-      // let selectedYear;
-      // let yearString;
-      // let groupTitleText = "";
-
       let chartData = data;
-
-      // TODO: IS this doing anything at all?
-      // TODO: Tmp fix to deal with removal of undefined values
-      // const missingString = data[1] // not currently needed
-      // for (let a = 0; a < chartData.length; a++) {
-      //   let cnt = [];
-      //   // get index of all array items that have an "undefined" value
-      //   for (let b = 0; b < chartData[a][1].length; b++) {
-      //     if (chartData[a][1][b].some(item => item === undefined)) {
-      //       cnt.push(b);
-      //       }
-      //     }
-      //     if (cnt) {
-      //       // remove items in reverse order to as not to mess up index
-      //       for (let c = cnt.length -1; c >= 0; c--) {
-      //         chartData[a][1].splice(cnt[c],1);
-      //       }
-      //     }
-      //   }
 
       const categoryKeys = Array.from(chartData).map(d => d[0]);
       const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
+
 
       y.domain([0, 1]).nice();
       x0.domain(categoryKeys);
@@ -2323,7 +2297,6 @@ function verticalGroupBar() {
         .style("font-family", "Inter, sans-serif")
         .style("border", "solid")
         .style("border-width", "1px")
-        // .style("border-radius", "5px")
         .style("padding-right", "4px")
         .style("padding-left", "5px")
         .style("padding-top", "2px")
@@ -2342,53 +2315,20 @@ function verticalGroupBar() {
         .style("fill", "steelblue")
         .style("font-size", 10);
 
-      // chart title
-      // var groupTitle = svg.append("g")
-      //   .classed("title", true);
 
       // NOTE: Is there a better way to do this?
       const svgWidth = width + margin.left + margin.right;
-      const xVal = ((svgWidth - width) - (margin.left/3))/2;
-
-      // groupTitle.append("rect")
-      //   .classed("titlebox", true)
-      //   .attr("width", (width))
-      //   .attr("x", -xVal)
-      //   .attr("y", -70)
-      //   .attr("rx", 5)
-      //   .style("fill", "#6783a9")
-      //   .attr("height", "30px");
-
-      // selectedYear = document.getElementById("yearSelect").value
-      // yearString = longYear(selectedYear);
-
-      // if (exists(data[0], 'Free or Reduced Price Meals')) {
-      //   groupTitleText = ["ELA: Comparison By Subgroup (" + yearString +")"]
-      // }
-      // else {
-      //   groupTitleText = ["ELA: Comparison By Ethnicity (" + yearString +")"]
-      // }
-
-      // groupTitle.append("text")
-      //   .classed("titletext", true)
-      //   .attr("fill", "white")
-      //   .style("font-weight", 700)
-      //   .attr("font-size", "12px")
-      //   .style("font-family", "Inter, sans-serif")
-      //   .style('text-anchor','middle')
-      //   .style('alignment-baseline', 'middle')
-      //   .attr('dx', function(d) {
-      //     return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-      //   })
-      //   .attr('y', -55)
-      //   .text(groupTitleText);
+      // const xVal = ((svgWidth - width) - (margin.left/3))/2;
 
       updateData = function() {
 
-        chartData = data;
+        let chartData = [...data];
+        // chartData = data;
 
         const colorObject = chartData.pop()
         
+        console.log(chartData)
+        console.log(data)
         // TODO: Add insufficient and missing n-size strings
         // const missingString = data[1]
 

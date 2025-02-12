@@ -139,6 +139,7 @@ def load_school_coordinates():
     # coordinates = check_for_gradespan_overlap(selections, coordinates)
 
 # TODO: Add School Type Here to filter out unrelated schools from the list
+# TODO: MS are still showing up for IREAD - NEED TO DROP THEM
     # use scipy.spatial KDTree method to calculate distances from given school_id
     comparison_list = calculate_comparison_school_list(selections, coordinates, 20)
 

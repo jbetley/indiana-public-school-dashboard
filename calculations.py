@@ -995,21 +995,9 @@ def calculate_comparison_school_list(
 
     comparison_set = comparison_set.head(num_schools_expanded)
 
-    # TODO: FIgure out why 21c Isnt displaying HS properly.
-    print("COMPARISON")
-    print(comparison_set)
     # convert for comparison dropdown
     comparison_dropdown = comparison_set[["School ID", "School Name"]].to_dict(
         "records"
     )
-
-    # comparison_dict = dict(
-    #     zip(
-    #         comparison_dropdown["School Name"],
-    #         comparison_dropdown["School ID"],
-    #     )
-    # )
-    # # final list will be displayed in order of increasing distance from selected school
-    # comparison_list = dict(comparison_dict.items())
 
     return comparison_dropdown
