@@ -399,9 +399,6 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
   // Schools with insufficient n-size or no data:Mary Nicholson School 70 Center for Inquiry (Black), Merle Sidener Academy 59 (Black).
   var insufficientN = []
 
-// TODO: THIS ISN"T WORKING FOR UPDATE HS TABLE
-  console.log("GOING IN TABLE")
-  console.log(data)
   for (let i = 0; i < data.length; ++i) {
 
     let eachYear = {}
@@ -427,8 +424,6 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
           }
           // otherwise add result for the category
           else {
-            console.log("ADDING PROFICIENCY")
-            console.log(proficiency)
             eachYear[proficiency] = result
           }
         }

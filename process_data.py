@@ -615,20 +615,21 @@ def clean_academic_data(
 
                 # NOTE: Cohort data (not currently kept): Actual Graduates,
                 # Actual Enrollment, CCR
-                if school_type == "AHS":
-                    analysis_data = hs_data.filter(
-                        regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name \
-                        |CCR Percentage|Grade 12|Total\|Graduation Rate|Graduation to Enrollment|Total Student Count|Benchmark \%|^Year$",
-                        axis=1,
-                    ).copy()
-                else:
-                    analysis_data = hs_data.filter(
-                        regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name|Graduation Rate$|Total Student Count|Benchmark \%|^Year$",
-                        axis=1,
-                    ).copy()
+                # if school_type == "AHS":
+                #     analysis_data = hs_data.filter(
+                #         regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name \
+                #         |CCR Percentage|Grade 12|Total\|Graduation Rate|Graduates|Graduation to Enrollment|Total Student Count|Benchmark \%|^Year$",
+                #         axis=1,
+                #     ).copy()
+                # else:
+                #     analysis_data = hs_data.filter(
+                #         regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name|Graduation Rate$|Total Student Count|Graduates|Benchmark \%|^Year$",
+                #         axis=1,
+                #     ).copy()
 
-                analysis_data = analysis_data.drop(
-                    list(analysis_data.filter(regex="EBRW and Math")), axis=1
+                # analysis_data = analysis_data.drop(
+                analysis_data = hs_data.drop(                    
+                    list(hs_data.filter(regex="EBRW and Math")), axis=1
                 )
 
                 hs_cols = [
@@ -636,9 +637,6 @@ def clean_academic_data(
                     for c in analysis_data.columns
                     if c not in ["School Name", "Corporation Name"]
                 ]
-
-                pd.set_option('display.max_columns', None)
-                pd.set_option('display.max_rows', None) 
 
                 # get index of rows where school_id matches selected school (TODO: Just the first row?)
                 school_idx = analysis_data.index[

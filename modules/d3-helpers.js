@@ -2327,8 +2327,6 @@ function verticalGroupBar() {
 
         const colorObject = chartData.pop()
         
-        console.log(chartData)
-        console.log(data)
         // TODO: Add insufficient and missing n-size strings
         // const missingString = data[1]
 
