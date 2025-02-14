@@ -430,7 +430,7 @@ section#tab-two .grid  {
 .tab2-table-1 {
   grid-column: 1 / span 1;
 }
-.tab2-lines-1 { 
+.tab2-chart-1 { 
   grid-column: 2 / span 1;
 }
 .tab2-label-2 { 
@@ -439,7 +439,7 @@ section#tab-two .grid  {
 .tab2-table-2 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-2 { 
+.tab2-chart-2 { 
   grid-column: 2 / span 1;
 }
 .tab2-label-3 { 
@@ -448,7 +448,7 @@ section#tab-two .grid  {
 .tab2-table-3{ 
   grid-column: 1 / span 1;
 }
-.tab2-lines-3 { 
+.tab2-chart-3 { 
   grid-column: 2 / span 1;
 }
 .tab2-label-4 { 
@@ -457,7 +457,7 @@ section#tab-two .grid  {
 .tab2-table-4 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-4 { 
+.tab2-chart-4 { 
   grid-column: 2 / span 1;
 }
 .tab2-stack-4 { 
@@ -469,7 +469,7 @@ section#tab-two .grid  {
 .tab2-table-5 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-5 { 
+.tab2-chart-5 { 
   grid-column: 2 / span 1;
 }
 .tab2-stack-5 { 
@@ -481,7 +481,7 @@ section#tab-two .grid  {
 .tab2-table-6 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-6 { 
+.tab2-chart-6 { 
   grid-column: 2 / span 1;
 }
 .tab2-stack-6 { 
@@ -493,7 +493,7 @@ section#tab-two .grid  {
 .tab2-table-7 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-7 { 
+.tab2-chart-7 { 
   grid-column: 2 / span 1;
 }
 .tab2-stack-7 { 
@@ -505,7 +505,7 @@ section#tab-two .grid  {
 .tab2-table-8 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-8 { 
+.tab2-chart-8 { 
   grid-column: 2 / span 1;
 }
 .tab2-stack-8 { 
@@ -517,12 +517,100 @@ section#tab-two .grid  {
 .tab2-table-9 { 
   grid-column: 1 / span 1;
 }
-.tab2-lines-9 { 
+.tab2-chart-9 { 
   grid-column: 2 / span 1;
 }
 .tab2-stack-9 { 
   grid-column: 1 / span 2; 
 }
+.tab2-label-10 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-10 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-10 { 
+  grid-column: 2 / span 1;
+}
+
+
+.tab2-label-11 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-11 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-11 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-12 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-12 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-12 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-13 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-13 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-13 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-14 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-14 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-14 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-15 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-15 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-15 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-16 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-16 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-16 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-17 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-17 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-17 { 
+  grid-column: 2 / span 1;
+}
+.tab2-label-18 { 
+  grid-column: 1 / span 2;
+}
+.tab2-table-18 { 
+  grid-column: 1 / span 1;
+}
+.tab2-chart-18 { 
+  grid-column: 2 / span 1;
+}
+
+
+
+
+
 
 /* Academic Analysis Tables and Charts */
 section#tab-three .grid  {

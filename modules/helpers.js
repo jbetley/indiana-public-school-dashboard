@@ -606,11 +606,12 @@ function getTableData(data, category, subject, selection) {
 }
 
 
-function getK8LineData(data, category, subject, selection) {
+function getChartData(data, category, subject, selection) {
 
   const type = selection.school_type;
   const subtype = selection.school_subtype;
 
+  // TODO: Update this- also add Nonwaiver Grad to HS Grad Table/Chart
   if (
       type == "K8" ||
       (type == "K12" && (subtype == "K8" || subtype == "K12")) ||
