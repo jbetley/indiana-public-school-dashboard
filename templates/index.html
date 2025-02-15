@@ -170,11 +170,11 @@
 
                      <div class="empty-box tab2-label-16" id="info-container-sat-label-16"><div id="info-sat-label-16" class="label__header"></div></div>
                      <div class="table-box tab2-table-16" id="info-container-sat-table-16"><div id="info-sat-table-16" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-16" id="info-container-sat-chart-13"><div id="mathSatInfoTotal"></div></div>
+                     <div class="box tab2-lines-16" id="info-container-sat-chart-16"><div id="mathSatInfoTotal"></div></div>
 
                      <div class="empty-box tab2-label-17" id="info-container-sat-label-17"><div id="info-sat-label-17" class="label__header"></div></div>
                      <div class="table-box tab2-table-17" id="info-container-sat-table-17"><div id="info-sat-table-17" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-17" id="info-container-sat-chart-14"><div id="mathSatInfoEthnicity"></div></div>
+                     <div class="box tab2-lines-17" id="info-container-sat-chart-17"><div id="mathSatInfoEthnicity"></div></div>
 
                      <div class="empty-box tab2-label-18" id="info-container-sat-label-18"><div id="info-sat-label-18" class="label__header"></div></div>
                      <div class="table-box tab2-table-18" id="info-container-sat-table-18"><div id="info-sat-table-18" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
@@ -912,8 +912,6 @@ async function getAcademicAnalysisData(select) {
          alert("Network Error: Could not load data.")
       }
    });
-   console.log("SELECT")
-   console.log(select)
    let analysisData = fetchedData[0]
    academicAnalysisPage(analysisData)
 };
@@ -1090,11 +1088,10 @@ function academicInfoPage(data) {
 
    let selection = getSelectedValues();
 
-   // TODO: HANDLE BLANK TABLE
+// TODO: HANDLE BLANK TABLE
    if (!Array.isArray(data) || !data.length) {
       console.log("NO DATA")
       console.log(data)
-      // TODO: BLANK TABLE
    }
 
    // this should occur only when the first school in list is a K12 school on load (currently
@@ -1114,7 +1111,7 @@ function academicInfoPage(data) {
    let subject;
    let ireadlabels = document.querySelectorAll('[id^="info-container-iread-label"]');
    let ilearnLabels = document.querySelectorAll('[id^="info-container-ilearn-label"]');
-   let gradLabels = document.querySelectorAll('[id^="info-container-ilearn-label"]');
+   let gradLabels = document.querySelectorAll('[id^="info-container-gradrate-label"]');
    let satLabels = document.querySelectorAll('[id^="info-container-sat-label"]');
 
    // set subject, type, and chart labels
@@ -1168,6 +1165,7 @@ function academicInfoPage(data) {
 
    if (!academicInfoPage.initialize) {
 
+// TODO: Load blank info tables       
       const defaultInfoData = [
          [
             "Total",
@@ -1232,7 +1230,7 @@ function academicInfoPage(data) {
       mathIlearnInfoStackSubgroup = horizontalStackedBar().data(getProficiencyBreakdown(data, subgroup, "Math", selection)).id("mathIlearnInfoStackSubgroup");
       d3.select("#mathIlearnInfoStackSubgroup").call(mathIlearnInfoStackSubgroup);
 
-      gradRateInfoTotal = multiLine().data(getChartData(data, total, "Graduation", selection)).id("gradRateInfoTotal");
+      gradRateInfoTotal = multiLine().data(getChartData(data, gradTotal, "Graduation", selection)).id("gradRateInfoTotal");
       d3.select("#gradRateInfoTotal").call(gradRateInfoTotal);
 
       gradRateInfoEthnicity = multiLine().data(getChartData(data, ethnicity, "Graduation", selection)).id("gradRateInfoEthnicity");
@@ -1325,19 +1323,16 @@ function academicInfoPage(data) {
       else if (typeTab == "hsTab") {
          
          if (hsTab == "gradTab") {
-            // tableNum = 3;
-
             infoTableStartingIndex = 9;
             infoTableSubjects = ["Graduation", "Graduation", "Graduation"];
-            infoTableCategories = [total, ethnicity, subgroup];
+            infoTableCategories = [gradTotal, ethnicity, subgroup];
 
-            gradRateInfoTotal.data(getChartData(data, total, "Graduation", selection)).id("gradRateInfoTotal");
+            gradRateInfoTotal.data(getChartData(data, gradTotal, "Graduation", selection)).id("gradRateInfoTotal");
             gradRateInfoEthnicity.data(getChartData(data, ethnicity, "Graduation", selection)).id("gradRateInfoEthnicity");
             gradRateInfoSubgroup.data(getChartData(data, subgroup, "Graduation", selection)).id("gradRateInfoSubgroup");
          }
          else if (hsTab == "satTab") {
-            // tableNum = 6;
-            infoTableStartingIndex = 11;
+            infoTableStartingIndex = 12;
             infoTableSubjects = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
             infoTableCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
@@ -1368,7 +1363,7 @@ function academicInfoPage(data) {
          infoTableData = getTableData(tabledata, infoTableCategories[i], subject[i], selection);
 
          // TODO: Figure out why this doesn't include tableID but createanalysisTable does
-         let infoTableOptions = createBasicTable(infoTableData, infoTableID)
+         let infoTableOptions = createInfoTable(infoTableData, infoTableID)
 
          // need to reset columndefs as well as rowdata or else table
          // will have empty cols.
@@ -1604,7 +1599,7 @@ function academicAnalysisPage(data) {
       academicAnalysisPage.initialize = true;
 
    } else {
-      console.log("UPDATING")
+      console.log("UPDATING ACADEMIC ANALYSIS")
 
       // Get table/chart data and build tables
       if (typeTab == "k8Tab") {
@@ -1798,7 +1793,7 @@ function academicAnalysisPage(data) {
             analysisTableCategories = [total, ethnicity, subgroup];
       }
 
-      for (let i=0; i < (tableSubjects.length); i++) {
+      for (let i=0; i < (analysisTableSubjects.length); i++) {
          let analysisTableNum = analysisTableStartingIndex + i
 
          analysisTableID = analysisGridApi[analysisTableNum].getGridId()
@@ -1806,8 +1801,8 @@ function academicAnalysisPage(data) {
          let analysisTableOptions = createAnalysisTable(analysisTableData, analysisTableID)
 
          // reset columndefs and rowdata or else table will have empty cols.
-         analysisGridApi[tableNum].setGridOption("columnDefs", analysisTableOptions.columnDefs);
-         analysisGridApi[tableNum].setGridOption("rowData", analysisTableData);
+         analysisGridApi[analysisTableNum].setGridOption("columnDefs", analysisTableOptions.columnDefs);
+         analysisGridApi[analysisTableNum].setGridOption("rowData", analysisTableData);
       }
    }
    // TODO: Multi-Year Analysis Page
@@ -1951,8 +1946,6 @@ function navigateHandler(e) {
             infoIlearnContainers.forEach(el => {
                el.style.display = "flex"; 
             });
-            console.log("ILEARN WIDTH")
-            console.log(elaIlearnInfoGrade.width())
             elaIlearnInfoGrade.width(windowWidth);
             elaIlearnInfoEthnicity.width(windowWidth);
             elaIlearnInfoSubgroup.width(windowWidth);
@@ -1972,8 +1965,6 @@ function navigateHandler(e) {
             infoGradRateContainers.forEach(el => {
                el.style.display = "flex"; 
             });
-            console.log("GRADRATE WIDTH")
-            console.log(gradRateInfoEthnicity.width())
             gradRateInfoTotal.width(windowWidth);
             gradRateInfoEthnicity.width(windowWidth);
             gradRateInfoSubgroup.width(windowWidth);
@@ -2148,10 +2139,8 @@ function navigateHandler(e) {
 
       yearSelection.value = yearValue;
       yearSelection.setAttribute("value", yearValue);
-
-      console.log(selectedValues)
       
-      // TODO: Need to figure out how to prevent this from triggering on page change ??
+// TODO: Need to figure out how to prevent this from triggering on page change ??
 
       // if we are here because the school type changed (e.g., K8 to HS),
       // we need to reload the comparison school list with the new data
@@ -2168,9 +2157,6 @@ function navigateHandler(e) {
 
       selectedValues.year = yearValue;
       selectedValues.comparison_schools = getComparisonSchoolIDs()
-      console.log("AFTER RESET")
-      console.log(selectedValues)
-// TODO: Do we need this here?       getComparisonSchools(selectedValues);
 
       getAcademicAnalysisData(selectedValues);
 
@@ -2270,7 +2256,7 @@ function resize() {
          ebrwSatInfoTotal.width(windowWidth);
          ebrwSatInfoEthnicity.width(windowWidth);
          ebrwSatInfoSubgroup.width(windowWidth);
-         mathSatInfoGrade.width(windowWidth);
+         mathSatInfoTotal.width(windowWidth);
          mathSatInfoEthnicity.width(windowWidth);
          mathSatInfoSubgroup.width(windowWidth);
       }
