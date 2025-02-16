@@ -2156,9 +2156,9 @@ function horizontalStackedBar() {
               .style('shape-rendering','crispEdges')
               .style("opacity", 0.5)
               .attr("x1", -20)
-              .attr("y1", height+5)
-              .attr("x2", width/2)
-              .attr("y2", height+5);
+              .attr("y1", height+15)
+              .attr("x2", width/2 + 75)
+              .attr("y2", height+15);
 
             endtext.selectAll(".endnote")
               .data(endnote, function(d) { return d })
@@ -2166,7 +2166,7 @@ function horizontalStackedBar() {
               .append("text")
               .style("fill", "steelblue")
               .style("font-size", 10)
-              .attr("y", height + 20)
+              .attr("y", height + 30)
               .attr("dx", -20)
               .attr("class","endtext")
               .style("font-weight", 700)

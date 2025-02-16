@@ -5,19 +5,38 @@
 // date:     02.14.25  
 
 
-// format value as percentage (used for Ag Grid)
+// format value as percentage (demographic/analysis pages)
 function basicPercentageFormatter(params) {
-  if (params.value == undefined) {return ""}
-  let s = Number(params.value).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
-  return s
+  if (params.value == undefined) {
+    return "\u2014"
   }
+  else if (params.value == "***") {
+    return "***"
+  }
+  else {
+    let s = Number(params.value).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+    return s
+  }
+};
 
+
+// format value as percentage (info page)
 function infoPercentageFormatter(params) {
-  if (params.value == undefined) {return "---"}
-  if (params.value[0] == undefined) {return "---"}
-  let s = Number(params.value[0]).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
-  return s
+  if (params.value == undefined) {
+    return "\u2014"
   }
+  else if (params.value[0] == undefined) {
+    return "\u2014"
+  }
+  else if (params.value[0] == "***") {
+    return "***"
+  }
+  else {
+    let s = Number(params.value[0]).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+    return s
+  }
+};
+
 
  // for all keys matching a list of "categories", replace value
  // with the percenatage it represents of another value
@@ -147,22 +166,22 @@ function createAnalysisTable(data, tableID) {
      domLayout : "autoHeight",
   };
   return options
-}
+};
+
 
 // Info Table Ag Grid (adds tooltips)
 function createInfoTable(data, tableID) {
 
   let keys = Object.keys(data.reduce(function(result, obj) {
      return Object.assign(result, obj);
-  }, {}))
+  }, {}));
 
   // Move "Category" to front of Array
   keys = keys.filter(item => item != "Category");
   keys.unshift("Category")
 
   let columns = keys.map(field => ({field}));
-  console.log("Info")
-  console.log(data)
+
   columns.forEach(function(e) {
 
      if (e.field == "Category") {
@@ -183,7 +202,7 @@ function createInfoTable(data, tableID) {
         e.headerClass = "text-center";
         e.tooltipValueGetter = function(params) {  
           if (params.value == undefined) 
-            { return "N-Size: ---" }
+            { return "N-Size: \u2014" }
           else { return `N-Size: ${params.value[1]}` }
         };
         e.headerTooltip = "Category N-Size";
@@ -198,10 +217,10 @@ function createInfoTable(data, tableID) {
      enableBrowserTooltips: false
   };
   return options
-}
+};
 
 
-// Basic Ag Grid table
+// Basic Ag Grid table (demographic data)
 function createBasicTable(data, tableID) {
   let keys = Object.keys(data.reduce(function(result, obj) {
      return Object.assign(result, obj);
@@ -240,6 +259,7 @@ function createBasicTable(data, tableID) {
   };
   return options
 }
+
 
 // initialize empty table
 function initializeTable(tableID) {
@@ -287,10 +307,10 @@ function initializeTable(tableID) {
     enableBrowserTooltips: false
   };
   return options
-}
+};
 
 
-// enrollment table
+
 function createEnrollmentTable(data) {
 
   let keys = getKeys(data);
@@ -336,7 +356,7 @@ function createEnrollmentTable(data) {
 // take an array of objects with each object representing "Category"
 // values for a group (e.g., by "Year" or by "School Name") and
 // convert it into an array of objects grouped by "Category",
-// with the group value (the "onKey" paramater becoming the key
+// with the group value (the "onKey" parameter becoming the key
 // for each category value in the new object. For example (with an
 // "onKey" value of "Year", this:
 // 0: {Attendance Rate: 0.972341537, Chronic Absenteeism %:undefined, Year:2019}
@@ -375,14 +395,14 @@ function transposeData(data, onKey) {
   }
 
   return transposed
-}
+};
 
 
 // calculate proficiency given tested/passed values
 function calcProficiency (data, proficient, tested) {
   let result = parseInt(data[proficient]) / parseInt(data[tested])
   return result
-}
+};
 
 
 function getAnalysisTableData(data, category, subject, selection, colors) {
@@ -453,20 +473,9 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
 
   let filteredData = []
 
-  // Selected School: White, Black, Hispanic
-  var noneTested = []
-
-  // Schools with insufficient n-size or no data:Mary Nicholson School 70 Center for Inquiry (Black), Merle Sidener Academy 59 (Black).
-  var insufficientN = []
-
-  var tstInfo = []
-
   for (let i = 0; i < data.length; ++i) {
 
     let eachYear = {}
-    let eachNoneTested = []
-    let eachinsufficientN = {}
-    let eachTestInfo = []
 
     if (data[i] != undefined) {
 
@@ -476,54 +485,28 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
         let tested = categoryTested[a]; 
         let proficiency = category[a]
 
-        // if tested value is greater than 0 and not NaN - calculate Proficiency
         if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
-// TODO: Create dict with insufficient and none-tested data
-          result = calcProficiency(data[i], proficient, tested)
-          console.log("RESULT")
-          console.log(data[i]["School Name"])
-          console.log("CategoryL")
-          console.log(tested)
-          console.log("NUM Tested:")
-          console.log(data[i][tested])
-          console.log("RESULT")          
-          console.log(result)
-
-          // if result is NaN then TotalProficient was '***' (insufficient N-Size)
-          if (result != result) {
-            const insufficientYear = data[i]["Year"];
-            const insufficientName = data[i]["School Name"];
-            eachTestInfo[insufficientYear] = [insufficientName, proficient]
-            eachinsufficientN[insufficientYear] = proficiency
-          }
-          // otherwise add result for the category
-          else {
-            eachYear[proficiency] = result
-          }
-        }
-        // if Tested is 0 or Nan then no students were tested for that category and subject
-        else {
-          eachNoneTested[data[i]["Year"]] = tested;
+          if (data[i][proficient] == "***") {
+             eachYear[proficiency] = "***"
+           }
+           else {
+             result = calcProficiency(data[i], proficient, tested)
+             eachYear[proficiency] = result
+           }
         }
       };
     }
     else {
+      // TODO: HANDLE ERROR BETTER HERE
       console.log("ERROR")
     }
 
     // add relevant year to obj and then push to array
     eachYear["Category"] = data[i]["School Name"]
-
-    tstInfo.push(eachTestInfo);
-
     filteredData.push(eachYear);
-
-    noneTested.push(eachNoneTested);
-
-    insufficientN.push(eachinsufficientN);
   };
 
-  // filter out all categories where the school has no data
+  // filter out categories where the school has no data
   let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
 
   let academicData = filterKeys(filteredData, schoolColumns)
@@ -541,12 +524,8 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
   // Get a list of the categories where school has no data
   let schoolCategories = schoolColumns.filter(i => i !== "Category")
   let missingCategories = category.filter((e) => !schoolCategories.includes(e));
-  // Selected school has insufficient n-size or no data for:
-  // Comparison schools with insufficient n-size or no data:
-  // TODO: Get categories for which school has data, but comparison schools do not
-
-  // console.log(tstInfo)
-  // console.log(missingCategories)
+  
+  finalData.push(missingCategories)
 
   return finalData
 }
@@ -607,16 +586,15 @@ function getTableData(data, category, subject, selection) {
     }
   }
 
-  // TODO: Add these to Charts
   let filteredData = []
-  var noneTested = []
-  var insufficientN = []
+  // var noneTested = []
+  // var insufficientN = []
 
   for (let i = 0; i < data.length; ++i) {
 
     let eachYear = {}
-    let eachNoneTested = {}
-    let eachinsufficientN = {}
+    // let eachNoneTested = {}
+    // let eachinsufficientN = {}
 
     if (data[i] != undefined) {
 
@@ -628,23 +606,35 @@ function getTableData(data, category, subject, selection) {
 
         // if tested value is greater than 0 and not NaN - calculate Proficiency
         if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
+          
+          let testedCategory = tested.split("|")[0] + " N-Size";
 
-          result = calcProficiency(data[i], proficient, tested)
-
-          // if result is NaN then TotalProficient was '***' (insufficient N-Size)
-          if (result != result) {
-            eachinsufficientN[data[i]["Year"]] = proficiency
-          }
-          // otherwise add result and N-Size for the category
-          else {
-            let testedCategory = tested.split("|")[0] + " N-Size";
-            eachYear[proficiency] = result
+          if (data[i][proficient] == "***") {
+            eachYear[proficiency] = "***"
             eachYear[testedCategory] = data[i][tested]
           }
-        }
-        // if Tested is 0 or Nan then no students were tested for that category and subject
-        else {
-          eachNoneTested[data[i]["Year"]] = tested
+          else {
+            result = calcProficiency(data[i], proficient, tested)
+            eachYear[proficiency] = result
+            eachYear[testedCategory] = data[i][tested]
+          };
+
+        //   result = calcProficiency(data[i], proficient, tested)
+
+        //   // if result is NaN then TotalProficient was '***' (insufficient N-Size)
+        //   if (result != result) {
+        //     eachinsufficientN[data[i]["Year"]] = proficiency
+        //   }
+        //   // otherwise add result and N-Size for the category
+        //   else {
+        //     let testedCategory = tested.split("|")[0] + " N-Size";
+        //     eachYear[proficiency] = result
+        //     eachYear[testedCategory] = data[i][tested]
+        //   }
+        // }
+        // // if Tested is 0 or Nan then no students were tested for that category and subject
+        // else {
+        //   eachNoneTested[data[i]["Year"]] = tested
         }
       };
     }
@@ -652,37 +642,36 @@ function getTableData(data, category, subject, selection) {
       console.log("ERROR")
     }
 
-      // add relevant year to obj and then push to array
-      eachYear["Year"] = data[i]["Year"]
+    // add relevant year to obj and then push to array
+    eachYear["Year"] = data[i]["Year"]
+    filteredData.push(eachYear);
+    // noneTested.push(eachNoneTested);
+    // insufficientN.push(eachinsufficientN);
+    };
 
-      filteredData.push(eachYear);
-      noneTested.push(eachNoneTested);
-      insufficientN.push(eachinsufficientN);
-      };
+    let finalData = []
 
-      let finalData = []
+    for (let b = 0; b < category.length; b++) {
+      let yearData = {}
 
-      for (let b = 0; b < category.length; b++) {
-        let yearData = {}
+      for (let c = 0; c < filteredData.length; c++) {
 
-        for (let c = 0; c < filteredData.length; c++) {
-
-          if (category[b] in filteredData[c]) {
-            const filterYear = filteredData[c].Year;
-            const filterCategory = filteredData[c][category[b]];
-            const filterNsize = filteredData[c][category[b] + " N-Size"];
-            yearData[filterYear] = [filterCategory, filterNsize];
-          }
-
+        if (category[b] in filteredData[c]) {
+          const filterYear = filteredData[c].Year;
+          const filterCategory = filteredData[c][category[b]];
+          const filterNsize = filteredData[c][category[b] + " N-Size"];
+          yearData[filterYear] = [filterCategory, filterNsize];
         }
-        if (Object.keys(yearData).length != 0) {
-          yearData["Category"] = category[b]
-          finalData.push(yearData)
-        }
+
       }
+      if (Object.keys(yearData).length != 0) {
+        yearData["Category"] = category[b]
+        finalData.push(yearData)
+      }
+    }
 
     return finalData
-}
+};
 
 
 function getChartData(data, category, subject, selection) {

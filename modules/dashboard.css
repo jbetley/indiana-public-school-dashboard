@@ -374,6 +374,19 @@ select:focus {
   stroke-width: 3.5px;
 }
 
+/* TODO: Testing info message at bottom of table */
+div[id^="analysis-container-ilearn-table"], div[id^="analysis-container-iread-table"],
+div[id^="analysis-container-gradrate-table"], div[id^="analysis-container-sat-table"] {
+    position: relative;
+    padding-bottom: 40px;
+}
+
+div[id*="ilearn-msg"], div[id*="iread-msg"], div[id*="gradrate-msg"], div[id*="sat-msg"] {
+  position: absolute; 
+  bottom: 15px; 
+  left: 20px;
+  font-size: 10px;
+}
 
 /* TODO: Test Grid */
 /* Grid Layout - Built with: https://cssgrid-generator.netlify.app/ Note: moved to not explicitly
