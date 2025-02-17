@@ -324,6 +324,7 @@
 </body>
 <script type="module">
 
+
 // Indiana Public School Academic Dashboard
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
@@ -1146,8 +1147,7 @@ function academicInfoPage(data) {
       console.log(data)
    }
 
-   // this should occur only when the first school in list is a K12 school on load (currently
-   // it is)
+   // if first school in list is K12, we need to manually set sub_type on initial load
    if (selection.school_type == "K12" && selection.school_subtype == "K12") {
       selection.school_subtype = "K8"
    }
@@ -1318,7 +1318,6 @@ function academicInfoPage(data) {
       // Initialize (empty) tables on-load
       for (let k = 0; k < infoTableNames.length; k++) {
          let infoTableID = "#" + infoTableNames[k]
-
          let infoTableOptions = initializeTable(infoTableID)
          var infoGridDiv = document.querySelector(infoTableID)
          infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
@@ -1331,69 +1330,61 @@ function academicInfoPage(data) {
       
       /* Update */
 
-      let tableNum,
-         infoTableStartingIndex,
-         infoTableCategories,
-         infoTableSubjects;
+      let infoStartingIndex,
+         infoCategories,
+         infoSubjects;
 
       if (typeTab == "k8Tab") {
-
          if (k8Tab == "ireadTab") {
-            // tableNum = 3;
+            infoStartingIndex = 0;
+            infoSubjects = ["IREAD", "IREAD", "IREAD"];
+            infoCategories = [total, ethnicity, subgroup];
 
-            infoTableStartingIndex = 0;
-            infoTableSubjects = ["IREAD", "IREAD", "IREAD"];
-            infoTableCategories = [total, ethnicity, subgroup];
-
-            ireadInfoTotal.data(getChartData(data, total, "IREAD", selection)).id("ireadInfoTotal");
-            ireadInfoEthnicity.data(getChartData(data, ethnicity, "IREAD", selection)).id("ireadInfoEthnicity");
-            ireadInfoSubgroup.data(getChartData(data, subgroup, "IREAD", selection)).id("ireadInfoSubgroup");         
+            ireadInfoTotal.data(getChartData(data, infoCategories[0], infoSubjects[0], selection)).id("ireadInfoTotal");
+            ireadInfoEthnicity.data(getChartData(data, infoCategories[1], infoSubjects[1], selection)).id("ireadInfoEthnicity");
+            ireadInfoSubgroup.data(getChartData(data, infoCategories[2], infoSubjects[2], selection)).id("ireadInfoSubgroup");         
          }
-
          else {
-            // tableNum = 6;
+            infoStartingIndex = 3;
+            infoSubjects = ["ELA", "ELA", "ELA", "Math", "Math", "Math"];
+            infoCategories = [gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup];
 
-            infoTableStartingIndex = 3;
-            infoTableSubjects = ["ELA", "ELA", "ELA", "Math", "Math", "Math"];
-            infoTableCategories = [gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup];
+            elaIlearnInfoGrade.data(getChartData(data, infoCategories[0], infoSubjects[0], selection)).id("elaIlearnInfoGrade");
+            elaIlearnInfoEthnicity.data(getChartData(data, infoCategories[1], infoSubjects[1], selection)).id("elaIlearnInfoEthnicity");
+            elaIlearnInfoSubgroup.data(getChartData(data, infoCategories[2], infoSubjects[2], selection)).id("elaIlearnInfoSubgroup");
+            mathIlearnInfoGrade.data(getChartData(data, infoCategories[3], infoSubjects[3], selection)).id("mathIlearnInfoGrade");
+            mathIlearnInfoEthnicity.data(getChartData(data, infoCategories[4], infoSubjects[4], selection)).id("mathIlearnInfoEthnicity");
+            mathIlearnInfoSubgroup.data(getChartData(data, infoCategories[5], infoSubjects[5], selection)).id("mathIlearnInfoSubgroup");
 
-            elaIlearnInfoGrade.data(getChartData(data, gradeAll, "ELA", selection)).id("elaIlearnInfoGrade");
-            elaIlearnInfoEthnicity.data(getChartData(data, gradeAll, "ELA", selection)).id("elaIlearnInfoEthnicity");
-            elaIlearnInfoSubgroup.data(getChartData(data, ethnicity, "ELA", selection)).id("elaIlearnInfoSubgroup");
-            mathIlearnInfoGrade.data(getChartData(data, ethnicity, "Math", selection)).id("mathIlearnInfoGrade");
-            mathIlearnInfoEthnicity.data(getChartData(data, subgroup, "Math", selection)).id("mathIlearnInfoEthnicity");
-            mathIlearnInfoSubgroup.data(getChartData(data, subgroup, "Math", selection)).id("mathIlearnInfoSubgroup");
-
-            elaIlearnInfoStackGrade.data(getProficiencyBreakdown(data, gradeAll, "ELA", selection)).id("elaIlearnInfoStackGrade");
-            elaIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, ethnicity, "ELA", selection)).id("elaIlearnInfoStackSubgroup");
-            elaIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, subgroup, "ELA", selection)).id("elaIlearnInfoStackEthnicity");
-            mathIlearnInfoStackGrade.data(getProficiencyBreakdown(data, gradeAll, "Math", selection)).id("mathIlearnInfoStackGrade");
-            mathIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, ethnicity, "Math", selection)).id("mathIlearnInfoStackEthnicity");
-            mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, subgroup, "Math", selection)).id("mathIlearnInfoStackSubgroup");              
+            elaIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[0], infoSubjects[0], selection)).id("elaIlearnInfoStackGrade");
+            elaIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[1], infoSubjects[1], selection)).id("elaIlearnInfoStackSubgroup");
+            elaIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[2], infoSubjects[2], selection)).id("elaIlearnInfoStackEthnicity");
+            mathIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[3], infoSubjects[3], selection)).id("mathIlearnInfoStackGrade");
+            mathIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[4], infoSubjects[4], selection)).id("mathIlearnInfoStackEthnicity");
+            mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[5], infoSubjects[5], selection)).id("mathIlearnInfoStackSubgroup");              
          }
       }
       else if (typeTab == "hsTab") {
-         
          if (hsTab == "gradTab") {
-            infoTableStartingIndex = 9;
-            infoTableSubjects = ["Graduation", "Graduation", "Graduation"];
-            infoTableCategories = [gradTotal, ethnicity, subgroup];
+            infoStartingIndex = 9;
+            infoSubjects = ["Graduation", "Graduation", "Graduation"];
+            infoCategories = [gradTotal, ethnicity, subgroup];
 
-            gradRateInfoTotal.data(getChartData(data, gradTotal, "Graduation", selection)).id("gradRateInfoTotal");
-            gradRateInfoEthnicity.data(getChartData(data, ethnicity, "Graduation", selection)).id("gradRateInfoEthnicity");
-            gradRateInfoSubgroup.data(getChartData(data, subgroup, "Graduation", selection)).id("gradRateInfoSubgroup");
+            gradRateInfoTotal.data(getChartData(data, infoCategories[0], infoSubjects, selection)).id("gradRateInfoTotal");
+            gradRateInfoEthnicity.data(getChartData(data, infoCategories[1], infoSubjects, selection)).id("gradRateInfoEthnicity");
+            gradRateInfoSubgroup.data(getChartData(data, infoCategories[2], infoSubjects, selection)).id("gradRateInfoSubgroup");
          }
          else if (hsTab == "satTab") {
-            infoTableStartingIndex = 12;
-            infoTableSubjects = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
-            infoTableCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
+            infoStartingIndex = 12;
+            infoSubjects = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
+            infoCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
-            ebrwSatInfoTotal.data(getChartData(data, total, "EBRW", selection)).id("ebrwSatInfoTotal");
-            ebrwSatInfoEthnicity.data(getChartData(data, ethnicity, "EBRW", selection)).id("ebrwSatInfoEthnicity");
-            ebrwSatInfoSubgroup.data(getChartData(data, subgroup, "EBRW", selection)).id("ebrwSatInfoSubgroup");
-            mathSatInfoTotal.data(getChartData(data, total, "Math", selection)).id("mathSatInfoTotal");
-            mathSatInfoEthnicity.data(getChartData(data, ethnicity, "Math", selection)).id("mathSatInfoEthnicity");
-            mathSatInfoSubgroup.data(getChartData(data, subgroup, "Math", selection)).id("mathSatInfoSubgroup");
+            ebrwSatInfoTotal.data(getChartData(data, infoCategories[0], infoSubjects[0], selection)).id("ebrwSatInfoTotal");
+            ebrwSatInfoEthnicity.data(getChartData(data, infoCategories[1], infoSubjects[1], selection)).id("ebrwSatInfoEthnicity");
+            ebrwSatInfoSubgroup.data(getChartData(data, infoCategories[2], infoSubjects[2], selection)).id("ebrwSatInfoSubgroup");
+            mathSatInfoTotal.data(getChartData(data, infoCategories[3], infoSubjects[3], selection)).id("mathSatInfoTotal");
+            mathSatInfoEthnicity.data(getChartData(data, infoCategories[4], infoSubjects[4], selection)).id("mathSatInfoEthnicity");
+            mathSatInfoSubgroup.data(getChartData(data, infoCategories[5], infoSubjects[5], selection)).id("mathSatInfoSubgroup");
          }
       };
 
@@ -1407,12 +1398,12 @@ function academicInfoPage(data) {
       // Remove objects with years > the selected year
       const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
 
-      for (let i=0; i < infoTableSubjects.length; i++) {
+      for (let i=0; i < infoSubjects.length; i++) {
 
-         let infoTableNum = i + infoTableStartingIndex;
+         let infoTableNum = i + infoStartingIndex;
 
          infoTableID = infoGridApi[infoTableNum].getGridId();
-         infoTableData = getTableData(tabledata, infoTableCategories[i], subject[i], selection);
+         infoTableData = getTableData(tabledata, infoCategories[i], subject[i], selection);
 
          // TODO: Figure out why this doesn't include tableID but createanalysisTable does
          let infoTableOptions = createInfoTable(infoTableData, infoTableID)

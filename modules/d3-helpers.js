@@ -2,7 +2,7 @@
 // d3.js charting functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     02.07.25
+// date:     02.18.25
 
 // https://datawanderings.com/2019/10/28/tutorial-making-a-line-chart-in-d3-js-v-5/
 // https://observablehq.com/@greenafrican/grouped-bar-chart
@@ -1251,7 +1251,6 @@ function singleLine() {
       let center = .5
       let year;
 
-      // TODO: Getting error here "cannot find Year"
       if (distance < center) {
         yearData = d0
         year = d0.Year
@@ -1332,7 +1331,7 @@ function singleLine() {
 }; // end simpleLineChart function
 
 
-// Enrollment by Ethnicity/Subgroup
+// Enrollment by Ethnicity/Subgroup (demographic page)
 function horizontalGroupBar() {
 
   let defaultWidth = window.innerWidth/2 - 125;
@@ -1368,10 +1367,7 @@ function horizontalGroupBar() {
 
       let selectedYear;
       let yearString;
-      let groupTitleText = "";
-
-      // used by title rect and text to fix slight offset from center
-      const manualAdjustment = 7;
+      let titleText = "";
 
       const chartData = data[0]
       const missingString = data[1] // not currently needed
@@ -1383,7 +1379,9 @@ function horizontalGroupBar() {
       y0.domain(categoryKeys);
       y1.domain(entityKeys).range([0, y0.bandwidth()]);
 
-      var dom = d3.select("#" + id);
+      const elementID = "#" + id;
+
+      var dom = d3.select(elementID);
 
       var svg = dom.append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -1410,7 +1408,7 @@ function horizontalGroupBar() {
 
       var legendContainer = svg.append('g')
         .attr('class', 'legendcontainer')
-        .attr('transform', "translate(" + -(margin.left/4) + "," + -(margin.top) +")")
+        .attr('transform', "translate(" + -(margin.left/4) + "," + -(margin.top) +")");
 
       // chart end-note
       var endtext = svg.append("g")
@@ -1421,53 +1419,54 @@ function horizontalGroupBar() {
         .style("fill", "steelblue")
         .style("font-size", 10);
 
-      // chart title
-      var groupTitle = svg.append("g")
-        .classed("title", true);
+      var title = svg.append("g");
 
-      // the rect position is relative to the svg including transforms (50,45). however,
-      // we want the title to be in the center of the containing div, not the svg group.
-      let containerWidth = d3.select('[id^="demo-container-3-stack"]')._groups[0][0].clientWidth;
-      const svgWidth = width + margin.left + margin.right
-      const xVal = (containerWidth - svgWidth) / 4
+      // title is positioned with respect to the svg, but we want
+      // to position it with respect to the parent container - so
+      // we get parent container width and left offset
+      let divWidth = dom._groups[0][0].parentElement.clientWidth;
+      let divElement = document.getElementById(id).parentElement;
+      let paddingLeft = parseInt(getComputedStyle(divElement).paddingLeft);
 
-      groupTitle.append("rect")
-        .classed("titlebox", true)
-        .attr("width", (width))
-        .attr("x", -xVal)
+      let xShift = paddingLeft/2;
+      let rectWidth = divWidth - ((margin.left + margin.right) * 2);
+      let textShift = (rectWidth / 2) - paddingLeft;
+
+      title.append("rect")
+        .classed("titlerect", true)
+        .attr("width", rectWidth)
+        .attr("x", -xShift)
         .attr("y", -70)
         .attr("rx", 5)
         .style("fill", "#6783a9")
         .attr("height", "30px");
 
-      selectedYear = document.getElementById("yearSelect").value
+      selectedYear = document.getElementById("yearSelect").value;
 
       yearString = longYear(selectedYear);
 
       if (exists(data[0], 'Free or Reduced Price Meals')) {
-        groupTitleText = ["Enrollment by Subgroup (" + yearString +")"]
+        titleText = ["Enrollment by Subgroup (" + yearString +")"]
       }
       else {
-        groupTitleText = ["Enrollment by Ethnicity (" + yearString +")"]
-      }
+        titleText = ["Enrollment by Ethnicity (" + yearString +")"]
+      };
 
-      groupTitle.append("text")
-        .classed("titletext", true)
+      title.append("text")
+        .classed("title", true)
         .attr("fill", "white")
         .style("font-weight", 700)
         .attr("font-size", "12px")
         .style("font-family", "Inter, sans-serif")
         .style('text-anchor','middle')
         .style('alignment-baseline', 'middle')
-        .attr('dx', function(d) {
-          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2 + manualAdjustment
-        })
+        .attr('dx', textShift)
         .attr('y', -55)
-        .text(groupTitleText);
+        .text(titleText);
 
       updateData = function() {
 
-        svg.select("#" + id)
+        // svg.select("#" + id)
 
         const chartData = data[0]
         const missingString = data[1]
@@ -1509,7 +1508,7 @@ function horizontalGroupBar() {
             .call(wrap, 60);
         }, 0);
 
-        legendContainer.selectAll('.legend').remove()
+        legendContainer.selectAll('.legend').remove();
         legendContainer.attr('display', 'block');
 
         // transform is handled below to allow for legend to wrap
@@ -1519,7 +1518,7 @@ function horizontalGroupBar() {
         var legend = legendContainer.selectAll('.legend')
           .data(entityKeys)
           .enter().append('g')
-          .attr('class', 'legend')
+          .attr('class', 'legend');
 
         legend.append('rect')
           .attr("x", function(d, i) {
@@ -1543,7 +1542,7 @@ function horizontalGroupBar() {
           .style('fill', "#6783a9")
           .text(function (d) {
             return d;
-          })
+          });
 
         // offset legend labels from one another
         var x_offset = 0
@@ -1666,36 +1665,49 @@ function horizontalGroupBar() {
               .call(wrap, width + margin.right);
         };
 
-          // update title
-          let selectedYear = document.getElementById("yearSelect").value
-          let yearString = longYear(selectedYear);
+        // update title
+        let selectedYear = document.getElementById("yearSelect").value;
+        let yearString = longYear(selectedYear);
 
-          if (exists(data[0], 'Free or Reduced Price Meals')) {
-            groupTitleText = ["Enrollment by Subgroup (" + yearString +")"]
+        if (exists(data[0], 'Free or Reduced Price Meals')) {
+          titleText = ["Enrollment by Subgroup (" + yearString +")"]
 
-          }
-          else {
-            groupTitleText = ["Enrollment by Ethnicity (" + yearString +")"]
-          }
+        }
+        else {
+          titleText = ["Enrollment by Ethnicity (" + yearString +")"]
+        };
 
-          svg.selectAll("text.titletext").remove();
+        svg.selectAll("text.title").remove();
+        svg.selectAll("rect.titlerect").remove();
 
-          groupTitle.selectAll("text.titletext")
-            .data(groupTitleText, function(d) { return d })
-            .enter()
-            .append("text")
-              .attr('class', 'titletext')
-              .attr("fill", "white")
-              .style("font-weight", 700)
-              .attr("font-size", "12px")
-              .style("font-family", "Inter, sans-serif")
-              .style('text-anchor','middle')
-              .style('alignment-baseline', 'middle')
-              .attr('dx', function(d) {
-                return (width + margin.left + margin.right)/2 - margin.left - margin.right/2 + manualAdjustment
-              })
-              .attr('y', -55)
-              .text(function(d) { return d })
+        divWidth = dom._groups[0][0].parentElement.clientWidth;
+        divElement = document.getElementById(id).parentElement;
+        paddingLeft = parseInt(getComputedStyle(divElement).paddingLeft);
+  
+        xShift = paddingLeft/2;
+        rectWidth = divWidth - ((margin.left + margin.right) * 2);
+        textShift = (rectWidth/2) - xShift;
+
+        title.append("rect")
+          .attr("width", rectWidth)
+          .attr("x", -xShift)
+          .attr("y", -70)
+          .attr("rx", 5)
+          .style("fill", "#6783a9")
+          .attr("height", "30px");
+
+        title.append("text")
+          .classed("title", true)
+          .attr("fill", "white")
+          .style("font-weight", 700)
+          .attr("font-size", "12px")
+          .style("font-family", "Inter, sans-serif")
+          .style('text-anchor','middle')
+          .style('alignment-baseline', 'middle')
+          .attr('dx', textShift)
+          .attr('y', -55)
+          .text(titleText);
+
       }; // end update Function
 
       updateWidth = function() {
@@ -1703,7 +1715,7 @@ function horizontalGroupBar() {
         // width is passed in as window.innerWidth/2
         widthScale = width - margin.left - margin.right;
 
-        let actualSvg = d3.select(svg._groups[0][0].parentNode)
+        let actualSvg = d3.select(svg._groups[0][0].parentNode);
 
         transformAdjust = 80;
         actualSvg.transition().duration(250).attr('width', widthScale + transformAdjust);
@@ -1733,15 +1745,39 @@ function horizontalGroupBar() {
         // even so, the rect is off center, manual adjustment fixes, but I'd 
         // prefer a more organic situation
         const svgWidth = widthScale + transformAdjust;
-        const containerWidth = svgWidth + 70
-        const manualAdjustment = 7
-        const xVal = ((containerWidth - svgWidth) / 4) - manualAdjustment
+        // const containerWidth = svgWidth + 70;
+        // const manualAdjustment = 7;
+        // const xVal = ((containerWidth - svgWidth) / 4) - manualAdjustment;
  
-        svg.select("rect.titlebox")
+        divElement = document.getElementById(id);
+
+        paddingLeft = parseInt(getComputedStyle(divElement.parentElement).paddingLeft);
+        let divPadding = paddingLeft * 2;
+        let divWidth = divPadding + svgWidth;
+
+        // console.log(svgWidth)
+        // console.log(widthScale)
+        // console.log(divWidth - svgWidth)
+
+        // TODO: CANNOT GET WIDTH CORECT
+
+        xShift = paddingLeft/2;
+        rectWidth = divWidth - ((margin.left + margin.right) * 2); // this is arbitrary
+        textShift = (rectWidth/2) - xShift;
+        console.log(divWidth)
+        console.log(rectWidth)
+
+        // TODO: DOUBLE RECTS ARE ADDED
+        svg.selectAll("text.title").remove();
+        svg.selectAll("rect.titlerect").remove();
+
+        title.select("rect")
           .transition()
           .duration(0)
-          .attr("width", (widthScale))
-          .attr("x", -xVal) 
+          .attr("width", rectWidth) // 
+          .attr("x", 0); //-xShift);
+          // .attr("width", (widthScale))
+          // .attr("x", -xVal) 
 
         svg.select("text.titletext")
         .transition()
@@ -1757,10 +1793,11 @@ function horizontalGroupBar() {
             return "12px"
           }
         })
+        .attr('dx', textShift)
         // no idea how I came up with this formula
-        .attr('dx', function(d) {
-          return (widthScale + margin.left + margin.right)/2 - margin.left + manualAdjustment
-        });
+        // .attr('dx', function(d) {
+        //   return (widthScale + margin.left + margin.right)/2 - margin.left + manualAdjustment
+        // });
 
         // TODO: Adjust x (higher) dynamically, somehow
         svg.selectAll("text.endtext")
@@ -1818,7 +1855,7 @@ function horizontalStackedBar() {
   var colors = {};
   const colorList = ["#df8f2d", "#ebbb81", "#96b8db", "#74a2d7"];
   
-  const manualAdjustment = 7;
+  // const manualAdjustment = 7;
 
   var yAxis = d3.axisLeft(y).tickSize(0).tickPadding(8);
 
@@ -1854,13 +1891,18 @@ function horizontalStackedBar() {
 
       var title = svg.append("g");
 
-      let actualSvg = d3.select(svg._groups[0][0]) /// GET WIDTH
+      // this is how we center the title rect: get width of svg and the "x"
+      // transform value. Get the difference between the svg width and the rect
+      // width, divide it by two and subtract the transform value
+      let svgWidth = dom.select("svg").attr("width");
+      let svgTransform = dom.select("svg").node().transform.baseVal.consolidate().matrix.e;
+      let rectWidth = (width + margin.left + margin.right)/2;
+      let xShift = (svgWidth - rectWidth)/2 - svgTransform;
+      let textShift = (svgWidth / 2) - svgTransform;
 
       title.append("rect")
-        .attr("width", (width + margin.left + margin.right)/2)
-        .attr("x", function(d) {
-          return ((width + margin.left + margin.right)/3) / 2
-        })
+        .attr("width", rectWidth)
+        .attr("x", xShift)
         .attr("rx", 5)
         .style("fill", "#6783a9")
         .attr("height", "30px");
@@ -1873,10 +1915,8 @@ function horizontalStackedBar() {
         .style("font-family", "Inter, sans-serif")
         .style('text-anchor','middle')
         .style('alignment-baseline', 'middle')
-        .attr('dx', function(d) {       // the "dx" value is an experiment
-          return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-        })
-        .attr('dy', 15)
+        .attr('dx', textShift)
+        .attr('dy', 16)
         .text("Proficiency Breakdown (" + selectedYear +")");
 
       // apply translate to all barstack items (including axis) to
@@ -1973,6 +2013,7 @@ function horizontalStackedBar() {
         // TODO: find way to get position from selected rather than
         // TODO: position of svg from top of screen - none of the
         // TODO: usual (getBoundingClientRec, bbox, etc.) work
+
         // the offset from the top of the screen to the top of the svg
         let that = d3.select("#" + id)._groups[0][0].offsetTop;
 
@@ -2048,7 +2089,7 @@ function horizontalStackedBar() {
             enter => enter
               .append("g")
               .attr("fill", function (d,i) { return colors[d.key]}),
-            null, // no update function
+            null, // no update function here
             exit => {
               exit
                 .transition()
@@ -2178,6 +2219,19 @@ function horizontalStackedBar() {
 
           svg.selectAll("text.title").remove();
 
+          svgWidth = dom.select("svg").attr("width");
+          svgTransform = dom.select("svg").node().transform.baseVal.consolidate().matrix.e;
+          rectWidth = (width + margin.left + margin.right)/2;
+          xShift = (svgWidth - rectWidth)/2 - svgTransform;
+          textShift = (svgWidth / 2) - svgTransform;
+
+          title.append("rect")
+          .attr("width", rectWidth)
+          .attr("x", xShift)
+          .attr("rx", 5)
+          .style("fill", "#6783a9")
+          .attr("height", "30px");
+
           title.append("text")
             .classed("title", true)
             .attr("fill", "white")
@@ -2186,10 +2240,8 @@ function horizontalStackedBar() {
             .style("font-family", "Inter, sans-serif")
             .style('text-anchor','middle')
             .style('alignment-baseline', 'middle')
-            .attr('dx', function(d) {
-              return (width + margin.left + margin.right)/2 - margin.left - margin.right/2
-            })
-            .attr('dy', 15)
+            .attr('dx', textShift)
+            .attr('dy', 16)
             .text("Proficiency Breakdown (" + selectedYear +")");
         }; // end Update
       }); // end each
