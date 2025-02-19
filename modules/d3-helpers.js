@@ -55,12 +55,13 @@ function multiLine() {
     .tickPadding([5])
     .tickFormat(d3.format(".0%"));
 
-  // hardcode colors to categories to ensure that colors are
-  // consistently displayed
   var colors = {}
   const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
                       "#83941f", "#f0c33b", "#bc986a", "#96b8db"]
 
+  var currentX = 0;
+  var yPosition = 0;
+  
   function chart(selection){
 
     selection.each(function () {
@@ -211,6 +212,7 @@ function multiLine() {
           // remove y-axis line
           svg.selectAll(".y.axis").select('.domain').remove()
 
+          // TODO: FIX THIX - NOT WORKING
           // this seems like a kludge
           legendContainer.selectAll('.legend').remove()
           legendContainer.attr('display', 'block');
@@ -249,17 +251,19 @@ function multiLine() {
               return d.id;
             })
 
-// TODO: LEGEND PLACEMENT SUUUUUUCCCCKKKSSS
-// TODO: Make the legend responsive? May need to make this a function and re-run it
-// TODO: steps, 1) build horizontal legend; 2) break the line if necessary;
-// TODO: 3) calculate center based on current svg; 4) ADD to WIDTH resize function
-// https://stackoverflow.com/questions/49454761/how-to-horizontally-centre-a-responsive-multi-line-legend-in-d3
+          // base legendItem is the starting x position of the legendcontainer
+          // this monstrosity gets the width of the svg
+          // console.log(d3.select(".legendcontainer")._groups[0][0].parentNode.parentNode.getBBox().width)
 
-          // base xOffset is the starting x position of the legendcontainer
           var legendStartX = d3.select(".legendcontainer").node().getCTM().e
-          var xOffset = 0; 
-          var row = 1;
-          var y_pos = 0;
+          console.log("Initial LegendX")
+          console.log(legendStartX)
+
+          var legendItem = 0;
+          // var row = 1;
+          // var yPosition = 0;
+          let xPosition = 0;
+
           const fontSize = 10;
           var rectWidth = 10; // start at 10 due to 0-based indexing
           var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
@@ -270,116 +274,234 @@ function multiLine() {
           svg.selectAll("g.legend")
             .attr("transform", function (d, i) {
 
-              rectWidth = i * 10
+              console.log("ENTERING LEGEND LOOP")
+              console.log(d3.select(this).selectAll("text")._groups[0][0].__data__.id)
+              console.log("Initial CurrentX")
+              console.log(currentX)
+              
+              rectWidth = 10;
 
-              // getComputedTextLength() returns 0 if the text hasn't been rendered (e.g.,
-              // on initial load of the app when focus is in another tab and display is
-              // set to none for the academic_info page) - so we use a different utility
-              // function (Browsertext) that uses built-in functionality in the HTML5 canvas
-              // 2D context if xpos is 0
-              var x_pos = d3.select(this).select("text").node().getComputedTextLength();
+              // NOTE: Process:
+              //  1) if all items could fit on one line:
+              //    a) if 4 items or less, keep on one line
+              //    b) if 5 items or more, split to two lines (e.g., 3/2, 3/3, 4/3, 4/4)
+              //  2) if items too long to fit on one line: calculate how many items can fit on each row
+              //    and force break at that number items for each row.
 
-              if (x_pos == 0) {
-                x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
-              }
+              // maximum number of legend items per row (based on length of longest item)
+              // this iterates over all text legend items and finds the length of
+              // the longest one. we return d.id in order to ensure no changes
+              // are made to the text (TODO: Better way to do this?)
+              let allTextItems = d3.select(this.parentNode).selectAll("text");
+              let lengths = [];
+              allTextItems.each(function (p, j) {
+                d3.select(this).text(function (d, i) {
+                    lengths.push(BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif"))
+                    return d.id
+                })
+              });
 
-              // xOffset is the length of the string plus the xOffset value
-              xOffset = xOffset + x_pos;
+              const intArray = lengths.map(float => Math.floor(float))
 
-              // if the length of the string + the current xPosition exceeds
-              // the width of the svg, we want to wrap to next line - the first
-              // condition only triggers if the length of the string measured from
-              // the current offset is longer than total width of svg.
+              // the number of items in each legendgroup
+              const numItems = intArray.length
+
+              // the length of longest item
+              const maxStrLength = Math.max(...intArray)
+
               let boundingArea = 0;
 
               if (categories.length > 6) {
-                boundingArea = svgWidth - 180
+                boundingArea = svgWidth - 60
               }
               else {
-                boundingArea = svgWidth - 100
+                boundingArea = svgWidth - 60
               }
 
-              if (xOffset + rectWidth >= boundingArea) {
+              // maximum allowable items per row based on length
+              const maxPerRow = Math.floor(boundingArea/maxStrLength)
 
-                // reset xOffset to 0 plus length of moves string
-                xOffset = legendStartX
-                xOffset = xOffset + x_pos;
+              // number of legend items possible for each row (if value is < 1, then all items
+              // may fit on one row)
+              const itemsPerRow = numItems/maxPerRow;
 
-                // shift down 15 pixels
-                y_pos = row * 15
+              // console.log("SVG")
+              // console.log(svgWidth)
+              // console.log("MAX ITEM")
+              // console.log(maxStrLength)
 
-                // NOTE: because this is a "group" translation, it doesn't directly impact
-                // the rec/text position (x values) determined by legendXPosition functions.
-                // Set x value back to left edge
-                d3.select(this).select("rect").attr("x", 0)
-                d3.select(this).select("text").attr("x", rectOffset)
+              // console.log("ITEMS PER ROW")
 
-                row+=1
-              }
-              else {
-                // First row
-                if (row == 1) {
-                    y_pos = 0
+              if (itemsPerRow < 1) {
+                
+                // this will be less than one if all items can fit on one line
+                const halfItems = numItems/2;
+
+                // number of items to be placed on first row is half rounded up
+                const firstRow = Math.ceil(halfItems);
+                
+                if (halfItems < 2 ) {
+                  // first item
+                  if (i == 0) {
+                    yPosition = 0;
+                    xPosition = legendStartX;
+                  }
+                  else {
+                    console.log("SINGLE ROW")
+                    console.log("CURRENT X - SINGLE ROW")
+                    console.log(currentX)
+
+                    // let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
+                    // console.log(rectWidth)
+                    // console.log(maxStrLength)
+
+                    d3.select(this).select("rect").attr("x", currentX); //rectWidth + rectOffset)
+                    d3.select(this).select("text").attr("x", currentX + rectOffset); //rectWidth + rectOffset + rectOffset)
+                  }
                 }
                 else {
+                  console.log("COULD BE SINGLE- BUT FORCED MULTIPLE")
+                  console.log("INDEX: " + i)
 
-                  let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
+                  if (i == 0) {
+                    yPosition = 0;
+                    xPosition = legendStartX;
+                  }
+                  else if (i < firstRow) {
+                    console.log("FORCED MULTIPLE- FIRST ROW")
+                    console.log("Setting Current X")
+                    console.log(currentX)
+                    xPosition = currentX;
+                    // account for rect size and 12 pixel offset between rect and text
+                    // add twice to text to account for prior and current offset
+                    d3.select(this).select("rect").attr("x", currentX); //rectWidth + rectOffset)
+                    d3.select(this).select("text").attr("x", currentX + rectOffset); //rectWidth + rectOffset + rectOffset)
 
-                  // account for rect size and 12 pixel offset between rect and text
-                  // add twice to text to account for prior and current offset
-                  d3.select(this).select("rect").attr("x", rectWidth + rectOffset)
-                  d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
+                  } else if (i+1 == firstRow) {
+                    console.log("FORCED MULTIPLE- FIRST ROW")
+                    console.log("Setting Current X")
+                    console.log(currentX)
+                    // reset legendItem to 0 plus length of moves string
+                    xPosition = 0; //legendStartX;
+                    currentX = 0;
+
+                    // shift down 15 pixels
+                    yPosition = 15;
+
+                    // NOTE: because this is a "group" translation, it doesn't directly impact
+                    // the rec/text position (x values) determined by legendXPosition functions.
+                    // Set x value back to left edge
+                    d3.select(this).select("rect").attr("x", 0)
+                    d3.select(this).select("text").attr("x", rectOffset)
+                  } else {
+                    yPosition = 15;
+                    xPosition = currentX;
+                    console.log("SECOND ROW ITEMS- REST OF EM")
+
+                    console.log("Current X")
+                    console.log(currentX)
+                    // account for rect size and 12 pixel offset between rect and text
+                    // add twice to text to account for prior and current offset
+                    d3.select(this).select("rect").attr("x", currentX); //rectWidth + rectOffset)
+                    d3.select(this).select("text").attr("x", currentX + rectOffset); //rectWidth + rectOffset + rectOffset)
+                  }
                 }
-              };
+              } else
+              {
+                console.log("auto line break at maxPerRow")
+                console.log(itemsPerRow)
+              }
 
-              const finalXposition = (xOffset - x_pos + legendStartX);
-              const finalYposition = y_pos;
+              // legendItem is the length of the string plus the legendItem value
+              currentX = xPosition + maxStrLength;
+
+              console.log("AFTERLOOP")
+              console.log(currentX)
+              console.log("YPOSTION")
+              console.log(yPosition)
+              // TODO: OLD OLD
+              // if (legendItem + rectWidth >= boundingArea) {
+
+              //   // reset legendItem to 0 plus length of moves string
+              //   legendItem = legendStartX
+              //   legendItem = legendItem + maxStrLength;
+
+              //   // shift down 15 pixels
+              //   yPosition = row * 15
+
+              //   // NOTE: because this is a "group" translation, it doesn't directly impact
+              //   // the rec/text position (x values) determined by legendXPosition functions.
+              //   // Set x value back to left edge
+              //   d3.select(this).select("rect").attr("x", 0)
+              //   d3.select(this).select("text").attr("x", rectOffset)
+
+              //   row+=1
+              // }
+              // else {
+              //   // First row
+              //   if (row == 1) {
+              //       yPosition = 0
+              //   }
+              //   else {
+
+              //     let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
+
+              //     // account for rect size and 12 pixel offset between rect and text
+              //     // add twice to text to account for prior and current offset
+              //     d3.select(this).select("rect").attr("x", rectWidth + rectOffset)
+              //     d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
+              //   }
+              // };
+
+              // we are storing the x position of each legend element in in an array of objects
+              // because I cannot determine another way to get the value once everything has
+              // been placed
+              const finalXposition = (legendItem - maxStrLength + 0); //legendStartX);
+              const finalYposition = yPosition;
 
               legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition});
 
               // final translation is with respect to the initial translation of
               // the legendcontainer.
-              return "translate(" + finalXposition + "," + finalYposition + ")"
+              return "translate(" + xPosition + "," + yPosition + ")"
             });
 
           // once the legend has been completed, do some calcs to shift the
           // legendcontainer to the middle of the svg.
 
-          // tst[0].x is the x value for the first legend item
-          // TODO: there has to be a better way to get this value
-          const legendItemStartingX = legendHistory[0].x
-          // the current x position of the legendcontainer
-          const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
-          // account for the initial X translation of the svg
-          const initialSvgTranslate = 35
-          // the width of the container
-          const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
+          // TODO: LEGEND PLACEMENT SUUUUUUCCCCKKKSSS
+          // TODO: Make the legend responsive? May need to make this a function and re-run it
+          // TODO: steps, 1) build horizontal legend; 2) break the line if necessary;
+          // TODO: 3) calculate center based on current svg; 4) ADD to WIDTH resize function
+          // https://stackoverflow.com/questions/49454761/how-to-horizontally-centre-a-responsive-multi-line-legend-in-d3
 
-          const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
+          // // tst[0].x is the x value for the first legend item
+          // const legendItemStartingX = legendHistory[0].x
 
-          svg.selectAll(".legendcontainer")
-            .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
+          // // the current x position of the legendcontainer
+          // const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
+
+          // // account for the initial X translation of the svg
+          // const initialSvgTranslate = 35
+
+          // // the width of the container
+          // const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
+
+          // const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
+
+          // svg.selectAll(".legendcontainer")
+          //   .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
+
+          // Update lines and circles
 
           // Set up transition.
           const dur = 200;
           const t = d3.transition().duration(dur);
 
-          // TODO: getting duplicate lines!
-          // TODO: Testing getting rid of this extra layer
-          // let lineGroupUpdate = svg.selectAll(".linechart-g")
-          //   .data(dataByCategory)
-
-          // lineGroupUpdate.selectAll(".linechart").remove()
-
-          // let lineUpdate = lineGroupUpdate.selectAll(".linechart")
-          // TODO: Testing getting rid of this extra layer
-
           let lineUpdate = svg.selectAll(".linechart")
-            .data(dataByCategory)
+            .data([dataByCategory])
             .join('g')
             .attr('class', 'linechart');
-
-          svg.selectAll("path.lines").remove()
 
           var lines = lineUpdate.selectAll("path.lines")
             .data(dataByCategory)
@@ -401,8 +523,6 @@ function multiLine() {
               },
               exit => exit.remove()
             );
-
-          svg.selectAll("circle.circles").remove();
 
           const vals = flattenObject(dataByCategory)
 
@@ -454,7 +574,6 @@ function multiLine() {
           // sets the overlay to the same width/height
           svgAttributes = d3.select("g")._groups[0][0].parentNode.attributes
           svgWidth = svgAttributes.getNamedItem("width").value
-          // const svgWidth = svgAttributes.getNamedItem("width").value
           const svgHeight = svgAttributes.getNamedItem("height").value
 
           var overlay = svg.append('rect')
@@ -473,11 +592,9 @@ function multiLine() {
           // width is passed in as window.innerWidth/2
           widthScale = width - margin.left - margin.right;
 
-          // TODO: the "svg" variable is actually "g" so parentnode is the svg
           let svgParent = d3.select(svg._groups[0][0].parentNode)
+          transformAdjust = 80; // added to ensure axis doesn't extend past container
 
-          // TODO: need to figure out how to automate transformAdjust val
-          transformAdjust = 80;
           svgParent.transition().duration(200).attr('width', widthScale + transformAdjust);
 
           // reset xScale range and redraw everything
@@ -506,12 +623,40 @@ function multiLine() {
 
           svg.select("rect.overlay").attr("width", width);
 
-          // TODO: TESTING
-          // base xOffset is the starting x position of the legendcontainer
+// TODO: THIS IS NOT WORKING PROPERLY
+          // svg.selectAll(".legendcontainer")
+          // .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
+
+          console.log("UPDATING")
+          // actual width of svg
+          const svgWidth2 = widthScale + transformAdjust;
+          console.log("svgWidth")
+          console.log(svgWidth2)
+
+          // actual width of div
+          divElement = document.getElementById(id);
+          paddingLeft = parseInt(getComputedStyle(divElement.parentElement).paddingLeft);
+          let divPadding = paddingLeft * 2;
+          let divWidth = divPadding + svgWidth2;
+
+          console.log("divWidth")
+          console.log(divWidth)
+
+          console.log(dom)
+          console.log(dom.select(".legendcontainer"))
+          console.log(dom.select(".legendcontainer").node())
+          console.log(dom.select(".legendcontainer").node().getCTM())
+
+// TODO: set width of legendcontainer - shrink it when width shrinks and adjust text, then center
+          let legendContainerWidth = dom.select(".legendcontainer").node().getBBox().width;
+          console.log("LegendWidth")
+          console.log(legendContainerWidth);
+
+          // base legendItem is the starting x position of the legendcontainer
           var legendStartX = d3.select(".legendcontainer").node().getCTM().e
-          var xOffset = 0;
+          var legendItem = 0;
           var row = 1;
-          var y_pos = 0;
+          var yPosition = 0;
           const fontSize = 10;
           var rectWidth = 10; // start at 10 due to 0-based indexing
           const origSvgWidth = d3.select("svg")._groups[0][0].attributes[0].value
@@ -519,7 +664,11 @@ function multiLine() {
           var svgWidth = widthScale
           const rectOffset = 10;
 
-          // used to capture x,y coords for each legend item
+          // console.log("origSVG")
+          // console.log(origSvgWidth)
+          // console.log("widthScale")
+          // console.log(svgWidth)
+
           var legendHistory = [];
 
           svg.selectAll("g.legend")
@@ -527,19 +676,14 @@ function multiLine() {
 
               rectWidth = i * 10
 
-              // getComputedTextLength() returns 0 if the text hasn't been rendered (e.g.,
-              // on initial load of the app when focus is in another tab and display is
-              // set to none for the academic_info page) - so we use a different utility
-              // function (Browsertext) that uses built-in functionality in the HTML5 canvas
-              // 2D context if xpos is 0
-              var x_pos = d3.select(this).select("text").node().getComputedTextLength();
+              var maxStrLength = d3.select(this).select("text").node().getComputedTextLength();
 
-              if (x_pos == 0) {
-                x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
+              if (maxStrLength == 0) {
+                maxStrLength = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
               }
 
-              // xOffset is the length of the string plus the xOffset value
-              xOffset = xOffset + x_pos;
+              // legendItem is the length of the string plus the legendItem value
+              legendItem = legendItem + maxStrLength;
 
               // if the length of the string + the current xPosition exceeds
               // the width of the svg, we want to wrap to next line - the first
@@ -555,14 +699,14 @@ function multiLine() {
                 boundingArea = svgWidth - (100 * percentChange)
               }
 
-              if (xOffset + rectWidth >= boundingArea) {
+              if (legendItem + rectWidth >= boundingArea) {
 
-                // reset xOffset to 0 plus length of moves string
-                xOffset = legendStartX
-                xOffset = xOffset + x_pos;
+                // reset legendItem to 0 plus length of moves string
+                legendItem = legendStartX
+                legendItem = legendItem + maxStrLength;
 
                 // shift down 15 pixels
-                y_pos = row * 15
+                yPosition = row * 15
 
                 // NOTE: because this is a "group" translation, it doesn't directly impact
                 // the rec/text position (x values) determined by legendXPosition functions.
@@ -575,7 +719,7 @@ function multiLine() {
               else {
                 // First row
                 if (row == 1) {
-                    y_pos = 0
+                    yPosition = 0
                 }
                 else {
 
@@ -591,8 +735,8 @@ function multiLine() {
               const rightPos = d3.select(this).select("text").node().getBoundingClientRect().right
               const leftPos = d3.select(this).select("text").node().getBoundingClientRect().left
               const txtWidth = d3.select(this).select("text").node().getBoundingClientRect().width
-              let finalXposition = (xOffset - x_pos + legendStartX);
-              let finalYposition = y_pos;
+              let finalXposition = (legendItem - maxStrLength + legendStartX);
+              let finalYposition = yPosition;
 
               legendHistory.push(
                 {
@@ -615,6 +759,7 @@ function multiLine() {
               //     }
               //   }
               // }
+
               // final translation is with respect to the initial translation of
               // the legendcontainer.
               return "translate(" + finalXposition + "," + finalYposition + ")"
@@ -665,7 +810,9 @@ function multiLine() {
     those = d3.select(this.parentNode)._groups[0][0]
 
     // get combined data from all path elements in the selection
-    rawData = that.selectAll(".linechart").data()
+    // have to take first element because data is passed to linechart
+    // as a list
+    rawData = that.selectAll(".linechart").data()[0]
 
     // get list of categories to add to dataByYear array
     columns = rawData.map(function(d) { return d.id });
@@ -930,7 +1077,6 @@ function multiLine() {
 
 /// single line chart with tooltip (e.g., enrollmentChart) ///
 function singleLine() {
-// viewbox: https://jsfiddle.net/cexLbfnk/1/
 
   let defaultWidth = window.innerWidth/2 - 125;
 
@@ -943,7 +1089,6 @@ function singleLine() {
     updateWidth,
     y = d3.scaleLinear().range([height, 0]),
     x = d3.scalePoint().range([0, width]);
-    // x = d3.scaleTime().range([0, width]);
 
   let data,
     id;
@@ -966,7 +1111,7 @@ function singleLine() {
     .x(function(d) { return x(d.Year); })
     .y(function(d) { return y(d["Total Enrollment"]); });
 
-  const color =  "#7b6888";
+  const color =  "#1c39bb";
 
   function chart(selection) {
 
@@ -976,10 +1121,10 @@ function singleLine() {
 
       x.domain(years);
 
-      const minEnrollment = d3.min(data, function (d) { 
+      const minEnrollment = d3.min(data, function (d) {
         return +d["Total Enrollment"];
       });
-      const maxEnrollment = d3.max(data, function (d) { 
+      const maxEnrollment = d3.max(data, function (d) {
         return +d["Total Enrollment"];
       });
 
@@ -1038,10 +1183,10 @@ function singleLine() {
 
         x.domain(years);
 
-        const minEnrollment = d3.min(data, function (d) { 
+        const minEnrollment = d3.min(data, function (d) {
           return +d["Total Enrollment"];
         });
-        const maxEnrollment = d3.max(data, function (d) { 
+        const maxEnrollment = d3.max(data, function (d) {
           return +d["Total Enrollment"];
         });
 
@@ -1229,13 +1374,11 @@ function singleLine() {
 
       // NOTE: See explanation in multiline mouseMove
       var inverseModeScale = d3.scaleQuantize()
-      .domain(x.range())
-      .range(x.domain())
+        .domain(x.range())
+        .range(x.domain())
 
       // mouse position
       const x0 = inverseModeScale(d3.mouse(those)[0]);
-
-      // const x0 = x.invert(d3.mouse(those)[0]);
 
       //bisect the data
       const j = (d3.bisect(years, x0, 1)) - 1;
@@ -1272,7 +1415,7 @@ function singleLine() {
           // boxTop + y() places the tooltip directly on the circle
           // so we shift a bit
           const boxTop = that.node().getBoundingClientRect().top
-          const shiftUp = 35;
+          const shiftUp = 0; //35;
 
           return y(yearData["Total Enrollment"]) + boxTop - shiftUp + "px"})
 
@@ -1419,54 +1562,10 @@ function horizontalGroupBar() {
         .style("fill", "steelblue")
         .style("font-size", 10);
 
-      var title = svg.append("g");
-
-      // title is positioned with respect to the svg, but we want
-      // to position it with respect to the parent container - so
-      // we get parent container width and left offset
-      let divWidth = dom._groups[0][0].parentElement.clientWidth;
-      let divElement = document.getElementById(id).parentElement;
-      let paddingLeft = parseInt(getComputedStyle(divElement).paddingLeft);
-
-      let xShift = paddingLeft/2;
-      let rectWidth = divWidth - ((margin.left + margin.right) * 2);
-      let textShift = (rectWidth / 2) - paddingLeft;
-
-      title.append("rect")
-        .classed("titlerect", true)
-        .attr("width", rectWidth)
-        .attr("x", -xShift)
-        .attr("y", -70)
-        .attr("rx", 5)
-        .style("fill", "#6783a9")
-        .attr("height", "30px");
-
-      selectedYear = document.getElementById("yearSelect").value;
-
-      yearString = longYear(selectedYear);
-
-      if (exists(data[0], 'Free or Reduced Price Meals')) {
-        titleText = ["Enrollment by Subgroup (" + yearString +")"]
-      }
-      else {
-        titleText = ["Enrollment by Ethnicity (" + yearString +")"]
-      };
-
-      title.append("text")
-        .classed("title", true)
-        .attr("fill", "white")
-        .style("font-weight", 700)
-        .attr("font-size", "12px")
-        .style("font-family", "Inter, sans-serif")
-        .style('text-anchor','middle')
-        .style('alignment-baseline', 'middle')
-        .attr('dx', textShift)
-        .attr('y', -55)
-        .text(titleText);
+      var title = svg.append("g")
+        .attr('class', 'title');
 
       updateData = function() {
-
-        // svg.select("#" + id)
 
         const chartData = data[0]
         const missingString = data[1]
@@ -1547,36 +1646,36 @@ function horizontalGroupBar() {
         // offset legend labels from one another
         var x_offset = 0
         var row = 1;
-        var y_pos = 0;
+        var yPosition = 0;
         const fontSize = 10;
 
         svg.selectAll("g.legend")
           .attr("transform", function (d, i) {
 
-            var x_pos = d3.select(this).select("text").node().getComputedTextLength();
+            var maxStrLength = d3.select(this).select("text").node().getComputedTextLength();
 
-            if (x_pos == 0) {
-              x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
+            if (maxStrLength == 0) {
+              maxStrLength = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
             }
 
             // width of svg
             const svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
 
             // offset is the length of the string plus the previous offset value
-            x_offset = x_offset + x_pos;
+            x_offset = x_offset + maxStrLength;
 
             // if the length of the string + the current xposition exceeds
             // the width of the svg, we want to wrap to next line - the first
             // condition only triggers if the length of the string measured from
             // the current offset is longer than total width of svg.
-            if ((svgWidth - x_offset) <= x_pos ) {
+            if ((svgWidth - x_offset) <= maxStrLength ) {
 
               // reset x_offset to 0 (back to left side)
               x_offset = 0
-              x_offset = x_offset + x_pos;
+              x_offset = x_offset + maxStrLength;
 
               // shift down 15 pixels
-              y_pos = row * 15
+              yPosition = row * 15
 
               // NOTE: because this is a "group" translation, it doesn't directly impact
               // the rec/text position (x values) determined by legendXPosition functions.
@@ -1589,7 +1688,7 @@ function horizontalGroupBar() {
             else {
               // First row
               if (row == 1) {
-                  y_pos = 0
+                  yPosition = 0
               }
               else {
 
@@ -1601,7 +1700,7 @@ function horizontalGroupBar() {
                 d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
               }
             };
-            return "translate(" + (x_offset - x_pos) + "," + y_pos + ")"
+            return "translate(" + (x_offset - maxStrLength) + "," + yPosition + ")"
           });
 
         let barUpdate = svg.selectAll(".groupedbar")
@@ -1666,48 +1765,54 @@ function horizontalGroupBar() {
         };
 
         // update title
-        let selectedYear = document.getElementById("yearSelect").value;
-        let yearString = longYear(selectedYear);
 
-        if (exists(data[0], 'Free or Reduced Price Meals')) {
-          titleText = ["Enrollment by Subgroup (" + yearString +")"]
+      // title is positioned with respect to the svg, but we want
+      // to position it with respect to the parent container - so
+      // we get parent container width and left offset
+      let divWidth = dom._groups[0][0].parentElement.clientWidth;
+      let divElement = document.getElementById(id).parentElement;
+      let paddingLeft = parseInt(getComputedStyle(divElement).paddingLeft);
 
-        }
-        else {
-          titleText = ["Enrollment by Ethnicity (" + yearString +")"]
-        };
+      let xShift = paddingLeft/2;
+      let rectWidth = divWidth - ((margin.left + margin.right) * 2);
+      let textShift = (rectWidth / 2) - paddingLeft;
 
-        svg.selectAll("text.title").remove();
-        svg.selectAll("rect.titlerect").remove();
+      // NOTE: Removal is hacky - need to figure out why update adds new rect
+      // each update/width change
+      title.select("rect").remove();
+      title.select("text").remove();
 
-        divWidth = dom._groups[0][0].parentElement.clientWidth;
-        divElement = document.getElementById(id).parentElement;
-        paddingLeft = parseInt(getComputedStyle(divElement).paddingLeft);
-  
-        xShift = paddingLeft/2;
-        rectWidth = divWidth - ((margin.left + margin.right) * 2);
-        textShift = (rectWidth/2) - xShift;
+      title.append("rect")
+        .classed("titlerect", true)
+        .attr("width", rectWidth)
+        .attr("x", -xShift)
+        .attr("y", -70)
+        .attr("rx", 5)
+        .style("fill", "#6783a9")
+        .attr("height", "30px");
 
-        title.append("rect")
-          .attr("width", rectWidth)
-          .attr("x", -xShift)
-          .attr("y", -70)
-          .attr("rx", 5)
-          .style("fill", "#6783a9")
-          .attr("height", "30px");
+      selectedYear = document.getElementById("yearSelect").value;
 
-        title.append("text")
-          .classed("title", true)
-          .attr("fill", "white")
-          .style("font-weight", 700)
-          .attr("font-size", "12px")
-          .style("font-family", "Inter, sans-serif")
-          .style('text-anchor','middle')
-          .style('alignment-baseline', 'middle')
-          .attr('dx', textShift)
-          .attr('y', -55)
-          .text(titleText);
+      yearString = longYear(selectedYear);
 
+      if (exists(data[0], 'Free or Reduced Price Meals')) {
+        titleText = ["Enrollment by Subgroup (" + yearString +")"]
+      }
+      else {
+        titleText = ["Enrollment by Ethnicity (" + yearString +")"]
+      };
+
+      title.append("text")
+        .classed("titletext", true)
+        .attr("fill", "white")
+        .style("font-weight", 700)
+        .attr("font-size", "12px")
+        .style("font-family", "Inter, sans-serif")
+        .style('text-anchor','middle')
+        .style('alignment-baseline', 'middle')
+        .attr('dx', textShift)
+        .attr('y', -55)
+        .text(titleText);
       }; // end update Function
 
       updateWidth = function() {
@@ -1717,7 +1822,7 @@ function horizontalGroupBar() {
 
         let actualSvg = d3.select(svg._groups[0][0].parentNode);
 
-        transformAdjust = 80;
+        transformAdjust = 80; // need to add this to ensure axis don't overlap container
         actualSvg.transition().duration(250).attr('width', widthScale + transformAdjust);
 
         // reset xScale range and redraw everything
@@ -1742,42 +1847,29 @@ function horizontalGroupBar() {
         // the containing div will always be 70 pixels wider than the svg post
         // transition (because of 35px padding on the div). the rect is attached to
         // the svg group so we need to adjust to account for the width change.
-        // even so, the rect is off center, manual adjustment fixes, but I'd 
+        // even so, the rect is off center, manual adjustment fixes, but I'd
         // prefer a more organic situation
         const svgWidth = widthScale + transformAdjust;
-        // const containerWidth = svgWidth + 70;
-        // const manualAdjustment = 7;
-        // const xVal = ((containerWidth - svgWidth) / 4) - manualAdjustment;
- 
-        divElement = document.getElementById(id);
 
+        divElement = document.getElementById(id);
         paddingLeft = parseInt(getComputedStyle(divElement.parentElement).paddingLeft);
         let divPadding = paddingLeft * 2;
         let divWidth = divPadding + svgWidth;
 
-        // console.log(svgWidth)
-        // console.log(widthScale)
-        // console.log(divWidth - svgWidth)
+        // this is arbitrary - there is no relationship to margins
+        rectWidth = divWidth - ((margin.left + margin.right) * 2);
 
-        // TODO: CANNOT GET WIDTH CORECT
+        // "40" is the transform applied to the group - not sure why this
+        // works (it calculates to "15"), but it does
+        xShift = (svgWidth - 40 - rectWidth) / 2;
 
-        xShift = paddingLeft/2;
-        rectWidth = divWidth - ((margin.left + margin.right) * 2); // this is arbitrary
         textShift = (rectWidth/2) - xShift;
-        console.log(divWidth)
-        console.log(rectWidth)
 
-        // TODO: DOUBLE RECTS ARE ADDED
-        svg.selectAll("text.title").remove();
-        svg.selectAll("rect.titlerect").remove();
-
-        title.select("rect")
+        svg.select("rect.titlerect")
           .transition()
           .duration(0)
-          .attr("width", rectWidth) // 
-          .attr("x", 0); //-xShift);
-          // .attr("width", (widthScale))
-          // .attr("x", -xVal) 
+          .attr("width", rectWidth)
+          .attr("x", -xShift);
 
         svg.select("text.titletext")
         .transition()
@@ -1793,11 +1885,8 @@ function horizontalGroupBar() {
             return "12px"
           }
         })
-        .attr('dx', textShift)
-        // no idea how I came up with this formula
-        // .attr('dx', function(d) {
-        //   return (widthScale + margin.left + margin.right)/2 - margin.left + manualAdjustment
-        // });
+        .attr('dx', textShift);
+
 
         // TODO: Adjust x (higher) dynamically, somehow
         svg.selectAll("text.endtext")
@@ -1854,7 +1943,7 @@ function horizontalStackedBar() {
 
   var colors = {};
   const colorList = ["#df8f2d", "#ebbb81", "#96b8db", "#74a2d7"];
-  
+
   // const manualAdjustment = 7;
 
   var yAxis = d3.axisLeft(y).tickSize(0).tickPadding(8);
@@ -1966,7 +2055,7 @@ function horizontalStackedBar() {
         .style("border-width", "1px")
         .style("border-radius", "5px")
         .style("padding", "10px");
-      
+
       const mouseOver = function(d) {
 
         focus.style("display", null);
@@ -2378,7 +2467,7 @@ function verticalGroupBar() {
         // chartData = data;
 
         const colorObject = chartData.pop()
-        
+
         // TODO: Add insufficient and missing n-size strings
         // const missingString = data[1]
 
@@ -2461,37 +2550,37 @@ function verticalGroupBar() {
         //   })
 
         // // offset legend labels from one another
-        // var xOffset = 0
+        // var legendItem = 0
         // var row = 1;
-        // var y_pos = 0;
+        // var yPosition = 0;
 
         // svg.selectAll("g.legend")
         //   .attr("transform", function (d, i) {
 
-        //     var x_pos = d3.select(this).select("text").node().getComputedTextLength();
+        //     var maxStrLength = d3.select(this).select("text").node().getComputedTextLength();
 
-        //     if (x_pos == 0) {
-        //       x_pos = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
+        //     if (maxStrLength == 0) {
+        //       maxStrLength = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
         //     }
 
         //     // width of svg
         //     const svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
 
         //     // offset is the length of the string plus the previous offset value
-        //     xOffset = xOffset + x_pos;
+        //     legendItem = legendItem + maxStrLength;
 
         //     // if the length of the string + the current xposition exceeds
         //     // the width of the svg, we want to wrap to next line - the first
         //     // condition only triggers if the length of the string measured from
         //     // the current offset is longer than total width of svg.
-        //     if ((svgWidth - xOffset) <= x_pos ) {
+        //     if ((svgWidth - legendItem) <= maxStrLength ) {
 
-        //       // reset xOffset to 0 (back to left side)
-        //       xOffset = 0
-        //       xOffset = xOffset + x_pos;
+        //       // reset legendItem to 0 (back to left side)
+        //       legendItem = 0
+        //       legendItem = legendItem + maxStrLength;
 
         //       // shift down 15 pixels
-        //       y_pos = row * 15
+        //       yPosition = row * 15
 
         //       // NOTE: because this is a "group" translation, it doesn't directly impact
         //       // the rec/text position (x values) determined by legendXPosition functions.
@@ -2504,7 +2593,7 @@ function verticalGroupBar() {
         //     else {
         //       // First row is at boxPosition 0
         //       if (row == 1) {
-        //           y_pos = 0
+        //           yPosition = 0
         //       }
         //       else {
 
@@ -2516,7 +2605,7 @@ function verticalGroupBar() {
         //         d3.select(this).select("text").attr("x", rectWidth + offset + offset)
         //       }
         //     };
-        //     return "translate(" + (xOffset - x_pos) + "," + y_pos + ")"
+        //     return "translate(" + (legendItem - maxStrLength) + "," + yPosition + ")"
         //   });
         // END LEGEND
 
@@ -2543,10 +2632,10 @@ function verticalGroupBar() {
 
         // barx.append("rect")
         //   .attr('class', 'rect')
-        //   .data(function (d,i) { 
+        //   .data(function (d,i) {
         //       console.log("WTF")
         //       console.log(d[1])
-        //       return d[1] 
+        //       return d[1]
         //   })
         //   .join("rect");
 
@@ -2560,7 +2649,7 @@ function verticalGroupBar() {
 
         // console.log("TESTING")
         // console.log(barx)
-        // TODO: TEST 
+        // TODO: TEST
 
         // all bars on the page
         let barUpdate = svg.selectAll(".groupedbar")
@@ -2583,10 +2672,10 @@ function verticalGroupBar() {
             .attr("width", x1.bandwidth())
             .attr("height", function (d) { return height - y(d[1])} )
             .attr("fill", function(d) {return color(d[0])});
-      
+
 
 // TODO: errors updating bars - Too many bars causing them to overlap. Increase width? or
-// TODO: decrease bandwidth of bars 
+// TODO: decrease bandwidth of bars
 // TODO: Getting data errors as well (hs?)
 
         bars
@@ -2790,7 +2879,7 @@ function verticalGroupBar() {
   //   box.selectAll('.tipbox path')
   //     .style("opacity", 1)
   //     .attr( 'd', function(d) {
-        
+
   //       console.log(d)
   //       // dataByCategory is the year, proficiency, and id for the selected
   //       // category. dataByCategory is undefined if there is no data for the
@@ -2818,7 +2907,7 @@ function verticalGroupBar() {
   //         // rightmost year (the closest to the right edge), flip the
   //         // tipbox to the left
 
-            
+
   //       // Tooltip Path
   //       // Right: M xStart yStart l 4 3 l 4 10 l 140 10 l 140 -10 l 4 -10 l 4 -3 l 0 0
   //       // var xStart = x
@@ -3022,7 +3111,7 @@ function verticalGroupBar() {
   //     } // end mouseMove
        // TODO: TESTING
 
-    
+
   }; // end selection
 
   chart.data = function(value) {
