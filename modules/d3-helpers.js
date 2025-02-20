@@ -59,9 +59,11 @@ function multiLine() {
   const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
                       "#83941f", "#f0c33b", "#bc986a", "#96b8db"]
 
+  // used for legend positioning
   var currentX = 0;
   var yPosition = 0;
-  
+  var xPosition = 0;
+
   function chart(selection){
 
     selection.each(function () {
@@ -212,13 +214,14 @@ function multiLine() {
           // remove y-axis line
           svg.selectAll(".y.axis").select('.domain').remove()
 
-          // TODO: FIX THIX - NOT WORKING
-          // this seems like a kludge
-          legendContainer.selectAll('.legend').remove()
+          // update the legend
+          legendContainer.selectAll('.legend').remove() // TODO: CHECK THIS IS IT DOING ANYTHING
           legendContainer.attr('display', 'block');
 
           const fontWidth = 6;
           const rectOffset = 10;
+          const fontSize = 8;
+          var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
 
           var legend = legendContainer.selectAll('.legend')
             .data(dataByCategory)
@@ -251,42 +254,18 @@ function multiLine() {
               return d.id;
             })
 
-          // base legendItem is the starting x position of the legendcontainer
-          // this monstrosity gets the width of the svg
-          // console.log(d3.select(".legendcontainer")._groups[0][0].parentNode.parentNode.getBBox().width)
-
-          var legendStartX = d3.select(".legendcontainer").node().getCTM().e
-          console.log("Initial LegendX")
-          console.log(legendStartX)
-
-          var legendItem = 0;
-          // var row = 1;
-          // var yPosition = 0;
-          let xPosition = 0;
-
-          const fontSize = 10;
-          var rectWidth = 10; // start at 10 due to 0-based indexing
-          var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
+          console.log("ENTERING LEGEND LOOP")
+          
+          // var legendStartX = d3.select(".legendcontainer").node().getCTM().e
 
           // used to capture x,y coords for each legend item
-          var legendHistory = [];
+          // var legendHistory = [];
 
+          let rowLength = 0;
+
+          console.log(svg.selectAll("g.legend"))
           svg.selectAll("g.legend")
             .attr("transform", function (d, i) {
-
-              console.log("ENTERING LEGEND LOOP")
-              console.log(d3.select(this).selectAll("text")._groups[0][0].__data__.id)
-              console.log("Initial CurrentX")
-              console.log(currentX)
-              
-              rectWidth = 10;
-
-              // NOTE: Process:
-              //  1) if all items could fit on one line:
-              //    a) if 4 items or less, keep on one line
-              //    b) if 5 items or more, split to two lines (e.g., 3/2, 3/3, 4/3, 4/4)
-              //  2) if items too long to fit on one line: calculate how many items can fit on each row
-              //    and force break at that number items for each row.
 
               // maximum number of legend items per row (based on length of longest item)
               // this iterates over all text legend items and finds the length of
@@ -294,6 +273,7 @@ function multiLine() {
               // are made to the text (TODO: Better way to do this?)
               let allTextItems = d3.select(this.parentNode).selectAll("text");
               let lengths = [];
+
               allTextItems.each(function (p, j) {
                 d3.select(this).text(function (d, i) {
                     lengths.push(BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif"))
@@ -307,162 +287,184 @@ function multiLine() {
               const numItems = intArray.length
 
               // the length of longest item
-              const maxStrLength = Math.max(...intArray)
+              let maxStrLength = Math.max(...intArray);
 
               let boundingArea = 0;
+              let svgPadding = 100;
 
               if (categories.length > 6) {
-                boundingArea = svgWidth - 60
+                boundingArea = svgWidth - svgPadding;
               }
               else {
-                boundingArea = svgWidth - 60
+                boundingArea = svgWidth - svgPadding;
               }
+
+              let legendPadding = svgPadding/2;
 
               // maximum allowable items per row based on length
               const maxPerRow = Math.floor(boundingArea/maxStrLength)
-
-              // number of legend items possible for each row (if value is < 1, then all items
-              // may fit on one row)
+              
+              // number of legend items possible for each row (if value is <
+              // 1, then all items may fit on one row)
               const itemsPerRow = numItems/maxPerRow;
 
-              // console.log("SVG")
-              // console.log(svgWidth)
-              // console.log("MAX ITEM")
-              // console.log(maxStrLength)
+              console.log("INDEX: " + i)
+              console.log("GOING IN TO CONDITIONAL")
+              console.log(d3.select(this).selectAll("text")._groups[0][0].__data__.id)
+              console.log(d3.select(this).selectAll("text"))
+              console.log("xPosition")
+              console.log(xPosition)
+              console.log("yPosition")
+              console.log(yPosition)
 
-              // console.log("ITEMS PER ROW")
+// TODO: TEST
+              if (i == 0) {
+                yPosition = 0;
+                xPosition = legendPadding;
+                rowLength = xPosition;
+              } else if (i > 0) {
 
-              if (itemsPerRow < 1) {
-                
-                // this will be less than one if all items can fit on one line
-                const halfItems = numItems/2;
+                if ((numItems < 4) && ((numItems * mxStrLength) < boundingArea)) {
+                  // a bit of a hack - not quite even
+                  xPosition = xPosition + intArray[i-1] + 5;
 
-                // number of items to be placed on first row is half rounded up
-                const firstRow = Math.ceil(halfItems);
-                
-                if (halfItems < 2 ) {
-                  // first item
-                  if (i == 0) {
-                    yPosition = 0;
-                    xPosition = legendStartX;
-                  }
-                  else {
-                    console.log("SINGLE ROW")
-                    console.log("CURRENT X - SINGLE ROW")
-                    console.log(currentX)
+                } else {
+                  
+                  rowLength = rowLength + maxStrLength;
 
-                    // let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
-                    // console.log(rectWidth)
-                    // console.log(maxStrLength)
-
-                    d3.select(this).select("rect").attr("x", currentX); //rectWidth + rectOffset)
-                    d3.select(this).select("text").attr("x", currentX + rectOffset); //rectWidth + rectOffset + rectOffset)
+                  if (rowLength > boundingArea) {
+                    // move to different row
+                    rowLength = 0;
+                    yPosition = yPosition + 15;
+                    xPosition = legendPadding;
+                    d3.select(this).select("rect").attr("x", xPosition);
+                    d3.select(this).select("text").attr("x", xPosition + rectOffset);
+                  } else {
+                    xPosition = xPosition + maxStrLength;
+                    d3.select(this).select("rect").attr("x", xPosition);
+                    d3.select(this).select("text").attr("x", xPosition + rectOffset);
                   }
                 }
-                else {
-                  console.log("COULD BE SINGLE- BUT FORCED MULTIPLE")
-                  console.log("INDEX: " + i)
+              }
+// TODO: TEST
 
+              // all items fit on one line
+              if (itemsPerRow < 1) {
+
+                const halfItems = numItems/2;
+
+                if (halfItems < 2 ) {
+
+                  // all items fit on one line
                   if (i == 0) {
                     yPosition = 0;
-                    xPosition = legendStartX;
+                    xPosition = legendPadding;
+                  }
+                  else {
+                    // a bit of a hack - not quite even
+                    xPosition = xPosition + intArray[i-1] + 5;
+                  }
+
+                }
+                // all items could fit on one line, but we force a break at
+                // the halfway point (2 lines) for aesthetics
+                else {
+                  
+                  // number of items to be placed on first row is half rounded up
+                  const firstRow = Math.ceil(halfItems);
+                  
+                  if (i == 0) {
+                    yPosition = 0;
+                    xPosition = legendPadding;
+                    // xPosition = 0;
                   }
                   else if (i < firstRow) {
-                    console.log("FORCED MULTIPLE- FIRST ROW")
-                    console.log("Setting Current X")
-                    console.log(currentX)
-                    xPosition = currentX;
-                    // account for rect size and 12 pixel offset between rect and text
-                    // add twice to text to account for prior and current offset
-                    d3.select(this).select("rect").attr("x", currentX); //rectWidth + rectOffset)
-                    d3.select(this).select("text").attr("x", currentX + rectOffset); //rectWidth + rectOffset + rectOffset)
+                    
+                    xPosition = xPosition + maxStrLength; //currentX;
+                    // console.log("xPosition")
+                    // console.log(xPosition)
+                    yPosition = 0;
+                    d3.select(this).select("rect").attr("x", xPosition);
+                    d3.select(this).select("text").attr("x", xPosition + rectOffset);
 
-                  } else if (i+1 == firstRow) {
-                    console.log("FORCED MULTIPLE- FIRST ROW")
-                    console.log("Setting Current X")
-                    console.log(currentX)
-                    // reset legendItem to 0 plus length of moves string
-                    xPosition = 0; //legendStartX;
+                  } else if (i == firstRow) {
+                    xPosition = legendPadding;
                     currentX = 0;
-
-                    // shift down 15 pixels
                     yPosition = 15;
-
-                    // NOTE: because this is a "group" translation, it doesn't directly impact
-                    // the rec/text position (x values) determined by legendXPosition functions.
-                    // Set x value back to left edge
                     d3.select(this).select("rect").attr("x", 0)
                     d3.select(this).select("text").attr("x", rectOffset)
                   } else {
                     yPosition = 15;
-                    xPosition = currentX;
-                    console.log("SECOND ROW ITEMS- REST OF EM")
-
-                    console.log("Current X")
-                    console.log(currentX)
-                    // account for rect size and 12 pixel offset between rect and text
-                    // add twice to text to account for prior and current offset
-                    d3.select(this).select("rect").attr("x", currentX); //rectWidth + rectOffset)
-                    d3.select(this).select("text").attr("x", currentX + rectOffset); //rectWidth + rectOffset + rectOffset)
+                    xPosition = xPosition + maxStrLength;
+                    d3.select(this).select("rect").attr("x", xPosition);
+                    d3.select(this).select("text").attr("x", xPosition + rectOffset);
                   }
+
                 }
-              } else
-              {
-                console.log("auto line break at maxPerRow")
-                console.log(itemsPerRow)
               }
+              else {
 
-              // legendItem is the length of the string plus the legendItem value
-              currentX = xPosition + maxStrLength;
 
-              console.log("AFTERLOOP")
-              console.log(currentX)
-              console.log("YPOSTION")
-              console.log(yPosition)
-              // TODO: OLD OLD
-              // if (legendItem + rectWidth >= boundingArea) {
+                if (i == 0) {
+                  yPosition = 0;
+                  xPosition = legendPadding;
 
-              //   // reset legendItem to 0 plus length of moves string
-              //   legendItem = legendStartX
-              //   legendItem = legendItem + maxStrLength;
+                  // console.log("ROW 1: First Item")
+                  // console.log("legendStartX")
+                  // console.log(legendStartX)
+                  // console.log("currentX")
+                  // console.log(currentX)
+                  // console.log("yPosition")
+                  // console.log(yPosition)
+                
+                }
+                else if (i == maxPerRow) {
+                  yPosition = 15;
+                  currentX = 0;
+                  xPosition = xPosition + maxStrLength;
 
-              //   // shift down 15 pixels
-              //   yPosition = row * 15
+                  // console.log("ROW 2: First Item")
+                  // console.log("currentX")
+                  // console.log(currentX)
+                  // console.log("yPosition")
+                  // console.log(yPosition)
 
-              //   // NOTE: because this is a "group" translation, it doesn't directly impact
-              //   // the rec/text position (x values) determined by legendXPosition functions.
-              //   // Set x value back to left edge
-              //   d3.select(this).select("rect").attr("x", 0)
-              //   d3.select(this).select("text").attr("x", rectOffset)
+                  d3.select(this).select("rect").attr("x", xPosition - (xPosition/1.6));
+                  d3.select(this).select("text").attr("x", xPosition - (xPosition/1.6) + rectOffset);
+                }
+                else {
+                  // yPosition = 15;
+                  xPosition = xPosition + maxStrLength;
+                  // console.log("ALL OTHER ITEMS")
+                  // console.log("currentX")
+                  // console.log(currentX)
+                  // console.log("yPosition")
+                  // console.log(yPosition)
 
-              //   row+=1
-              // }
-              // else {
-              //   // First row
-              //   if (row == 1) {
-              //       yPosition = 0
-              //   }
-              //   else {
+                  d3.select(this).select("rect").attr("x", xPosition - (xPosition/1.6));
+                  d3.select(this).select("text").attr("x", xPosition - (xPosition/1.6) + rectOffset);                 
+                }
+              };
 
-              //     let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
-
-              //     // account for rect size and 12 pixel offset between rect and text
-              //     // add twice to text to account for prior and current offset
-              //     d3.select(this).select("rect").attr("x", rectWidth + rectOffset)
-              //     d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
-              //   }
-              // };
+              // END LOOP
+              // currentX = xPosition + maxStrLength;
 
               // we are storing the x position of each legend element in in an array of objects
               // because I cannot determine another way to get the value once everything has
               // been placed
-              const finalXposition = (legendItem - maxStrLength + 0); //legendStartX);
-              const finalYposition = yPosition;
+              // const finalXposition = (legendItem - maxStrLength + 0);
+              // const finalYposition = yPosition;
 
-              legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition});
+              // legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition});
 
               // final translation is with respect to the initial translation of
               // the legendcontainer.
+              console.log("LEAVING LEGEND CALL")
+              console.log("xPosition")
+              console.log(xPosition)
+              console.log("yPosition")
+              console.log(yPosition)  
+
               return "translate(" + xPosition + "," + yPosition + ")"
             });
 
