@@ -254,16 +254,12 @@ function multiLine() {
               return d.id;
             })
 
-          console.log("ENTERING LEGEND LOOP")
-          
-          // var legendStartX = d3.select(".legendcontainer").node().getCTM().e
 
-          // used to capture x,y coords for each legend item
-          // var legendHistory = [];
-
+          // Legend positioning
           let rowLength = 0;
+          let boundingArea = 0;
+          let legendPadding = 0;
 
-          console.log(svg.selectAll("g.legend"))
           svg.selectAll("g.legend")
             .attr("transform", function (d, i) {
 
@@ -289,210 +285,107 @@ function multiLine() {
               // the length of longest item
               let maxStrLength = Math.max(...intArray);
 
-              let boundingArea = 0;
-              let svgPadding = 100;
+              // maximum allowable items per row based on length
+              // const maxPerRow = Math.floor(boundingArea/maxStrLength)
+              // const itemsPerRow = numItems/maxPerRow;
 
-              if (categories.length > 6) {
-                boundingArea = svgWidth - svgPadding;
+              console.log(d3.select(this).selectAll("text"))
+              console.log(d3.select(this).selectAll("text")._groups[0][0].__data__.id)
+
+              const maxLength = (numItems * maxStrLength) + (numItems * rectOffset);
+
+
+              if (maxLength > svgWidth) {
+                boundingArea = svgWidth/2 - 30;
               }
               else {
-                boundingArea = svgWidth - svgPadding;
+                boundingArea = svgWidth/2;
               }
 
-              let legendPadding = svgPadding/2;
-
-              // maximum allowable items per row based on length
-              const maxPerRow = Math.floor(boundingArea/maxStrLength)
-              
-              // number of legend items possible for each row (if value is <
-              // 1, then all items may fit on one row)
-              const itemsPerRow = numItems/maxPerRow;
-
-              console.log("INDEX: " + i)
-              console.log("GOING IN TO CONDITIONAL")
-              console.log(d3.select(this).selectAll("text")._groups[0][0].__data__.id)
-              console.log(d3.select(this).selectAll("text"))
-              console.log("xPosition")
-              console.log(xPosition)
-              console.log("yPosition")
-              console.log(yPosition)
-
-// TODO: TEST
               if (i == 0) {
                 yPosition = 0;
                 xPosition = legendPadding;
                 rowLength = xPosition;
               } else if (i > 0) {
 
-                if ((numItems < 4) && ((numItems * mxStrLength) < boundingArea)) {
-                  // a bit of a hack - not quite even
+                // single row
+                if ((numItems < 4) && (maxLength < boundingArea)) {
                   xPosition = xPosition + intArray[i-1] + 5;
+                }
+                
+                // need a way to separate the case where a legend could fit 
+                // on one line (e.g., the maxLength is < svgWidth) and the
+                // case where a legend cannot fit on one line. In the former
+                // case, we still want to break up legends with more than 4
+                // items into 2 rows.
 
-                } else {
-                  
-                  rowLength = rowLength + maxStrLength;
+// TODO: Figure out a way to automate: 1) the boundingArea calculation and 2) the modification to maxStrLength
+                // case 1: cannot fit on one line
+                else if ((numItems > 4) && (maxLength > svgWidth)) {
+
+                  rowLength = rowLength + maxStrLength/1.4;
+
+                  console.log("Breaking by Row Length")
+
+                  console.log("rowLength")
+                  console.log(rowLength)
+                  console.log("boundingArea")
+                  console.log(boundingArea)
 
                   if (rowLength > boundingArea) {
-                    // move to different row
+
                     rowLength = 0;
                     yPosition = yPosition + 15;
                     xPosition = legendPadding;
+                    
+                    console.log("NEXT ROW")
+                    console.log("xPosition")
+                    console.log(xPosition)
+                    
                     d3.select(this).select("rect").attr("x", xPosition);
                     d3.select(this).select("text").attr("x", xPosition + rectOffset);
                   } else {
-                    xPosition = xPosition + maxStrLength;
+
+                    xPosition = xPosition + maxStrLength/1.4;
+                    
+                    console.log("Initial Row")
+                    console.log("xPosition")
+                    console.log(xPosition)
+                    
                     d3.select(this).select("rect").attr("x", xPosition);
                     d3.select(this).select("text").attr("x", xPosition + rectOffset);
                   }
                 }
-              }
-// TODO: TEST
+                else {
+                  // case 2: can fit on one line, but we split it due to # of items
+                  const firstRow = Math.ceil(numItems/2);
 
-              // all items fit on one line
-              if (itemsPerRow < 1) {
-
-                const halfItems = numItems/2;
-
-                if (halfItems < 2 ) {
-
-                  // all items fit on one line
-                  if (i == 0) {
+                  if (i < firstRow) {
                     yPosition = 0;
+                    xPosition = xPosition + maxStrLength;
+                  }
+                  else if (i == firstRow) {
+                    yPosition = yPosition + 15;
                     xPosition = legendPadding;
                   }
                   else {
-                    // a bit of a hack - not quite even
-                    xPosition = xPosition + intArray[i-1] + 5;
-                  }
-
-                }
-                // all items could fit on one line, but we force a break at
-                // the halfway point (2 lines) for aesthetics
-                else {
-                  
-                  // number of items to be placed on first row is half rounded up
-                  const firstRow = Math.ceil(halfItems);
-                  
-                  if (i == 0) {
-                    yPosition = 0;
-                    xPosition = legendPadding;
-                    // xPosition = 0;
-                  }
-                  else if (i < firstRow) {
-                    
-                    xPosition = xPosition + maxStrLength; //currentX;
-                    // console.log("xPosition")
-                    // console.log(xPosition)
-                    yPosition = 0;
-                    d3.select(this).select("rect").attr("x", xPosition);
-                    d3.select(this).select("text").attr("x", xPosition + rectOffset);
-
-                  } else if (i == firstRow) {
-                    xPosition = legendPadding;
-                    currentX = 0;
-                    yPosition = 15;
-                    d3.select(this).select("rect").attr("x", 0)
-                    d3.select(this).select("text").attr("x", rectOffset)
-                  } else {
-                    yPosition = 15;
                     xPosition = xPosition + maxStrLength;
-                    d3.select(this).select("rect").attr("x", xPosition);
-                    d3.select(this).select("text").attr("x", xPosition + rectOffset);
                   }
-
-                }
-              }
-              else {
-
-
-                if (i == 0) {
-                  yPosition = 0;
-                  xPosition = legendPadding;
-
-                  // console.log("ROW 1: First Item")
-                  // console.log("legendStartX")
-                  // console.log(legendStartX)
-                  // console.log("currentX")
-                  // console.log(currentX)
-                  // console.log("yPosition")
-                  // console.log(yPosition)
-                
-                }
-                else if (i == maxPerRow) {
-                  yPosition = 15;
-                  currentX = 0;
-                  xPosition = xPosition + maxStrLength;
-
-                  // console.log("ROW 2: First Item")
-                  // console.log("currentX")
-                  // console.log(currentX)
-                  // console.log("yPosition")
-                  // console.log(yPosition)
-
-                  d3.select(this).select("rect").attr("x", xPosition - (xPosition/1.6));
-                  d3.select(this).select("text").attr("x", xPosition - (xPosition/1.6) + rectOffset);
-                }
-                else {
-                  // yPosition = 15;
-                  xPosition = xPosition + maxStrLength;
-                  // console.log("ALL OTHER ITEMS")
-                  // console.log("currentX")
-                  // console.log(currentX)
-                  // console.log("yPosition")
-                  // console.log(yPosition)
-
-                  d3.select(this).select("rect").attr("x", xPosition - (xPosition/1.6));
-                  d3.select(this).select("text").attr("x", xPosition - (xPosition/1.6) + rectOffset);                 
+                  d3.select(this).select("rect").attr("x", xPosition);
+                  d3.select(this).select("text").attr("x", xPosition + rectOffset);                  
                 }
               };
 
-              // END LOOP
-              // currentX = xPosition + maxStrLength;
-
-              // we are storing the x position of each legend element in in an array of objects
-              // because I cannot determine another way to get the value once everything has
-              // been placed
-              // const finalXposition = (legendItem - maxStrLength + 0);
-              // const finalYposition = yPosition;
-
-              // legendHistory.push({id: categories[i], x: finalXposition, y: finalYposition});
-
-              // final translation is with respect to the initial translation of
-              // the legendcontainer.
-              console.log("LEAVING LEGEND CALL")
-              console.log("xPosition")
-              console.log(xPosition)
-              console.log("yPosition")
-              console.log(yPosition)  
-
+              // this acts as a shift for the entire legend item (TODO: Is it duplicative?)
               return "translate(" + xPosition + "," + yPosition + ")"
             });
 
-          // once the legend has been completed, do some calcs to shift the
-          // legendcontainer to the middle of the svg.
+            const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
+            const shiftToCenter = ((svgWidth - legendContainerWidth) / 2) - 35;
 
-          // TODO: LEGEND PLACEMENT SUUUUUUCCCCKKKSSS
-          // TODO: Make the legend responsive? May need to make this a function and re-run it
-          // TODO: steps, 1) build horizontal legend; 2) break the line if necessary;
-          // TODO: 3) calculate center based on current svg; 4) ADD to WIDTH resize function
-          // https://stackoverflow.com/questions/49454761/how-to-horizontally-centre-a-responsive-multi-line-legend-in-d3
+            svg.selectAll(".legendcontainer")
+              .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
 
-          // // tst[0].x is the x value for the first legend item
-          // const legendItemStartingX = legendHistory[0].x
-
-          // // the current x position of the legendcontainer
-          // const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
-
-          // // account for the initial X translation of the svg
-          // const initialSvgTranslate = 35
-
-          // // the width of the container
-          // const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
-
-          // const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
-
-          // svg.selectAll(".legendcontainer")
-          //   .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
 
           // Update lines and circles
 
@@ -589,6 +482,7 @@ function multiLine() {
           }
         } // end updateData
 
+
         updateWidth = function() {
 
           // width is passed in as window.innerWidth/2
@@ -625,164 +519,170 @@ function multiLine() {
 
           svg.select("rect.overlay").attr("width", width);
 
-// TODO: THIS IS NOT WORKING PROPERLY
-          // svg.selectAll(".legendcontainer")
-          // .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
 
-          console.log("UPDATING")
-          // actual width of svg
-          const svgWidth2 = widthScale + transformAdjust;
-          console.log("svgWidth")
-          console.log(svgWidth2)
+          // TODO: LEGEND PLACEMENT SUUUUUUCCCCKKKSSS
+          // TODO: Make the legend responsive? May need to make this a function and re-run it
+          // TODO: steps, 1) build horizontal legend; 2) break the line if necessary;
+          // TODO: 3) calculate center based on current svg; 4) ADD to WIDTH resize function
+          // https://stackoverflow.com/questions/49454761/how-to-horizontally-centre-a-responsive-multi-line-legend-in-d3
+// // TODO: THIS IS NOT WORKING PROPERLY
+//           // svg.selectAll(".legendcontainer")
+//           // .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
 
-          // actual width of div
-          divElement = document.getElementById(id);
-          paddingLeft = parseInt(getComputedStyle(divElement.parentElement).paddingLeft);
-          let divPadding = paddingLeft * 2;
-          let divWidth = divPadding + svgWidth2;
+//           console.log("UPDATING")
+//           // actual width of svg
+//           const svgWidth2 = widthScale + transformAdjust;
+//           console.log("svgWidth")
+//           console.log(svgWidth2)
 
-          console.log("divWidth")
-          console.log(divWidth)
+//           // actual width of div
+//           divElement = document.getElementById(id);
+//           paddingLeft = parseInt(getComputedStyle(divElement.parentElement).paddingLeft);
+//           let divPadding = paddingLeft * 2;
+//           let divWidth = divPadding + svgWidth2;
 
-          console.log(dom)
-          console.log(dom.select(".legendcontainer"))
-          console.log(dom.select(".legendcontainer").node())
-          console.log(dom.select(".legendcontainer").node().getCTM())
+//           console.log("divWidth")
+//           console.log(divWidth)
 
-// TODO: set width of legendcontainer - shrink it when width shrinks and adjust text, then center
-          let legendContainerWidth = dom.select(".legendcontainer").node().getBBox().width;
-          console.log("LegendWidth")
-          console.log(legendContainerWidth);
+//           console.log(dom)
+//           console.log(dom.select(".legendcontainer"))
+//           console.log(dom.select(".legendcontainer").node())
+//           console.log(dom.select(".legendcontainer").node().getCTM())
 
-          // base legendItem is the starting x position of the legendcontainer
-          var legendStartX = d3.select(".legendcontainer").node().getCTM().e
-          var legendItem = 0;
-          var row = 1;
-          var yPosition = 0;
-          const fontSize = 10;
-          var rectWidth = 10; // start at 10 due to 0-based indexing
-          const origSvgWidth = d3.select("svg")._groups[0][0].attributes[0].value
-          const percentChange = widthScale/origSvgWidth
-          var svgWidth = widthScale
-          const rectOffset = 10;
+// // TODO: set width of legendcontainer - shrink it when width shrinks and adjust text, then center
+//           let legendContainerWidth = dom.select(".legendcontainer").node().getBBox().width;
+//           console.log("LegendWidth")
+//           console.log(legendContainerWidth);
 
-          // console.log("origSVG")
-          // console.log(origSvgWidth)
-          // console.log("widthScale")
-          // console.log(svgWidth)
+//           // base legendItem is the starting x position of the legendcontainer
+//           var legendStartX = d3.select(".legendcontainer").node().getCTM().e
+//           var legendItem = 0;
+//           var row = 1;
+//           var yPosition = 0;
+//           const fontSize = 10;
+//           var rectWidth = 10; // start at 10 due to 0-based indexing
+//           const origSvgWidth = d3.select("svg")._groups[0][0].attributes[0].value
+//           const percentChange = widthScale/origSvgWidth
+//           var svgWidth = widthScale
+//           const rectOffset = 10;
 
-          var legendHistory = [];
+//           // console.log("origSVG")
+//           // console.log(origSvgWidth)
+//           // console.log("widthScale")
+//           // console.log(svgWidth)
 
-          svg.selectAll("g.legend")
-            .attr("transform", function (d, i) {
+//           var legendHistory = [];
 
-              rectWidth = i * 10
+//           svg.selectAll("g.legend")
+//             .attr("transform", function (d, i) {
 
-              var maxStrLength = d3.select(this).select("text").node().getComputedTextLength();
+//               rectWidth = i * 10
 
-              if (maxStrLength == 0) {
-                maxStrLength = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
-              }
+//               var maxStrLength = d3.select(this).select("text").node().getComputedTextLength();
 
-              // legendItem is the length of the string plus the legendItem value
-              legendItem = legendItem + maxStrLength;
+//               if (maxStrLength == 0) {
+//                 maxStrLength = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
+//               }
 
-              // if the length of the string + the current xPosition exceeds
-              // the width of the svg, we want to wrap to next line - the first
-              // condition only triggers if the length of the string measured from
-              // the current offset is longer than total width of svg.
+//               // legendItem is the length of the string plus the legendItem value
+//               legendItem = legendItem + maxStrLength;
 
-              let boundingArea = 0;
+//               // if the length of the string + the current xPosition exceeds
+//               // the width of the svg, we want to wrap to next line - the first
+//               // condition only triggers if the length of the string measured from
+//               // the current offset is longer than total width of svg.
 
-              if (categories.length > 6) {
-                boundingArea = svgWidth - (180 * percentChange)
-              }
-              else {
-                boundingArea = svgWidth - (100 * percentChange)
-              }
+//               let boundingArea = 0;
 
-              if (legendItem + rectWidth >= boundingArea) {
+//               if (categories.length > 6) {
+//                 boundingArea = svgWidth - (180 * percentChange)
+//               }
+//               else {
+//                 boundingArea = svgWidth - (100 * percentChange)
+//               }
 
-                // reset legendItem to 0 plus length of moves string
-                legendItem = legendStartX
-                legendItem = legendItem + maxStrLength;
+//               if (legendItem + rectWidth >= boundingArea) {
 
-                // shift down 15 pixels
-                yPosition = row * 15
+//                 // reset legendItem to 0 plus length of moves string
+//                 legendItem = legendStartX
+//                 legendItem = legendItem + maxStrLength;
 
-                // NOTE: because this is a "group" translation, it doesn't directly impact
-                // the rec/text position (x values) determined by legendXPosition functions.
-                // Set x value back to left edge
-                d3.select(this).select("rect").attr("x", 0)
-                d3.select(this).select("text").attr("x", rectOffset)
+//                 // shift down 15 pixels
+//                 yPosition = row * 15
 
-                row+=1
-              }
-              else {
-                // First row
-                if (row == 1) {
-                    yPosition = 0
-                }
-                else {
+//                 // NOTE: because this is a "group" translation, it doesn't directly impact
+//                 // the rec/text position (x values) determined by legendXPosition functions.
+//                 // Set x value back to left edge
+//                 d3.select(this).select("rect").attr("x", 0)
+//                 d3.select(this).select("text").attr("x", rectOffset)
 
-                  let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
+//                 row+=1
+//               }
+//               else {
+//                 // First row
+//                 if (row == 1) {
+//                     yPosition = 0
+//                 }
+//                 else {
 
-                  // account for rect size and 12 pixel offset between rect and text
-                  // add twice to text to account for prior and current offset
-                  d3.select(this).select("rect").attr("x", rectWidth + rectOffset)
-                  d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
-                }
-              };
+//                   let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
 
-              const rightPos = d3.select(this).select("text").node().getBoundingClientRect().right
-              const leftPos = d3.select(this).select("text").node().getBoundingClientRect().left
-              const txtWidth = d3.select(this).select("text").node().getBoundingClientRect().width
-              let finalXposition = (legendItem - maxStrLength + legendStartX);
-              let finalYposition = yPosition;
+//                   // account for rect size and 12 pixel offset between rect and text
+//                   // add twice to text to account for prior and current offset
+//                   d3.select(this).select("rect").attr("x", rectWidth + rectOffset)
+//                   d3.select(this).select("text").attr("x", rectWidth + rectOffset + rectOffset)
+//                 }
+//               };
 
-              legendHistory.push(
-                {
-                  index: i,
-                  id: categories[i],
-                  x: finalXposition,
-                  y: finalYposition,
-                  right: rightPos,
-                  left: leftPos
-                }
-              );
+//               const rightPos = d3.select(this).select("text").node().getBoundingClientRect().right
+//               const leftPos = d3.select(this).select("text").node().getBoundingClientRect().left
+//               const txtWidth = d3.select(this).select("text").node().getBoundingClientRect().width
+//               let finalXposition = (legendItem - maxStrLength + legendStartX);
+//               let finalYposition = yPosition;
 
-              // // TODO: Test to push legends apart if they overlap?
-              // if (i > 0) {
-              //   if (legendHistory[i].y == legendHistory[i-1].y) {
-              //     if (legendHistory[i].left < legendHistory[i-1].right) {
-              //       // console.log("OVERLAP: " + legendHistory[i].id)
-              //       const diff = legendHistory[i-1].right - legendHistory[i].left // not working
-              //       finalXposition = finalXposition + 20;
-              //     }
-              //   }
-              // }
+//               legendHistory.push(
+//                 {
+//                   index: i,
+//                   id: categories[i],
+//                   x: finalXposition,
+//                   y: finalYposition,
+//                   right: rightPos,
+//                   left: leftPos
+//                 }
+//               );
 
-              // final translation is with respect to the initial translation of
-              // the legendcontainer.
-              return "translate(" + finalXposition + "," + finalYposition + ")"
-            });
+//               // // TODO: Test to push legends apart if they overlap?
+//               // if (i > 0) {
+//               //   if (legendHistory[i].y == legendHistory[i-1].y) {
+//               //     if (legendHistory[i].left < legendHistory[i-1].right) {
+//               //       // console.log("OVERLAP: " + legendHistory[i].id)
+//               //       const diff = legendHistory[i-1].right - legendHistory[i].left // not working
+//               //       finalXposition = finalXposition + 20;
+//               //     }
+//               //   }
+//               // }
 
-          // once the legend has been completed, do some calcs to shift the
-          // legendcontainer to the middle of the svg.
+//               // final translation is with respect to the initial translation of
+//               // the legendcontainer.
+//               return "translate(" + finalXposition + "," + finalYposition + ")"
+//             });
 
-          // tst[0].x is the x value for the first legend item
-          const legendItemStartingX = legendHistory[0].x
-          // the current x position of the legendcontainer
-          const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
-          // account for the initial X translation of the svg
-          const initialSvgTranslate = 35
-          // the width of the container
-          const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
+//           // once the legend has been completed, do some calcs to shift the
+//           // legendcontainer to the middle of the svg.
 
-          const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
+//           // tst[0].x is the x value for the first legend item
+//           const legendItemStartingX = legendHistory[0].x
+//           // the current x position of the legendcontainer
+//           const currX = d3.select(".legendcontainer").node().getBBox().x + legendItemStartingX
+//           // account for the initial X translation of the svg
+//           const initialSvgTranslate = 35
+//           // the width of the container
+//           const legendWidth = svg.selectAll(".legendcontainer").node().getBBox().width
 
-          svg.selectAll(".legendcontainer")
-            .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
+//           const shiftToCenter = (((svgWidth - legendWidth)/2) - currX) - initialSvgTranslate
+
+//           svg.selectAll(".legendcontainer")
+//             .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
         };
 
 
