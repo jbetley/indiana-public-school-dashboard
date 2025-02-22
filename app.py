@@ -208,6 +208,9 @@ def load_academic_data():
 
         data = data.sort_values(by="Year")
 
+        data.columns = data.columns.str.replace("English Language", "English", regex=True)
+        
+        print(data.columns.tolist())
         school_proficiency = [
             {k: v for k, v in m.items() if v == v and v is not None}
             for m in data.to_dict(orient="records")

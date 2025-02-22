@@ -321,8 +321,8 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
     # will match both "English" and "Non English"
     merged_data = merged_data.replace(
         {
-            "Non English Language Learners": "Temp1",
-            "English Language Learners": "Temp2",
+            "Non English Learners": "Temp1",
+            "English Learners": "Temp2",
         },
         regex=True,
     )
@@ -333,8 +333,8 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
 
     merged_data = merged_data.replace(
         {
-            "Temp1": "Non English Language Learners",
-            "Temp2": "English Language Learners",
+            "Temp1": "Non English Learners",
+            "Temp2": "English Learners",
         },
         regex=True,
     )

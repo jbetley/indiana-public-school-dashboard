@@ -91,6 +91,28 @@ function findMissing(schoolData, corpData) {
   return missingString
 }
 
+// sort an array of objects by a provided property and list order
+function orderByProperty(arr, property, order) {
+  const orderMap = order.reduce((acc, value, index) => {
+    acc[value] = index;
+    return acc;
+  }, {});
+
+  arr.sort((a, b) => {
+
+    const aIndex = orderMap[a[property]];
+    const bIndex = orderMap[b[property]];
+
+    if (aIndex === undefined && bIndex === undefined) return 0;
+    if (aIndex === undefined) return 1;
+    if (bIndex === undefined) return -1;
+
+    return aIndex - bIndex;
+  });
+
+  return arr;
+};
+
 
 // process array for groupBarChart
 function processBarData(data) {
