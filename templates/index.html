@@ -4,21 +4,22 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
    <title>Indiana School Academic Dashboard</title>
-   
+
    <!-- Imported Fonts -->
    <link  rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.11.2/css/all.css" integrity="sha384-zrnmn8R8KkWl12rAZFt4yKjxplaDaT7/EUkKm7AovijfrQItFWR7O/JJn4DAa/gx" crossorigin="anonymous">
-   
+
    <!-- Third-Party Modules -->
    <script src="{{ url_for('static', filename='slimselect.min.js')}}"></script>
    <script src="{{ url_for('static', filename='d3.v5.js')}}"></script>
    <script src="{{ url_for('static', filename='ag-grid-community.min.js')}}"></script>
-   
+
    <!-- Local Modules -->
    <script src="{{ url_for('static', filename='d3-helpers.js')}}"></script>
    <script src="{{ url_for('static', filename='helpers.js')}}"></script>
    <script src="{{ url_for('static', filename='utils.js')}}"></script>
-   <script src="{{ url_for('static', filename='d3-utils.js')}}"></script>   
+   <script src="{{ url_for('static', filename='d3-utils.js')}}"></script>
+   <script src="{{ url_for('static', filename='globals.js')}}"></script>
 
    <!-- Imported Stylesheets -->
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
@@ -54,7 +55,7 @@
                <button data-analysistab="tab-a-2" id="multiTab" class="tab analysis">Multi-Year</button>
             </div>
          </div>
-      </div>               
+      </div>
       <div class="row">
          <div class="nav-container twelve columns">
             <div id="typenav-tabs" class="typenav">
@@ -78,7 +79,7 @@
                <button data-hstab="tab-h-2" id="satTab" class="tab hsinfo">SAT</button>
             </div>
          </div>
-      </div>      
+      </div>
    </div>
    <div class="row">
       <div class="panel-container">
@@ -178,7 +179,7 @@
 
                      <div class="empty-box tab2-label-18" id="info-container-sat-label-18"><div id="info-sat-label-18" class="label__header"></div></div>
                      <div class="table-box tab2-table-18" id="info-container-sat-table-18"><div id="info-sat-table-18" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-18" id="info-container-sat-chart-18"><div id="mathSatInfoSubgroup"></div></div>                     
+                     <div class="box tab2-lines-18" id="info-container-sat-chart-18"><div id="mathSatInfoSubgroup"></div></div>
                   </div>
                </section>
             </div>
@@ -207,9 +208,9 @@
                            <div id="analysis-iread-table-2" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-iread-msg-2"></div>
                         </div>
-                        
 
-                        <div class="empty-box tab3-label-3" id="analysis-container-iread-label-3"><div id="analysis-iread-label-3" class="label__header"></div></div>                        
+
+                        <div class="empty-box tab3-label-3" id="analysis-container-iread-label-3"><div id="analysis-iread-label-3" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-3" id="analysis-container-iread-chart-3"><div id="ireadComparisonSubgroup"></div></div>
                         <div class="table-box tab3-table-3" id="analysis-container-iread-table-3">
                            <div id="analysis-iread-table-3" style="width: 100%" class="ag-theme-quartz"></div>
@@ -222,7 +223,7 @@
                            <div id="analysis-ilearn-table-4" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-ilearn-msg-4"></div>
                         </div>
-                        
+
                         <div class="empty-box tab3-label-5" id="analysis-container-ilearn-label-5"><div id="analysis-ilearn-label-5" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-5" id="analysis-container-ilearn-chart-5"><div id="elaILEARNComparisonGrade"></div></div>
                         <div class="table-box tab3-table-5" id="analysis-container-ilearn-table-5">
@@ -236,14 +237,14 @@
                            <div id="analysis-ilearn-table-6" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-ilearn-msg-6"></div>
                         </div>
-                        
+
                         <div class="empty-box tab3-label-7" id="analysis-container-ilearn-label-7"><div id="analysis-ilearn-label-7" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-7" id="analysis-container-ilearn-chart-7"><div id="elaILEARNComparisonSubgroup"></div></div>
                         <div class="table-box tab3-table-7" id="analysis-container-ilearn-table-7">
                            <div id="analysis-ilearn-table-7" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-ilearn-msg-7"></div>
                         </div>
-                     
+
                         <div class="empty-box tab3-label-8" id="analysis-container-ilearn-label-8"><div id="analysis-ilearn-label-8" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-8" id="analysis-container-ilearn-chart-8"><div id="mathILEARNComparisonTotal"></div></div>
                         <div class="table-box tab3-table-8" id="analysis-container-ilearn-table-8">
@@ -285,8 +286,8 @@
                            <div id="analysis-gradrate-table-13" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-gradrate-msg-13"></div>
                         </div>
-                        
-                        <div class="empty-box tab3-label-14" id="analysis-container-gradrate-label-14"><div id="analysis-grad-label-14" class="label__header"></div></div>                        
+
+                        <div class="empty-box tab3-label-14" id="analysis-container-gradrate-label-14"><div id="analysis-grad-label-14" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-14" id="analysis-container-gradrate-chart-14"><div id="gradRateComparisonSubgroup"></div></div>
                         <div class="table-box tab3-table-14" id="analysis-container-gradrate-table-14">
                            <div id="analysis-gradrate-table-14" style="width: 100%" class="ag-theme-quartz"></div>
@@ -299,7 +300,7 @@
                            <div id="analysis-sat-table-15" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-sat-msg-15"></div>
                         </div>
-                        
+
                         <div class="empty-box tab3-label-16" id="analysis-container-sat-label-16"><div id="analysis-sat-label-16" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-16" id="analysis-container-sat-chart-16"><div id="satComparisonEthnicity"></div></div>
                         <div class="table-box tab3-table-16" id="analysis-container-sat-table-16">
@@ -349,27 +350,28 @@ allSchoolsObj.forEach(function (obj) {
 });
 
 // chart variables
-const subjectIlearn = ["ELA", "ELA", "ELA", "ELA", "Math", "Math", "Math", "Math"];
-const subjectGrad = ["Graduation", "Graduation", "Graduation"];
-const subjectIread = ["IREAD", "IREAD", "IREAD"];
-const subjectSAT = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
-const gradeAll = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Total"];
-const grade = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8"];
-const total = ["Total"];
-const gradTotal = ["Total", "Non Waiver"];
-const ethnicity = ["American Indian","Asian","Black","Hispanic","Multiracial","Native Hawaiian or Other Pacific Islander","White"];
-const subgroup = ["Special Education","General Education","Paid Meals","Free or Reduced Price Meals","English Learners",
-   "Non English Learners"];
-const categoryList = [grade, ethnicity, subgroup];
-const allCategories = ethnicity + subgroup + grade;
-const ilearnLabelSuffixes = ["by Grade", "by Ethnicity", "by Subgroup", "by Grade", "by Ethnicity", "by Subgroup"];
-const IREADLabelSuffixes = ["Total", "by Ethnicity", "by Subgroup"];
-const analysisLabelSuffixes = ["Total", "Total", "Total", "by Ethnicity", "by Subgroup", "by Grade", "by Ethnicity", "by Subgroup"];
-const gradLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup"];
-const satLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup", "Overview", "by Ethnicity", "by Subgroup"];
+// const subjectIlearn = ["ELA", "ELA", "ELA", "ELA", "Math", "Math", "Math", "Math"];
+// const subjectGrad = ["Graduation", "Graduation", "Graduation"];
+// const subjectIread = ["IREAD", "IREAD", "IREAD"];
+// const subjectSAT = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
+// const gradeAll = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Total"];
+// const grade = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8"];
+// const total = ["Total"];
+// const gradTotal = ["Total", "Non Waiver"];
+// const ethnicity = ["American Indian","Asian","Black","Hispanic","Multiracial","Native Hawaiian or Other Pacific Islander","White"];
+// const subgroup = ["Special Education","General Education","Paid Meals","Free or Reduced Price Meals","English Learners",
+//    "Non English Learners"];
+// const categoryList = [grade, ethnicity, subgroup];
+// const allCategories = ethnicity + subgroup + grade;
+// const ilearnLabelSuffixes = ["by Grade", "by Ethnicity", "by Subgroup", "by Grade", "by Ethnicity", "by Subgroup"];
+// const IREADLabelSuffixes = ["Total", "by Ethnicity", "by Subgroup"];
+// const analysisLabelSuffixes = ["Total", "Total", "Total", "by Ethnicity", "by Subgroup", "by Grade", "by Ethnicity", "by Subgroup"];
+// const gradLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup"];
+// const satLabelSuffixes = ["Overview", "by Ethnicity", "by Subgroup", "Overview", "by Ethnicity", "by Subgroup"];
 
-const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
-   "#83941f", "#f0c33b", "#bc986a", "#96b8db"];
+// const colorList = [ "#7b6888", "#df8f2d", "#a8b462", "#ebbb81", "#74a2d7", "#d4773f",
+//    "#83941f", "#f0c33b", "#bc986a", "#96b8db"];
+
 let colorState = [];
 
 // Demographic Page
@@ -425,9 +427,9 @@ var elaILEARNComparisonTotal,
    gradRateComparisonSubgroup,
    satComparisonTotal,
    satComparisonEthnicity,
-   satComparisonSubgroup;   
+   satComparisonSubgroup;
 
-var analysisGridApi = [];   
+var analysisGridApi = [];
 
 // https://www.pluralsight.com/resources/blog/guides/handling-nested-http-requests-using-the-fetch-api
 // https://dev.to/alexmercedcoder/making-multiple-api-calls-in-javascript-kip
@@ -495,7 +497,7 @@ schoolSelection.addEventListener("change", function () {
 
       if (selectedValues.school_type == "K8" ||
          (selectedValues.school_type == "K12" &&
-         selectedValues.school_subtype == "K8") 
+         selectedValues.school_subtype == "K8")
       ) {
 
          hsCategories.classList.remove("open");
@@ -511,14 +513,14 @@ schoolSelection.addEventListener("change", function () {
          selectedValues.type_tab = "k8Tab"
       }
       else if (selectedValues.school_type == "HS" ||
-         (selectedValues.school_type == "K12" && 
+         (selectedValues.school_type == "K12" &&
          selectedValues.school_subtype == "HS")
       ) {
          k8Categories.classList.remove("open");
          hsCategories.classList.add("open");
          k8TypeTab.classList.remove("active");
          hsTypeTab.classList.add("active");
-         selectedValues.type_tab = "hsTab"      
+         selectedValues.type_tab = "hsTab"
       }
 
       getAcademicInfoData(selectedValues);
@@ -530,7 +532,7 @@ schoolSelection.addEventListener("change", function () {
 
       if (selectedValues.school_type == "K8" ||
          (selectedValues.school_type == "K12" &&
-         selectedValues.school_subtype == "K8") 
+         selectedValues.school_subtype == "K8")
       ) {
 
          hsCategories.classList.remove("open");
@@ -546,16 +548,16 @@ schoolSelection.addEventListener("change", function () {
          selectedValues.type_tab = "k8Tab"
       }
       else if (selectedValues.school_type == "HS" ||
-         (selectedValues.school_type == "K12" && 
+         (selectedValues.school_type == "K12" &&
          selectedValues.school_subtype == "HS")
       ) {
          k8Categories.classList.remove("open");
          hsCategories.classList.add("open");
          k8TypeTab.classList.remove("active");
          hsTypeTab.classList.add("active");
-         selectedValues.type_tab = "hsTab"      
+         selectedValues.type_tab = "hsTab"
       }
-      
+
       // populates selectedValues dict with new list of comparison school ids
       getComparisonSchools(selectedValues);
       selectedValues.comparison_schools = getComparisonSchoolIDs();
@@ -704,7 +706,7 @@ function getSelectedValues() {
    selectedValues.k8_tab = k8Tab;
    selectedValues.hs_tab = hsTab;
    selectedValues.type_tab = typeTab;
-   selectedValues.analysis_tab = analysisTab; 
+   selectedValues.analysis_tab = analysisTab;
 
    return selectedValues
 }
@@ -847,7 +849,7 @@ function setCorpList (data) {
 function setSchoolList(data) {
    let schoolDropdown = []
    let selectedValues = getSelectedValues();
-   
+
    const pageTab = selectedValues.page_tab;
    const year = getSelectedYear();
    const corpID = getCorpSelection();
@@ -878,9 +880,9 @@ function setSchoolList(data) {
 
 /// Comparison List
 function setComparisonList(data) {
-   
+
    let subset = data.map(({ ["School ID"]: value, ["School Name"]: text }) => ({ text, value }));
-   
+
    // remove selected school from dropdown
    subset = subset.slice(1);
 
@@ -996,7 +998,7 @@ async function getComparisonSchools(select) {
 function demographicsPage(data, select) {
    const schoolId = select.school_id;
    const year = select.year;
-   
+
    let schoolData = data.filter((ele) => ele["School ID"] === Number(schoolId));
    let corpData = data.filter((ele) => ele["School ID"] != Number(schoolId));
 
@@ -1007,7 +1009,7 @@ function demographicsPage(data, select) {
    const yearLimit = 5;
 
    const yearsToRemove = schoolData.length - yearLimit;
-   
+
    if (yearsToRemove > 0 ) {
       schoolData = dropElements(schoolData, yearsToRemove);
       corpData = dropElements(corpData, yearsToRemove);
@@ -1168,7 +1170,7 @@ function academicInfoPage(data) {
 
    // set subject, type, and chart labels
    if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
-      if (k8Tab == "ireadTab") {  
+      if (k8Tab == "ireadTab") {
 
          subject =  ["IREAD", "IREAD", "IREAD"];
 
@@ -1189,11 +1191,11 @@ function academicInfoPage(data) {
       }
    }
    else if (
-      schoolType == "HS" || schoolType == "AHS" || 
+      schoolType == "HS" || schoolType == "AHS" ||
       (schoolType == "K12" && schoolSubtype == "HS")
    ) {
 
-      if (hsTab == "gradTab") {   
+      if (hsTab == "gradTab") {
 
          subject = ["Graduation", "Graduation", "Graduation"];
 
@@ -1203,7 +1205,7 @@ function academicInfoPage(data) {
          });
       }
       else {
-         
+
          subject = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
 
          satLabels.forEach((el, i) => {
@@ -1217,7 +1219,7 @@ function academicInfoPage(data) {
 
    if (!academicInfoPage.initialize) {
 
-// TODO: Load blank info tables       
+// TODO: Load blank info tables
       const defaultInfoData = [
          [
             "Total",
@@ -1326,8 +1328,8 @@ function academicInfoPage(data) {
       academicInfoPage.initialize = true;
 
    }
-   else {      
-      
+   else {
+
       /* Update */
 
       let infoStartingIndex,
@@ -1342,7 +1344,7 @@ function academicInfoPage(data) {
 
             ireadInfoTotal.data(getChartData(data, infoCategories[0], infoSubjects[0], selection)).id("ireadInfoTotal");
             ireadInfoEthnicity.data(getChartData(data, infoCategories[1], infoSubjects[1], selection)).id("ireadInfoEthnicity");
-            ireadInfoSubgroup.data(getChartData(data, infoCategories[2], infoSubjects[2], selection)).id("ireadInfoSubgroup");         
+            ireadInfoSubgroup.data(getChartData(data, infoCategories[2], infoSubjects[2], selection)).id("ireadInfoSubgroup");
          }
          else {
             infoStartingIndex = 3;
@@ -1361,7 +1363,7 @@ function academicInfoPage(data) {
             elaIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[2], infoSubjects[2], selection)).id("elaIlearnInfoStackEthnicity");
             mathIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[3], infoSubjects[3], selection)).id("mathIlearnInfoStackGrade");
             mathIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[4], infoSubjects[4], selection)).id("mathIlearnInfoStackEthnicity");
-            mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[5], infoSubjects[5], selection)).id("mathIlearnInfoStackSubgroup");              
+            mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[5], infoSubjects[5], selection)).id("mathIlearnInfoStackSubgroup");
          }
       }
       else if (typeTab == "hsTab") {
@@ -1437,7 +1439,7 @@ function academicAnalysisPage(data) {
    let remainingColors = [];
 
    console.log("ACADEMIC ANALYSIS Main Function")
-   
+
    // set subject based on selected tab
    if (
       schoolType == "K8" ||
@@ -1452,7 +1454,7 @@ function academicAnalysisPage(data) {
       }
    }
    else if (
-      schoolType == "HS" || schoolType == "AHS" || 
+      schoolType == "HS" || schoolType == "AHS" ||
       (schoolType == "K12" && schoolSubtype == "HS")
    ) {
       if (hsTab == "gradTab") { subject = subjectGrad }
@@ -1485,7 +1487,7 @@ function academicAnalysisPage(data) {
    // using answer provided by "pantaflex44"
    const addSchool = newColors.filter(({ school: id1 }) => !colorState.some(({ school: id2 }) => id2 === id1));
    const removeSchool = colorState.filter(({ school: id1 }) => !newColors.some(({ school: id2 }) => id2 === id1));
-   
+
    usedColors = colorState.map(function (obj) { return  obj.color});
    remainingColors = colorList.filter(x => !usedColors.includes(x));
 
@@ -1494,10 +1496,10 @@ function academicAnalysisPage(data) {
    // time addSchool should be more than 1)
    if (Array.isArray(addSchool) && addSchool.length > 1) {
       colorState = newColors;
-   } 
+   }
    // school added
    else if (Array.isArray(addSchool) && addSchool.length) {
-      colorState.push({school: addSchool[0].school, color: remainingColors[0]}) 
+      colorState.push({school: addSchool[0].school, color: remainingColors[0]})
    }
    // school removed
    else if (Array.isArray(removeSchool) && removeSchool.length) {
@@ -1521,7 +1523,7 @@ function academicAnalysisPage(data) {
    let ireadTotalLabel = document.getElementById("analysis-container-iread-label-1");
    ireadTotalLabel.firstChild.textContent = "Current Year IREAD Proficiency (" + yearString + ")";
    let ireadEthnicityLabel = document.getElementById("analysis-container-iread-label-2");
-   ireadEthnicityLabel.firstChild.textContent = "Current Year IREAD Proficiency by Ethnicity(" + yearString + ")";         
+   ireadEthnicityLabel.firstChild.textContent = "Current Year IREAD Proficiency by Ethnicity(" + yearString + ")";
    let ireadSubgroupLabel = document.getElementById("analysis-container-iread-label-3");
    ireadSubgroupLabel.firstChild.textContent = "Current Year IREAD Proficiency by Subgroup (" + yearString + ")";
    let elaILEARNTotalLabel = document.getElementById("analysis-container-ilearn-label-4");
@@ -1556,7 +1558,7 @@ function academicAnalysisPage(data) {
    // get table names from document (querySelector returns a collection,
    // so we use spread syntax and map to get ids as a list)
    let analysisTableNames = [...document.querySelectorAll('[id^="analysis-"][id*="table"]:not([id*="container"])')].map(item => item.id);
-   
+
    if (!academicAnalysisPage.initialize){
 
       console.log("INITIALIZINGINS")
@@ -1578,7 +1580,7 @@ function academicAnalysisPage(data) {
             }
          ]
       ];
-      
+
       ireadComparisonTotal = verticalGroupBar().data(defaultData).id("ireadComparisonTotal");
       d3.select("#ireadComparisonTotal").call(ireadComparisonTotal);
 
@@ -1619,7 +1621,7 @@ function academicAnalysisPage(data) {
       d3.select("#gradRateComparisonEthnicity").call(gradRateComparisonEthnicity);
 
       gradRateComparisonSubgroup = verticalGroupBar().data(defaultData).id("gradRateComparisonSubgroup");
-      d3.select("#gradRateComparisonSubgroup").call(gradRateComparisonSubgroup);      
+      d3.select("#gradRateComparisonSubgroup").call(gradRateComparisonSubgroup);
 
       satComparisonTotal = verticalGroupBar().data(defaultData).id("satComparisonTotal");
       d3.select("#satComparisonTotal").call(satComparisonTotal);
@@ -1628,7 +1630,7 @@ function academicAnalysisPage(data) {
       d3.select("#satComparisonEthnicity").call(satComparisonEthnicity);
 
       satComparisonSubgroup = verticalGroupBar().data(defaultData).id("satComparisonSubgroup");
-      d3.select("#satComparisonSubgroup").call(satComparisonSubgroup); 
+      d3.select("#satComparisonSubgroup").call(satComparisonSubgroup);
 
       for (let k = 0; k < analysisTableNames.length; k++) {
          let analysisTableName = analysisTableNames[k];
@@ -1655,7 +1657,7 @@ function academicAnalysisPage(data) {
             var ireadTotalChartData = processBarData(itreadTotalTransposedData);
             ireadTotalChartData.push(colorState)
             ireadComparisonTotal.data(ireadTotalChartData).id("ireadComparisonTotal");
-            
+
             // Single Year Comparison: IREAD Proficiency by Ethnicity
             let ireadEthnicityData = getChartData(yearData, ethnicity, "IREAD", selection)
             let ireadEthnicityColumns = Object.keys(ireadEthnicityData.find(d => d["School Name"] === schoolName));
@@ -1664,7 +1666,7 @@ function academicAnalysisPage(data) {
             var ireadEthnicityChartData = processBarData(ireadEthnicityTransposedData);
             ireadEthnicityChartData.push(colorState)
             ireadComparisonEthnicity.data(ireadEthnicityChartData).id("ireadComparisonEthnicity");
-            
+
             // Single Year Comparison: IREAD Proficiency by Subgroup
             let ireadSubgroupData = getChartData(yearData, subgroup, "IREAD", selection)
             let ireadSubgroupColumns = Object.keys(ireadSubgroupData.find(d => d["School Name"] === schoolName));
@@ -1737,7 +1739,7 @@ function academicAnalysisPage(data) {
             var mathILEARNEthnicityChartData = processBarData(mathILEARNEthnicityTransposedData);
             mathILEARNEthnicityChartData.push(colorState)
             mathILEARNComparisonEthnicity.data(mathILEARNEthnicityChartData).id("mathILEARNComparisonEthnicity");
-            
+
             //Single Year Comparison: ELA Proficiency by Subgroup
             let mathILEARNSubgroupData = getChartData(yearData, subgroup, subject[0], selection)
             let mathILEARNSubgroupColumns = Object.keys(mathILEARNSubgroupData.find(d => d["School Name"] === schoolName));
@@ -1935,7 +1937,7 @@ function navigateHandler(e) {
       enrollmentChart.width(windowWidth);
       attendanceChart.width(windowWidth);
       ethnicityDemoChart.width(windowWidth);
-      statusDemoChart.width(windowWidth);      
+      statusDemoChart.width(windowWidth);
    }
    else if (
 
@@ -1959,16 +1961,16 @@ function navigateHandler(e) {
       let infoGradRateContainers = document.querySelectorAll('[id^="info-container-gradrate"]');
 
       infoIreadContainers.forEach(el => {
-         el.style.display = "none"; 
+         el.style.display = "none";
       });
       infoIlearnContainers.forEach(el => {
-         el.style.display = "none"; 
-      }); 
+         el.style.display = "none";
+      });
       infoGradRateContainers.forEach(el => {
-         el.style.display = "none"; 
+         el.style.display = "none";
       });
       infoSatContainers.forEach(el => {
-         el.style.display = "none"; 
+         el.style.display = "none";
       });
 
       analysisPages.classList.remove("open");
@@ -1984,13 +1986,13 @@ function navigateHandler(e) {
          (schoolType == "K8" && schoolSubtype != "MS") ||
          (schoolType == "K12" && schoolSubtype == "K8") ||
          schoolSubtype == "K8"
-      ) {      
+      ) {
 
          k8Categories.classList.add("open");
 
          if (k8Selection == "ireadTab") {
             infoIreadContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
             ireadInfoTotal.width(windowWidth);
             ireadInfoEthnicity.width(windowWidth);
@@ -1998,14 +2000,14 @@ function navigateHandler(e) {
          }
          else if (k8Selection == "ilearnTab") {
             infoIlearnContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
             elaIlearnInfoGrade.width(windowWidth);
             elaIlearnInfoEthnicity.width(windowWidth);
             elaIlearnInfoSubgroup.width(windowWidth);
             mathIlearnInfoGrade.width(windowWidth);
             mathIlearnInfoEthnicity.width(windowWidth);
-            mathIlearnInfoSubgroup.width(windowWidth);            
+            mathIlearnInfoSubgroup.width(windowWidth);
          }
       }
       else if (
@@ -2017,7 +2019,7 @@ function navigateHandler(e) {
 
          if (hsSelection == "gradTab") {
             infoGradRateContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
             gradRateInfoTotal.width(windowWidth);
             gradRateInfoEthnicity.width(windowWidth);
@@ -2025,14 +2027,14 @@ function navigateHandler(e) {
          }
          else if (hsSelection == "satTab") {
             infoSatContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
             ebrwSatInfoTotal.width(windowWidth);
             ebrwSatInfoEthnicity.width(windowWidth);
             ebrwSatInfoSubgroup.width(windowWidth);
             mathSatInfoTotal.width(windowWidth);
             mathSatInfoEthnicity.width(windowWidth);
-            mathSatInfoSubgroup.width(windowWidth);       
+            mathSatInfoSubgroup.width(windowWidth);
          }
       };
 
@@ -2080,16 +2082,16 @@ function navigateHandler(e) {
       let analysisGradRateContainers = document.querySelectorAll('[id^="analysis-container-gradrate"]');
 
       analysisIreadContainers.forEach(el => {
-         el.style.display = "none"; 
+         el.style.display = "none";
       });
       analysisIlearnContainers.forEach(el => {
-         el.style.display = "none"; 
-      }); 
+         el.style.display = "none";
+      });
       analysisGradRateContainers.forEach(el => {
-         el.style.display = "none"; 
+         el.style.display = "none";
       });
       analysisSatContainers.forEach(el => {
-         el.style.display = "none"; 
+         el.style.display = "none";
       });
 
       analysisPages.classList.add("open");
@@ -2105,38 +2107,38 @@ function navigateHandler(e) {
          (schoolType == "K8" && schoolSubtype != "MS") ||
          (schoolType == "K12" && schoolSubtype == "K8") ||
          schoolSubtype == "K8"
-      ) {      
+      ) {
          k8Categories.classList.add("open");
 
          if (k8Selection == "ireadTab") {
             analysisIreadContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
 
             // analysisIlearnContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisSatContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisGradRateContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
          }
          else if (k8Selection == "ilearnTab") {
             analysisIlearnContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
 
             // analysisIreadContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisSatContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisGradRateContainers.forEach(el => {
-            //    el.style.display = "none"; 
-            // });         
+            //    el.style.display = "none";
+            // });
          }
 
        } else if (
@@ -2148,32 +2150,32 @@ function navigateHandler(e) {
 
          if (hsSelection == "gradTab") {
             analysisGradRateContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
 
             // analysisIreadContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisIlearnContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisSatContainers.forEach(el => {
-            //    el.style.display = "none"; 
-            // });            
+            //    el.style.display = "none";
+            // });
          }
          else if (hsSelection == "satTab") {
             analysisSatContainers.forEach(el => {
-               el.style.display = "flex"; 
+               el.style.display = "flex";
             });
 
             // analysisIreadContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
             // analysisIlearnContainers.forEach(el => {
-            //    el.style.display = "none"; 
-            // }); 
+            //    el.style.display = "none";
+            // });
             // analysisGradRateContainers.forEach(el => {
-            //    el.style.display = "none"; 
+            //    el.style.display = "none";
             // });
          }
       };
@@ -2193,7 +2195,7 @@ function navigateHandler(e) {
 
       yearSelection.value = yearValue;
       yearSelection.setAttribute("value", yearValue);
-      
+
 // TODO: Need to figure out how to prevent this from triggering on page change ??
 
       // if we are here because the school type changed (e.g., K8 to HS),
@@ -2249,7 +2251,7 @@ if (document.readyState !== "loading") {
    typeCategories.classList.remove("open");
    hsCategories.classList.remove("open");
    k8Categories.classList.remove("open");
-      
+
    getDemographicData(selectedValues);
    getAcademicInfoData(selectedValues);
 
@@ -2277,7 +2279,7 @@ function resize() {
    let selectedValues = getSelectedValues();
 
    let windowWidth = window.innerWidth/2 - 125;
-   
+
    if (windowWidth >= 290) {
 
       if (selectedValues.page_tab === "analysisTab") {
