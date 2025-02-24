@@ -17,10 +17,6 @@
 // https://stackoverflow.com/questions/72630781/d3-wrapping-text-legends
 // https://dataviz.unhcr.org/tools/d3/d3_grouped_bar_chart.html
 
-// import { gradeAll } from './global';
-// import { ethnicity } from './global';
-// import { subgroup } from './global';
-
 
 /// Multi-Line Year over Year Chart ///
 function multiLine() {
@@ -77,9 +73,13 @@ function multiLine() {
       var dataByCategory = dataProcessed[0];
       var years = dataProcessed[1];
 
-      categories = dataByYear.columns;
-      categories = categories.filter(el => el != "School Name")
-      categories.forEach((category, i) => colors[category] = colorList[i])
+      // categories = dataByYear.columns;
+      // categories = categories.filter(el => el != "School Name")
+      // categories.forEach((category, i) => colors[category] = colorList[i])
+
+      // console.log("INITIAL COLORS")
+      // console.log(categories)
+      // console.log(colors)
 
       y.domain([(0), d3.max(dataByCategory, function(c) {
         return d3.max(c.values, function(d) {
@@ -96,17 +96,6 @@ function multiLine() {
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-      // TODO: testing removing the extra linechart "level"
-      // var svg = dom.append("svg")
-      //   .attr("width", width + margin.left + margin.right)
-      //   .attr("height", height + margin.top + margin.bottom)
-
-      // let id = dom._groups[0][0].id
-      // var linechart = svg.append("g")
-      //   .attr('class', 'linechart-g')
-      //   .attr('id', id)
-      //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       svg.append("g")
         .attr("class", "x axis")
@@ -179,6 +168,14 @@ function multiLine() {
           categories = categories.filter(el => el != "School Name")
           categories.forEach((category, i) => colors[category] = colorList[i])
 
+          // console.log("UPDATE COLORS")
+          // console.log(categories)
+          // console.log(colors)
+
+          // Set up transition.
+          const dur = 200;
+          const t = d3.transition().duration(dur);
+
           y.domain([(0), d3.max(dataByCategory, function(c) {
             return d3.max(c.values, function(d) {
                 return d.proficiency + .10});
@@ -230,6 +227,8 @@ function multiLine() {
           var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
           
           // Sorting the legend items into a specific order makes things look cleaner
+          // start with array in sorted order and then filter by the categories
+          // actually present- gives properly sorted categories
           let sortedOrder = [];
 
           if (gradeAll.includes(dataByCategory[0].id)) {
@@ -245,12 +244,100 @@ function multiLine() {
             sortedOrder = ["Attendance Rate", "Chronic Absenteeism %"];
           };
 
-          let sortedData = orderByProperty(dataByCategory, 'id', sortedOrder);
+          let filteredSort = sortedOrder.filter(item => categories.includes(item))
+          let sortedData = orderByProperty(dataByCategory, 'id', filteredSort);
 
-          var legend = legendContainer.selectAll('.legend')
+          // TODO: This is the d3v5 way to update- but it places all legends under
+          // TODO: a single g.legend group which breaks the legend transform
+          // let legendUpdate = legendContainer.selectAll('g.legend')
+          //   .data([sortedData])
+          //   .join('g')
+          //   .attr('class', 'legend');
+
+          // console.log(legendUpdate)
+
+          // var legendRect = legendUpdate.selectAll("rect")
+          //   .data(sortedData)
+          //   .join(
+          //     enter => {
+          //       enter.append('rect')
+          //         .attr('class', 'boxes')
+          //         .attr("x", function(d, i) {
+          //           var xPost = legendXPosition(d.id, i, fontWidth);
+          //           return xPost;
+          //         })
+          //         .attr('y', 30)
+          //         .attr('width', 8)
+          //         .attr('height', 8)
+          //         .style('fill', function (d) {
+          //           return colors[d.id];
+          //         })
+          //     },
+          //     update => {
+          //       update
+          //         .transition(t)
+          //         .attr("x", function(d, i) {
+          //           console.log(d.id)
+          //           var xPost = legendXPosition(d.id, i, fontWidth);
+          //           return xPost;
+          //         })
+          //         .attr('y', 30)
+          //         .attr('width', 8)
+          //         .attr('height', 8)
+          //         .style('fill', function (d) {
+          //           return colors[d.id];
+          //         })
+          //     },
+          //     exit => exit.remove()
+          //   );
+
+          // var legendText = legendUpdate.selectAll("text")
+          //   .data(sortedData)
+          //   .join(
+          //     enter => {
+          //       enter.append('text')
+          //         .attr('class', 'words')
+          //         .attr("x", function(d, i) {
+          //           var xPost = legendXPositionText(d.id, i, rectOffset, fontWidth);
+          //           return xPost;
+          //         })
+          //         .attr('y', 37)
+          //         .style("font-size", 10)
+          //         .style('fill', function (d) {
+          //           return colors[d.id];
+          //         })
+          //         .text(function (d) {
+          //           return d.id;
+          //         })
+          //     },
+          //     update => {
+          //       update
+          //         .transition(t)
+          //         .attr("x", function(d, i) {
+          //           var xPost = legendXPositionText(d.id, i, rectOffset, fontWidth);
+          //           return xPost;
+          //         })
+          //         .attr('y', 37)
+          //         .style("font-size", 10)
+          //         .style('fill', function (d) {
+          //           return colors[d.id];
+          //         })
+          //         .text(function (d) {
+          //           return d.id;
+          //         })
+          //     },
+          //     exit => exit.remove()
+          //   );
+
+          // NOTE: This works, but it is the d3 way to do this?
+          svg.selectAll("g.legend").remove()
+
+          var legend = legendContainer.selectAll('g.legend')
             .data(sortedData)
-              .enter().append('g')
-              .attr('class', 'legend');
+            .enter()
+            .append('g')
+            .attr('class', 'legend');
+
 
           legend.append('rect')
             .attr("x", function(d, i) {
@@ -262,7 +349,8 @@ function multiLine() {
             .attr('height', 8)
             .style('fill', function (d) {
               return colors[d.id];
-            });
+            })
+
 
           legend.append("text")
             .attr("x", function(d, i) {
@@ -276,7 +364,7 @@ function multiLine() {
             })
             .text(function (d) {
               return d.id;
-            })
+            });
 
           // This is an attempt to make a decent looking responsive legend (see updateWidth()),
           // it uses various calculations based on the length of the strings and legend items
@@ -289,6 +377,7 @@ function multiLine() {
 
               // get the length of all legend strings
               let allTextItems = d3.select(this.parentNode).selectAll("text");
+
               let lengths = [];
 
               allTextItems.each(function (p, j) {
@@ -435,7 +524,7 @@ function multiLine() {
 
             // shift legendcontainer to center
             let divElement = document.getElementById(id);
-            let padding = parseInt(getComputedStyle(divElement.parentElement).padding); // acount for padding
+            let padding = parseInt(getComputedStyle(divElement.parentElement).padding); // take padding into acount
             const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
             const shiftToCenter = ((svgWidth - legendContainerWidth) / 2) - padding;
 
@@ -445,13 +534,15 @@ function multiLine() {
           // Update lines and circles
 
           // Set up transition.
-          const dur = 200;
-          const t = d3.transition().duration(dur);
+          // const dur = 200;
+          // const t = d3.transition().duration(dur);
 
           let lineUpdate = svg.selectAll(".linechart")
             .data([dataByCategory])
             .join('g')
             .attr('class', 'linechart');
+
+          console.log("THESE ARE UPDATES")
 
           var lines = lineUpdate.selectAll("path.lines")
             .data(dataByCategory)
@@ -461,7 +552,12 @@ function multiLine() {
                   .attr('class', 'lines')
                   .attr("fill", "none")
                   .style("stroke-width", function(d) { return "2"; })
-                  .attr("stroke", function (d,i) { return colors[d.id]})
+                  .attr("stroke", function (d,i) { 
+                    // console.log("LINES")
+                    // console.log(d.id)
+                    // console.log(colors[d.id])
+                    return colors[d.id]
+                  })
                   .attr("d", d => line(d.values))
                   .transition(t)
                   .attr("d", d => line(d.values));
@@ -482,7 +578,12 @@ function multiLine() {
               enter => {
                 enter.append('circle').attr('class', 'circles')
                   .attr("r", 3.5)
-                  .style("fill", function (d,i) { return colors[d.id]})
+                  .style("fill", function (d,i) { 
+                    // console.log("CIRCLES")
+                    // console.log(d.id)
+                    // console.log(colors[d.id])
+                    return colors[d.id]
+                  })
                   .attr("cx", function (d,i,j) { return x(d.year) })
                   .attr("cy", function (d,i) { return x(d.proficiency) })
                   .transition(t)
@@ -521,7 +622,7 @@ function multiLine() {
           svg.selectAll("rect.overlay").remove()
 
           // determine the actual height and width of svg and
-          // sets the overlay to the same width/height
+          // sets the overlay to the same dimensions
           svgAttributes = d3.select("g")._groups[0][0].parentNode.attributes
           svgWidth = svgAttributes.getNamedItem("width").value
           const svgHeight = svgAttributes.getNamedItem("height").value
@@ -574,7 +675,7 @@ function multiLine() {
 
           svg.select("rect.overlay").attr("width", width);
           
-          // Note: This is a giant pain in the ass
+          // legend shenanigans
           fontWidth = 6;
           rectOffset = 10;
           fontSize = 8;
@@ -582,6 +683,25 @@ function multiLine() {
           rowLength = 0;
           boundingArea = 0;
           legendPadding = 0;
+
+          // ensure that legend items are sorted correctly
+          let sortedOrder = [];
+
+          if (gradeAll.includes(categories[0])) {
+            sortedOrder = gradeAll
+          }
+          else if (subgroup.includes(categories[0])) {
+            sortedOrder = subgroup
+          }
+          else if (ethnicity.includes(categories[0])) {
+            sortedOrder = ethnicity
+          }
+          else {
+            sortedOrder = ["Attendance Rate", "Chronic Absenteeism %"];
+          };
+
+          // filter out categories not present in the data set
+          let filteredCategories = sortedOrder.filter(item => categories.includes(item))
 
           svg.selectAll("g.legend")
             .attr("transform", function (d, i) {
@@ -592,15 +712,13 @@ function multiLine() {
 
               let isSingleLine = false;
 
-              let allTextItems = d3.select(this.parentNode).selectAll("text");
-              let lengths = [];
+              lengths = []
 
-              allTextItems.each(function (p, j) {
-                d3.select(this).text(function (d, i) {
-                    lengths.push(BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif"))
-                    return d.id
-                })
-              });
+              // use a for-loop instead of selection to get length of strings because we are using an
+              // array ("filteredCategories") instead of a selection as in updateData()
+              for (let i = 0; i < filteredCategories.length; i++) {
+                lengths.push(BrowserText.getWidth(filteredCategories[i], fontSize, "Inter, sans-serif"))
+              }
 
               const intArray = lengths.map(float => Math.floor(float))
               const numItems = intArray.length
