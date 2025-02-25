@@ -91,6 +91,26 @@ function findMissing(schoolData, corpData) {
   return missingString
 }
 
+
+// replace the first duplicate value in the passed "obj"
+// with the passed "newValue"
+function replaceDuplicate(obj, newValue) {
+  const seenValues = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key];
+      if (seenValues[value]) {
+        obj[key] = newValue;
+        return obj; // Exit after replacing the first duplicate
+      } else {
+        seenValues[value] = true;
+      }
+    }
+  }
+  return obj; // No duplicates found
+}
+
+
 // sort an array of objects by a provided property and list order
 function orderByProperty(arr, property, order) {
   const orderMap = order.reduce((acc, value, index) => {

@@ -8,7 +8,8 @@ const gradeAll = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 
 const grade = ["Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8"];
 const total = ["Total"];
 const gradTotal = ["Total", "Non Waiver"];
-const ethnicity = ["American Indian","Asian","Black","Hispanic","Multiracial","Native Hawaiian or Other Pacific Islander","White"];
+// Note: Replaced "Native Hawaiian or Other Pacific Islander" because it was breaking axis
+const ethnicity = ["American Indian","Asian","Black","Hispanic","Multiracial","Pacific Islander","White"];
 const subgroup = ["General Education","Special Education", "Paid Meals","Free or Reduced Price Meals","English Learners",
    "Non English Learners"];
 const categoryList = [grade, ethnicity, subgroup];

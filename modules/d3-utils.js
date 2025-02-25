@@ -44,7 +44,6 @@ function wrap(text, width) {
         else {
           dyTmp = ++lineNumber * lineHeight + dy +.1
         }
-        // TODO: end kludge
 
         tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", dyTmp + "em").text(word);
       } 

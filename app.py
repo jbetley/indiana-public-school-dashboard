@@ -155,6 +155,8 @@ def load_demographic_data():
 
     all_demographic_data = all_demographic_data.sort_values(by="Year")
 
+    all_demographic_data.columns = all_demographic_data.columns.str.replace("Native Hawaiian or Other Pacific Islander", "Pacific Islander", regex=True)
+    print(all_demographic_data.columns.tolist())
     all_demographic_data_object = [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in all_demographic_data.to_dict(orient="records")
@@ -208,8 +210,10 @@ def load_academic_data():
 
         data = data.sort_values(by="Year")
 
+# TODO: Check to see if we are even loading Pacific Islander data ..
         data.columns = data.columns.str.replace("English Language", "English", regex=True)
-
+        data.columns = data.columns.str.replace("Native Hawaiian or Other Pacific Islander", "Pacific Islander", regex=True)
+       
         school_proficiency = [
             {k: v for k, v in m.items() if v == v and v is not None}
             for m in data.to_dict(orient="records")

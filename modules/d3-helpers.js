@@ -32,6 +32,7 @@ function multiLine() {
     focus,
     categories,
     colors,
+    updatedColors,
     data = [],
     y = d3.scaleLinear().range([height, 0]),
     x = d3.scalePoint().range([0, width]);
@@ -72,14 +73,6 @@ function multiLine() {
       var dataProcessed = processData(dataByYear);
       var dataByCategory = dataProcessed[0];
       var years = dataProcessed[1];
-
-      // categories = dataByYear.columns;
-      // categories = categories.filter(el => el != "School Name")
-      // categories.forEach((category, i) => colors[category] = colorList[i])
-
-      // console.log("INITIAL COLORS")
-      // console.log(categories)
-      // console.log(colors)
 
       y.domain([(0), d3.max(dataByCategory, function(c) {
         return d3.max(c.values, function(d) {
@@ -129,7 +122,6 @@ function multiLine() {
       var legendContainer = svg.append('g')
         .attr('class', 'legendcontainer');
 
-      // TODO: Updating is a hot mess. Check Dynamic Minds Academy
       updateData = function() {
 
         // display empty svg is there is no data
@@ -164,14 +156,29 @@ function multiLine() {
           dataByCategory = dataProcessed[0];
           years = dataProcessed[1];
 
+          //  We want to track historical colors so when an update is made,
+          // categories that remain keep the same color. However, this can
+          // sometimes result in duplicate colors- so we also need to check
+          // for duplicates and replace one of the values with a new color (we use
+          // the colorList with an index equal to the number of items- which will
+          // always be a color that is not currently in use)
+          let existingColors;
+          if (Object.keys(colors).length != 0) {
+            existingColors = { ...updatedColors };
+          } else {
+            existingColors = {};
+          }
+
           categories = dataByYear.columns;
           categories = categories.filter(el => el != "School Name")
           categories.forEach((category, i) => colors[category] = colorList[i])
 
-          // console.log("UPDATE COLORS")
-          // console.log(categories)
-          // console.log(colors)
+          updatedColors = { ...colors, ...existingColors };
 
+          const currentColors = Object.values(updatedColors);
+          const remainingColors = (colorList.filter(x => !currentColors.includes(x)));
+          updatedColors = replaceDuplicate(updatedColors, remainingColors[0]);
+          
           // Set up transition.
           const dur = 200;
           const t = d3.transition().duration(dur);
@@ -348,7 +355,7 @@ function multiLine() {
             .attr('width', 8)
             .attr('height', 8)
             .style('fill', function (d) {
-              return colors[d.id];
+              return updatedColors[d.id];
             })
 
 
@@ -360,7 +367,7 @@ function multiLine() {
             .attr('y', 37)
             .style("font-size", 10)
             .style('fill', function (d) {
-              return colors[d.id];
+              return updatedColors[d.id];
             })
             .text(function (d) {
               return d.id;
@@ -533,16 +540,10 @@ function multiLine() {
 
           // Update lines and circles
 
-          // Set up transition.
-          // const dur = 200;
-          // const t = d3.transition().duration(dur);
-
           let lineUpdate = svg.selectAll(".linechart")
             .data([dataByCategory])
             .join('g')
             .attr('class', 'linechart');
-
-          console.log("THESE ARE UPDATES")
 
           var lines = lineUpdate.selectAll("path.lines")
             .data(dataByCategory)
@@ -553,18 +554,21 @@ function multiLine() {
                   .attr("fill", "none")
                   .style("stroke-width", function(d) { return "2"; })
                   .attr("stroke", function (d,i) { 
-                    // console.log("LINES")
-                    // console.log(d.id)
-                    // console.log(colors[d.id])
-                    return colors[d.id]
+                    return updatedColors[d.id]
                   })
                   .attr("d", d => line(d.values))
                   .transition(t)
+                  .attr("stroke", function (d,i) { 
+                    return updatedColors[d.id]
+                  })
                   .attr("d", d => line(d.values));
               },
               update => {
                 update
                   .transition(t)
+                  .attr("stroke", function (d,i) { 
+                    return updatedColors[d.id]
+                  })
                   .attr("d", d => line(d.values));
               },
               exit => exit.remove()
@@ -579,20 +583,23 @@ function multiLine() {
                 enter.append('circle').attr('class', 'circles')
                   .attr("r", 3.5)
                   .style("fill", function (d,i) { 
-                    // console.log("CIRCLES")
-                    // console.log(d.id)
-                    // console.log(colors[d.id])
-                    return colors[d.id]
+                    return updatedColors[d.id]
                   })
                   .attr("cx", function (d,i,j) { return x(d.year) })
                   .attr("cy", function (d,i) { return x(d.proficiency) })
                   .transition(t)
+                  .style("fill", function (d,i) { 
+                    return updatedColors[d.id]
+                  })
                   .attr("cx", function (d,i) { return x(d.year)})
                   .attr("cy", function (d,i) { return y(d.proficiency)})
               },
               update => {
                 update
                   .transition(t)
+                  .style("fill", function (d,i) { 
+                    return updatedColors[d.id]
+                  })
                   .attr("cx", function (d,i) { return x(d.year)})
                   .attr("cy", function (d,i) { return y(d.proficiency)})
               },
@@ -607,7 +614,7 @@ function multiLine() {
             .attr('class', 'tipbox');
 
           tipBox.append('path')
-            .style("fill", function (d,i) { return colors[d.id]})
+            .style("fill", function (d,i) { return updatedColors[d.id]})
             .attr('class', 'path');
 
           tipBox.append("text")
@@ -638,7 +645,7 @@ function multiLine() {
           }
         } // end updateData
 
-
+// TODO: LEGEND STILL OVERLAPPING IN SOME CASES, SEE 21C IREAD DATA
         updateWidth = function() {
 
           // width is passed in as window.innerWidth/2
@@ -674,7 +681,7 @@ function multiLine() {
             .attr("cy", function (d,i) { return y(d.proficiency)});
 
           svg.select("rect.overlay").attr("width", width);
-          
+
           // legend shenanigans
           fontWidth = 6;
           rectOffset = 10;
@@ -1003,7 +1010,7 @@ function multiLine() {
       })
       .style('fill', function (d,i) {
         if (d) {
-          return colors[d.id]
+          return updatedColors[d.id]
         }
       });
 
@@ -1556,11 +1563,11 @@ function horizontalGroupBar() {
       let yearString;
       let titleText = "";
 
-      const chartData = data[0]
-      const missingString = data[1] // not currently needed
+      let chartData = data[0]
+      let missingString = data[1] // not currently needed
 
-      const categoryKeys = Array.from(chartData).map(d => d[0]);
-      const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
+      let categoryKeys = Array.from(chartData).map(d => d[0]);
+      let entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
 
       x.domain([0, 1]).nice();
       y0.domain(categoryKeys);
@@ -1611,11 +1618,11 @@ function horizontalGroupBar() {
 
       updateData = function() {
 
-        const chartData = data[0]
-        const missingString = data[1]
+        chartData = data[0]
+        missingString = data[1]
 
-        const categoryKeys = Array.from(chartData).map(d => d[0]);
-        const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
+        categoryKeys = Array.from(chartData).map(d => d[0]);
+        entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
 
         x.domain([0, 1]).nice();
         y0.domain(categoryKeys);
@@ -1931,8 +1938,6 @@ function horizontalGroupBar() {
         })
         .attr('dx', textShift);
 
-
-        // TODO: Adjust x (higher) dynamically, somehow
         svg.selectAll("text.endtext")
           .attr("x", -(margin.right*2))
           .text(function(d) { return d })
@@ -1974,7 +1979,7 @@ function horizontalStackedBar() {
 
   var margin = {top: 15, right: 25, bottom: 15, left: 60},
     width = 540 - margin.left - margin.right,
-    height = 380 - margin.top - margin.bottom,
+    height = 400 - margin.top - margin.bottom,
     updateData,
     focus,
     categories,
@@ -1987,8 +1992,6 @@ function horizontalStackedBar() {
 
   var colors = {};
   const colorList = ["#df8f2d", "#ebbb81", "#96b8db", "#74a2d7"];
-
-  // const manualAdjustment = 7;
 
   var yAxis = d3.axisLeft(y).tickSize(0).tickPadding(8);
 
@@ -2330,24 +2333,24 @@ function horizontalStackedBar() {
               .style('shape-rendering','crispEdges')
               .style("opacity", 0.5)
               .attr("x1", -20)
-              .attr("y1", height+15)
+              .attr("y1", height+5)
               .attr("x2", width/2 + 75)
-              .attr("y2", height+15);
+              .attr("y2", height+5);
+
+            endnote = ["Insufficient N-Size: " + endnote];
 
             endtext.selectAll(".endnote")
               .data(endnote, function(d) { return d })
               .enter()
               .append("text")
-              .style("fill", "steelblue")
-              .style("font-size", 10)
-              .attr("y", height + 30)
-              .attr("dx", -20)
-              .attr("class","endtext")
-              .style("font-weight", 700)
-              .text("Insufficient N-Size: ")
-              .append("tspan")
-              .style("font-weight", 300)
-              .text(function(d) { return d });
+                .style("fill", "steelblue")
+                .style("font-size", 10)
+                .attr("x", -(margin.right))
+                .attr("y", height + 20)
+                .attr("class","endtext")
+                .style("font-weight", 300)
+                .text(function(d) { return d })
+                .call(wrap, width-50);
           };
 
           svg.selectAll("text.title").remove();
@@ -2359,11 +2362,11 @@ function horizontalStackedBar() {
           textShift = (svgWidth / 2) - svgTransform;
 
           title.append("rect")
-          .attr("width", rectWidth)
-          .attr("x", xShift)
-          .attr("rx", 5)
-          .style("fill", "#6783a9")
-          .attr("height", "30px");
+            .attr("width", rectWidth)
+            .attr("x", xShift)
+            .attr("rx", 5)
+            .style("fill", "#6783a9")
+            .attr("height", "30px");
 
           title.append("text")
             .classed("title", true)
@@ -2807,7 +2810,7 @@ function verticalGroupBar() {
           .text(function(d, i) {
             return d3.format(".0%")(d[1]);
           });
-// TODO: ADD
+// TODO: ADD ENDNOTES
         // svg.selectAll("text.endtext").remove();
 
         // if (missingString.length > 0) {
