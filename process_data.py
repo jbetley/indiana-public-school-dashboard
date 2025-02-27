@@ -3,28 +3,24 @@
 # data cleaning and processing          #
 #########################################
 # author:   jbetley (https://github.com/jbetley)
-# version:  0.9
+# version:  0.9  # noqa: ERA001
 # date:     02/21/24
 
-# from typing import Tuple
-import pandas as pd
 import numpy as np
-import itertools
-
+import pandas as pd
+from calculations import (
+    calculate_ahs_average,
+    calculate_graduation_rate,
+    calculate_proficiency,
+    calculate_sat_rate,
+    recalculate_total_proficiency,
+)
 from load_data import (
     get_adm_data,
     get_ahs_averages,
     get_corporation_academic_data,
     get_excluded_years,
     # get_graduation_data,
-)
-
-from calculations import (
-    calculate_graduation_rate,
-    calculate_ahs_average,
-    calculate_sat_rate,
-    calculate_proficiency,
-    recalculate_total_proficiency,
 )
 
 
@@ -46,14 +42,14 @@ def reorder_columns(data: pd.DataFrame, match_cols: list) -> list:
         col_list.append([c for c in data.columns if col in c])
         col_list[i].sort()
 
-    final_cols = list(sum(zip(*col_list), ()))
+    final_cols = list(sum(zip(*col_list, strict=False), ())) # testing "strict=False"
     final_cols.insert(0, "Category")
 
     return final_cols
 
 
 def check_total_tested(
-    df: pd.DataFrame, school_id: str, school_type: str
+    df: pd.DataFrame, school_id: str, school_type: str,
 ) -> pd.DataFrame:
     """
     Drop all columns for a Category if the value of "Total Tested" for
@@ -92,7 +88,7 @@ def check_total_tested(
     for col in tested_cols:
         if (
             pd.to_numeric(
-                data[data["School ID"] == str(school_id)][col], errors="coerce"
+                data[data["School ID"] == str(school_id)][col], errors="coerce",
             ).sum()
             == 0
             or data[data["School ID"] == str(school_id)][col].isnull().all()
@@ -100,10 +96,7 @@ def check_total_tested(
             if "Total Tested" in col:
                 match_string = " Total Tested"
             else:
-                if school_type == "K8":
-                    match_string = " Test N"
-                else:
-                    match_string = "|Cohort Count"
+                match_string = " Test N" if school_type == "K8" else "|Cohort Count"
 
             matching_cols = data.columns[
                 pd.Series(data.columns).str.startswith(col.split(match_string)[0])
@@ -115,9 +108,8 @@ def check_total_tested(
 
     data = data.drop(drop_all, axis=1).copy()
 
-    data = data.reset_index(drop=True)
+    return data.reset_index(drop=True)
 
-    return data
 
 
 def clean_adm_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -136,20 +128,11 @@ def clean_adm_data(df: pd.DataFrame) -> pd.DataFrame:
     data = data.drop(
         list(
             data.filter(
-                regex="Fall Virtual ADM|Spring Virtual ADM|School ID|Corporation ID|Corporation Name|School Name"
-            )
+                regex="Fall Virtual ADM|Spring Virtual ADM|School ID|Corporation ID|Corporation Name|School Name",  # noqa: E501
+            ),
         ),
         axis=1,
     )
-
-    # results = results.drop(
-    #     list(
-    #         results.filter(
-    #             regex="Fall Virtual ADM|Spring Virtual ADM|Corporation ID|Name"
-    #         )
-    #     ),
-    #     axis=1,
-    # )
 
     # Each adm average requires 2 columns (Fall and Spring). If there are an
     # odd number of columns after the above drop, that means that the last
@@ -232,7 +215,7 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
         # NOTE: CCR Percentage uses "|Count", grad rates use "|Cohort Count",
         # SAT uses "Total Tested"
         tested_cols = "Total Tested|Cohort Count|Count|Year"
-        filter_cols = r"^Category|CCR Percentage|Grade 12\|Graduation Rate|Total\|Graduation Rate|ADM Average|Graduation to Enrollment\|Graduation Rate|Benchmark \%|Below|Approaching|At|^Year$"
+        filter_cols = r"^Category|CCR Percentage|Grade 12\|Graduation Rate|Total\|Graduation Rate|ADM Average|Graduation to Enrollment\|Graduation Rate|Benchmark \%|Below|Approaching|At|^Year$"  # noqa: E501
         substring_dict = {
             " Total Tested": "",
             r"|Cohort Count": r"|Graduation",
@@ -241,12 +224,12 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
 
     elif school_type == "HS":
         tested_cols = r"Total Tested|Cohort Count|Year"
-        filter_cols = r"^Category|Graduation Rate$|AHS|Pass Rate$|Benchmark %|Below|Approaching|At|^Year$"
+        filter_cols = r"^Category|Graduation Rate$|AHS|Pass Rate$|Benchmark %|Below|Approaching|At|^Year$"  # noqa: E501
         substring_dict = {r" Total Tested": "", r"|Cohort Count": r"|Graduation"}
 
     else:
         tested_cols = "Total Tested|Test N|Year"
-        filter_cols = r"School ID|Corporation ID|Corporation Name|Low Grade|High Grade|\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$"
+        filter_cols = r"School ID|Corporation ID|Corporation Name|Low Grade|High Grade|\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$"  # noqa: E501
         substring_dict = {" Total Tested": "", " Test N": ""}
 
     # We get proficiency and cohort/tested (N-Size) data in separate dataframes,
@@ -270,7 +253,7 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
     tested_data = tested_data.rename(
         columns={
             c: str(c) + nsize_id for c in tested_data.columns if c not in ["Category"]
-        }
+        },
     )
 
     tested_data = tested_data.fillna(value=np.nan)
@@ -282,7 +265,7 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
     # add new column with substring values and drop the original
     # Category column
     tested_data["Substring"] = tested_data["Category"].replace(
-        substring_dict, regex=True
+        substring_dict, regex=True,
     )
 
     tested_data = tested_data.drop("Category", axis=1)
@@ -299,7 +282,7 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
             c: str(c) + name_id
             for c in proficiency_data.columns
             if c not in ["Category"]
-        }
+        },
     )
 
     proficiency_data = proficiency_data.reset_index(drop=True)
@@ -328,7 +311,8 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
     )
 
     merged_data = merged_data[
-        [a in b for a, b in zip(merged_data["Substring"], merged_data["Category"])]
+        [a in b for a, b in zip(merged_data["Substring"], merged_data["Category"],
+            strict=False)]
     ]
 
     merged_data = merged_data.replace(
@@ -359,7 +343,7 @@ def transpose_data(raw_df: pd.DataFrame, school_type: str) -> pd.DataFrame:
 
 
 def clean_academic_data(
-    df: pd.DataFrame, school_list: list, school_type: str, year: str, location: str
+    df: pd.DataFrame, school_list: list, school_type: str, year: str, location: str,
 ) -> pd.DataFrame:
     """
     A big chonky function that takes raw academic data and processes it in
@@ -375,11 +359,12 @@ def clean_academic_data(
         data (pd.DataFrame): processed dataframe
     """
     raw_data = df.copy()
-    
+
     school_id = school_list[0]
-    
+
     # note: corp_id needs to be a str
-    corp_id = raw_data[raw_data["School ID"] == school_id]["GEO Corp"].unique()[0].astype(str)
+    corp_id = raw_data[raw_data["School ID"] ==
+        school_id]["GEO Corp"].unique()[0].astype(str)
 
     is_analysis = False
 
@@ -394,7 +379,7 @@ def clean_academic_data(
 
     # if True, we are on academic analysis page and need comp
     # and corp data
-    if is_analysis == True:
+    if is_analysis is True:
 
         if school_type == "AHS":
             raw_ahs_data = get_ahs_averages()
@@ -433,11 +418,11 @@ def clean_academic_data(
     # drop ELA and Math/EBRW and Math columns
     if school_type == "HS" or school_type == "AHS":
         school_data = school_data.drop(
-            list(school_data.filter(regex="EBRW and Math")), axis=1
+            list(school_data.filter(regex="EBRW and Math")), axis=1,
         )
     else:
         school_data = school_data.drop(
-            list(school_data.filter(regex="ELA and Math")), axis=1
+            list(school_data.filter(regex="ELA and Math")), axis=1,
         )
 
     data = check_total_tested(school_data, school_id, school_type)
@@ -460,12 +445,12 @@ def clean_academic_data(
             ahs_data = processed_data.copy()
             if "AHS|CCR" in ahs_data.columns:
                 ahs_data["AHS|CCR"] = pd.to_numeric(
-                    ahs_data["AHS|CCR"], errors="coerce"
+                    ahs_data["AHS|CCR"], errors="coerce",
                 )
 
             if "AHS|Actual Graduates" in ahs_data.columns:
                 ahs_data["AHS|Actual Graduates"] = pd.to_numeric(
-                    ahs_data["AHS|Actual Graduates"], errors="coerce"
+                    ahs_data["AHS|Actual Graduates"], errors="coerce",
                 )
 
             # Student performance, dual-credit accumulation and/or industry
@@ -486,15 +471,16 @@ def clean_academic_data(
             ahs_data["CCR Percentage|Count"] = ahs_data["AHS|Actual Graduates"]
 
             ahs_data = ahs_data.rename(
-                columns={"AHS|Actual Graduates": "Grade 12|Cohort Count"}
+                columns={"AHS|Actual Graduates": "Grade 12|Cohort Count"},
             )
 
             if "AHS|Actual Enrollment" in ahs_data.columns:
                 ahs_data["AHS|Actual Enrollment"] = pd.to_numeric(
-                    ahs_data["AHS|Actual Enrollment"], errors="coerce"
+                    ahs_data["AHS|Actual Enrollment"], errors="coerce",
                 )
 
-            # Students enrolled in grade 12 graduate within the school year being assessed.
+            # Students enrolled in grade 12 graduate within the school
+            # year being assessed.
             if {
                 "AHS|Actual Enrollment",
                 "Grade 12|Cohort Count",
@@ -512,11 +498,12 @@ def clean_academic_data(
             # a cohort of at least ten (10) graduates is reached
 
             # TODO: Get GEOCorp here as corp_id? or just corp_id
-            # selected_school = get_school_index(school_id)
-            # corp_id = int(selected_school["Corporation ID"].values[0])
-            # corp_id = 9999
+            # selected_school = get_school_index(school_id)  # noqa: ERA001
+            # corp_id = int(selected_school["Corporation ID"].values[0])  # noqa: ERA001
+            # corp_id = 9999  # noqa: ERA001
             # get adm average and add to dataframe matching on school_id and Year
             # TODO: Corp ID working from above?
+
             raw_adm = get_adm_data(corp_id)
             adm_average = clean_adm_data(raw_adm)
 
@@ -596,7 +583,7 @@ def clean_academic_data(
     ):
         return pd.DataFrame()
 
-    else:
+    else:  # noqa: RET505
         ## Keep five years of data at most
         years = processed_data["Year"].unique().tolist()
 
@@ -608,7 +595,7 @@ def clean_academic_data(
         # TODO: (currently in get_multiyear_data)
 
         # analysis page (single?)
-        if is_analysis == True:
+        if is_analysis is True:
             ## HS/AHS academic_analysis_single
             if school_type == "HS" or school_type == "AHS":
                 hs_data = processed_data.copy()
@@ -616,57 +603,65 @@ def clean_academic_data(
                 # NOTE: Cohort data (not currently kept): Actual Graduates,
                 # Actual Enrollment, CCR
                 # if school_type == "AHS":
-                #     analysis_data = hs_data.filter(
-                #         regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name \
-                #         |CCR Percentage|Grade 12|Total\|Graduation Rate|Graduates|Graduation to Enrollment|Total Student Count|Benchmark \%|^Year$",
-                #         axis=1,
+                #     analysis_data = hs_data.filter(  # noqa: ERA001, RUF100
+                #         regex=r"School ID|School Name|Low Grade|High Grade
+                #           |Corporation ID|Corporation Name|CCR Percentage
+                #           |Grade 12|Total\|Graduation Rate|Graduates
+                #           |Graduation to Enrollment|Total Student Count
+                #           |Benchmark \%|^Year$", axis=1,
                 #     ).copy()
-                # else:
-                #     analysis_data = hs_data.filter(
-                #         regex=r"School ID|School Name|Low Grade|High Grade|Corporation ID|Corporation Name|Graduation Rate$|Total Student Count|Graduates|Benchmark \%|^Year$",
-                #         axis=1,
+                # else:  # noqa: ERA001
+                #     analysis_data = hs_data.filter(  # noqa: ERA001, RUF100
+                #         regex=r"School ID|School Name|Low Grade|High Grade
+                #           |Corporation ID|Corporation Name|Graduation Rate$
+                #           |Total Student Count|Graduates|Benchmark \%|^Year$",
+                #         axis=1,  # noqa: ERA001
                 #     ).copy()
 
-                # analysis_data = analysis_data.drop(
-                analysis_data = hs_data.drop(                    
-                    list(hs_data.filter(regex="EBRW and Math")), axis=1
+                analysis_data = hs_data.drop(
+                    list(hs_data.filter(regex="EBRW and Math")), axis=1,
                 )
 
-                hs_cols = [
-                    c
-                    for c in analysis_data.columns
-                    if c not in ["School Name", "Corporation Name"]
-                ]
+                # hs_cols = [
+                #     c
+                #     for c in analysis_data.columns
+                #     if c not in ["School Name", "Corporation Name"]
+                # ]
 
-                # get index of rows where school_id matches selected school (TODO: Just the first row?)
+                # get index of rows where school_id matches selected school
+                # (TODO: Just the first row?)
                 school_idx = analysis_data.index[
                     analysis_data["School ID"] == str(school_id)
                 ].tolist()[0]
 
-                for col in hs_cols:
-                    analysis_data[col] = pd.to_numeric(
-                        analysis_data[col], errors="coerce"
-                    )
+                filename99 = "analysis_data.csv"
+                analysis_data.to_csv(filename99, index=False)
+
+                # for col in hs_cols:
+                #     analysis_data[col] = pd.to_numeric(
+                #         analysis_data[col], errors="coerce",
+                #     )
 
                 # drop all columns where the row at school_name_idx has a NaN value
                 analysis_data = analysis_data.loc[:, ~hs_data.iloc[school_idx].isna()]
 
                 # want all IDs to be strings throughout the process
                 analysis_data["School ID"] = analysis_data["School ID"].astype(str)
-                analysis_data["Corporation ID"] = analysis_data["Corporation ID"].astype(str)
-                
+                analysis_data["Corporation ID"] = \
+                    analysis_data["Corporation ID"].astype(str)
+
                 return analysis_data
 
             ## K8 academic_analysis_single
-            else:
+            else:  # noqa: RET505
                 # TODO: testing unfiltered data
-                # k8_data = processed_data.copy()
+                # k8_data = processed_data.copy()  # noqa: ERA001
                 analysis_data = processed_data.copy()
-                # analysis_data = k8_data.filter(
-                #     regex=r"\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",
-                #     axis=1,
-                # )
-                
+                # analysis_data = k8_data.filter(  # noqa: ERA001, RUF100
+                #     regex=r"\|ELA Proficient %$|\|Math Proficient %$|IREAD Proficient %|^Year$|Low|High|School Name|School ID|Corporation ID",  # noqa: E501, ERA001
+                #     axis=1,  # noqa: ERA001
+                # )  # noqa: ERA001, RUF100
+
                 analysis_data = analysis_data.sort_values("Year").reset_index(drop=True)
 
                 analysis_data = analysis_data[
@@ -689,7 +684,7 @@ def clean_academic_data(
 
                 for col in check_for_unchartable_data.columns:
                     check_for_unchartable_data[col] = pd.to_numeric(
-                        check_for_unchartable_data[col], errors="coerce"
+                        check_for_unchartable_data[col], errors="coerce",
                     )
 
                 # TODO: Is there a K12?
@@ -697,17 +692,18 @@ def clean_academic_data(
                 if (
                     (school_type == "K8" or school_type == "K12")
                     and len(analysis_data.index) > 0
-                ) and check_for_unchartable_data.isnull().all().all() == True:
-                    
-                    analysis_data = pd.DataFrame()
-                    return analysis_data
+                ) and check_for_unchartable_data.isnull().all().all() is True:
+                    # and check_for_unchartable_data.isnull().all().all() == True:
 
-                else:
-                    
+                    return pd.DataFrame()
+
+                else:  # noqa: RET505
+
                     # want all IDs to be strings throughout the process
                     analysis_data["School ID"] = analysis_data["School ID"].astype(str)
-                    analysis_data["Corporation ID"] = analysis_data["Corporation ID"].astype(str)
-                
+                    analysis_data["Corporation ID"] = \
+                        analysis_data["Corporation ID"].astype(str)
+
                     return analysis_data
 
         # TODO: ORIGINAL AND NEW ARE IDENTICAL (EXCEPT M/F) for single school
@@ -720,6 +716,7 @@ def clean_academic_data(
 
             # want all IDs to be strings throughout the process
             final_school_data["School ID"] = final_school_data["School ID"].astype(str)
-            final_school_data["Corporation ID"] = final_school_data["Corporation ID"].astype(str)
-            
+            final_school_data["Corporation ID"] = \
+                final_school_data["Corporation ID"].astype(str)
+
             return final_school_data

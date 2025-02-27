@@ -280,8 +280,8 @@ function createBasicTable(data, tableID) {
         e.resizable = false;
         e.autoHeight = true;
         e.wrapText = true;
-        e.minWidth = 80;
-        e.maxWidth = 90;
+        e.minWidth = 140;
+        e.maxWidth = 140;
         e.cellClass = "ag-left-aligned-cell";
         e.headerClass = "text-center";
      }
@@ -527,14 +527,13 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
         let tested = categoryTested[a]; 
         let proficiency = category[a]
 
-        if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
-          if (data[i][proficient] == "***") {
-             eachYear[proficiency] = "***"
-           }
-           else {
-             result = calcProficiency(data[i], proficient, tested)
-             eachYear[proficiency] = result
-           }
+        if (data[i][tested] == "***" || data[i][proficient] == "***") {
+          eachYear[proficiency] = "***"
+        }
+        else if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
+
+          result = calcProficiency(data[i], proficient, tested)
+          eachYear[proficiency] = result
         }
       };
     }
@@ -548,6 +547,12 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
     filteredData.push(eachYear);
   };
 
+  console.log("TABLE FILTERED DATA")
+  console.log(filteredData)
+  // if selected school has insufficent data for all categories (e.g.,
+  // either tested or proficient is "***")- then we have no data to
+  // display
+  
   // filter out categories where the school has no data
   let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
 
@@ -767,6 +772,27 @@ function getChartData(data, category, subject, selection) {
   filteredData['columns'] = remaining
 
   return filteredData
+}
+
+// rename a key in an array of objects
+function renameKey(array, oldKey, newKey) {
+  return array.map(obj => {
+     if (obj.hasOwnProperty(oldKey)) {
+        obj[newKey] = obj[oldKey];
+        delete obj[oldKey];
+     }
+     return obj;
+  });
+}
+
+// see title of function
+function replaceSubstringInArrayOfObjects(arr, key, searchValue, replaceValue) {
+  return arr.map(obj => {
+     if (obj.hasOwnProperty(key) && typeof obj[key] === 'string') {
+        obj[key] = obj[key].replace(searchValue, replaceValue);
+     }
+     return obj;
+  });
 }
 
 

@@ -3,7 +3,7 @@
 # main application & backend            #
 #########################################
 # author:   jbetley (https://github.com/jbetley)
-# version:  0.9
+# version:  0.9  # noqa: ERA001
 # date:     01/06/25
 
 # https://www.geeksforgeeks.org/connect-flask-to-a-database-with-flask-sqlalchemy/
@@ -13,8 +13,9 @@
 # https://stackoverflow.com/questions/7689695/passing-variables-between-python-and-javascript
 # https://blog.logrocket.com/build-interactive-charts-flask-d3js/
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+from calculations import calculate_comparison_school_list
 from flask import (
     Flask,
     render_template,
@@ -25,23 +26,22 @@ from flask import (
 from load_data import (
     current_academic_year,
     current_demographic_year,
-    get_public_dropdown,
+    get_academic_data,
     # get_gradespan,
     # get_academic_data,
     get_demographic_data,
+    get_public_dropdown,
     get_school_coordinates,
-    get_academic_data,
 )
-from calculations import calculate_comparison_school_list
 from process_data import clean_academic_data
 
-# basedir = os.path.abspath(os.path.dirname(__file__))
+# basedir = os.path.abspath(os.path.dirname(__file__))  # noqa: ERA001
 
 app = Flask(__name__, static_folder="./modules")
-# app.config['SQLALCHEMY_DATABASE_URI'] =\
-#         'sqlite:///' + os.path.join(basedir, 'database.db')
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# db = SQLAlchemy(app)
+# app.config['SQLALCHEMY_DATABASE_URI'] =\  # noqa: ERA001, RUF100
+#         'sqlite:///' + os.path.join(basedir, 'database.db')  # noqa: ERA001
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # noqa: ERA001
+# db = SQLAlchemy(app)  # noqa: ERA001
 
 
 @app.route("/")
@@ -53,11 +53,10 @@ def index():
 def load_config():
 
     # these are global values  calculated in load_data
-    data = {
+    return {
         "academic_year": current_academic_year,
         "demographic_year": current_demographic_year,
     }
-    return data
 
 
 # school dropdown list
@@ -66,15 +65,13 @@ def load_school_dropdown():
     school_df = get_public_dropdown()
 
     school_df = school_df.sort_values(
-        ["Corporation Name", "School Name"], ascending=[True, True]
-    )
+        ["Corporation Name", "School Name"], ascending=[True, True])
 
-    dropdown_list = [
+    return [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in school_df.to_dict(orient="records")
     ]
 
-    return dropdown_list
 
 
 # comparison schools list
@@ -85,65 +82,62 @@ def load_school_coordinates():
     school_id = selections["school_id"]
     year = int(selections["year"])
     school_type = selections["school_type"]
-    # school_subtype = data["school_subtype"]
-    
+    # school_subtype = data["school_subtype"]  # noqa: ERA001
     # get coordinates for all schools for a year
     # TODO: hardcoded temporarily until all other errors fixed
     # if year == 2024:
-    #     year = 2023
+    #     year = 2023  # noqa: ERA001
 
     coordinates = get_school_coordinates(year, school_type)
 
-    # Drop any school not testing at least 20 students (probably only 
+    # Drop any school not testing at least 20 students (probably only
     # impacts ~20 schools). the second condition ensures that the school
     # is retained if it exists
     coordinates["Total Student Count"] = coordinates[
         "Total Student Count"
     ].replace("", np.nan)
 
-    coordinates = coordinates.dropna(subset=["Total Student Count"])        
+    coordinates = coordinates.dropna(subset=["Total Student Count"])
 
     coordinates["Total Student Count"] = pd.to_numeric(
-        coordinates["Total Student Count"], errors="coerce"
-    )
+        coordinates["Total Student Count"], errors="coerce")
 
     coordinates = coordinates[
         (coordinates["Total Student Count"].astype(int) >= 30)
         | (coordinates["School ID"] == int(school_id))
     ]
-    
+
     # if school_type == "K8" or (school_type == "K12" and school_subtype =="K8") :
-        
+
     #     coordinates["Total|ELA Total Tested"] = coordinates[
     #         "Total|ELA Total Tested"
     #     ].replace("", np.nan)
-        
-    #     coordinates = coordinates.dropna(subset=["Total|ELA Total Tested"])
+
+    #  coordinates = coordinates.dropna(subset=["Total|ELA Total Tested"])# noqa: ERA001
 
     #     coordinates["Total|ELA Total Tested"] = pd.to_numeric(
-    #         coordinates["Total|ELA Total Tested"], errors="coerce"
-    #     )
-        
-    #     coordinates = coordinates[
-    #         (coordinates["Total|ELA Total Tested"].astype(int) >= 20)
+    #         coordinates["Total|ELA Total Tested"], errors="coerce"  # noqa: ERA001
+    #   )  # noqa: ERA001, RUF100
+
+    #     coordinates = coordinates[  # noqa: ERA001, RUF100
+    #         (coordinates["Total|ELA Total Tested"].astype(int) >= 20)  # noqa: ERA001
     #         | (coordinates["School ID"] == int(school_id))
-    #     ]
-        
-    # else:
+    #     ]  # noqa: ERA001, RUF100
+
+    # else:  # noqa: ERA001
     #     pass
 
-    # NOTE: Before we do the distance check, we reduce the size of the df removing
-    # schools where there is no or only one grade overlap between the comparison schools.
-    # the variable "overlap" is one less than the the number of grades that we want as a
-    # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
-    # coordinates = check_for_gradespan_overlap(selections, coordinates)
+    # NOTE: Before we do the distance check, we reduce the size of the
+    # df removing schools where there is no or only one grade overlap
+    # between the comparison schools.the variable "overlap" is one less
+    # than the the number of grades that we want as a minimum (a value
+    # of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
+    # coordinates = check_for_gradespan_overlap(selections, coordinates)  # noqa: ERA001
 
 # TODO: Add School Type Here to filter out unrelated schools from the list
 # TODO: MS are still showing up for IREAD - NEED TO DROP THEM
     # use scipy.spatial KDTree method to calculate distances from given school_id
-    comparison_list = calculate_comparison_school_list(selections, coordinates, 20)
-
-    return comparison_list
+    return calculate_comparison_school_list(selections, coordinates, 20)
 
 
 @app.route("/demographic", methods=["post"])
@@ -155,16 +149,17 @@ def load_demographic_data():
 
     all_demographic_data = all_demographic_data.sort_values(by="Year")
 
-    all_demographic_data.columns = all_demographic_data.columns.str.replace("Native Hawaiian or Other Pacific Islander", "Pacific Islander", regex=True)
-    print(all_demographic_data.columns.tolist())
+    all_demographic_data.columns = all_demographic_data.columns.str.replace(
+        "Native Hawaiian or Other Pacific Islander", "Pacific Islander",
+        regex=True)
+
     all_demographic_data_object = [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in all_demographic_data.to_dict(orient="records")
     ]
 
-    return_values = [all_demographic_data_object]
+    return [all_demographic_data_object]
 
-    return return_values
 
 
 # academic data
@@ -180,13 +175,9 @@ def load_academic_data():
     if data["school_type"] == "K12":
 
         if data["school_subtype"] == "K12":
-            if data["type_tab"] == "hsTab":
-                school_type = "HS"
-            else:
-                school_type = "K8"
+            school_type = "HS" if data["type_tab"] == "hsTab" else "K8"
         else:
             school_type = data["school_subtype"]
-            
     else:
         school_type = data["school_type"]
 
@@ -200,20 +191,27 @@ def load_academic_data():
         data["page_tab"],
     )
 
+    filename99 = "clean_data.csv"
+    data.to_csv(filename99, index=False)
+
     # df is empty or only has information cols (e.g., MS for IREAD data)
     if len(data.columns) <= 6:
         return_values = []
 
     else:
         # # clarify school type (NOTE: Bake this in to clean_data?)
-        # gradespan = get_gradespan(data["school_id"], data["school_type"], data["year"])
+        # gradespan = get_gradespan(data["school_id"], data["school_type"], data["year"])  # noqa: E501, ERA001
 
         data = data.sort_values(by="Year")
 
+        data.columns = data.columns.str.replace(
+            "English Language", "English", regex=True)
+
 # TODO: Check to see if we are even loading Pacific Islander data ..
-        data.columns = data.columns.str.replace("English Language", "English", regex=True)
-        data.columns = data.columns.str.replace("Native Hawaiian or Other Pacific Islander", "Pacific Islander", regex=True)
-       
+        data.columns = data.columns.str.replace(
+            "Native Hawaiian or Other Pacific Islander", "Pacific Islander",
+            regex=True)
+
         school_proficiency = [
             {k: v for k, v in m.items() if v == v and v is not None}
             for m in data.to_dict(orient="records")
@@ -225,4 +223,4 @@ def load_academic_data():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)
+    app.run(host="0.0.0.0", port=3000, debug=True)  # noqa: S104, S201

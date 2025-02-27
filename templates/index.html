@@ -1029,9 +1029,13 @@ function demographicsPage(data, select) {
    keep = ["Year","Attendance Rate", "Chronic Absenteeism %"];
    var attendanceChartData = filterObj(schoolData, keep);
 
+   // remove "%" from "Chronic Absenteeism %""
+   attendanceChartData = renameKey(attendanceChartData, "Chronic Absenteeism %", "Chronic Absenteeism");
+
    let attChartkeys = getKeys(attendanceChartData);
-   const attChartcols = attChartkeys.filter(e => e !== "Year");
-   attendanceChartData["columns"] = attChartcols;
+
+   const attChartCols = attChartkeys.filter(e => e !== "Year");
+   attendanceChartData["columns"] = attChartCols;
 
    let attendanceTableData = transposeData(attendanceChartData, "Year");
 
@@ -1747,7 +1751,8 @@ function academicAnalysisPage(data) {
             var gradRateEthnicityChartData = processBarData(gradRateEthnicityTransposedData);
             gradRateEthnicityChartData.push(colorState)
             gradRateComparisonEthnicity.data(gradRateEthnicityChartData).id("gradRateComparisonEthnicity");
-
+            console.log("CHART")
+            console.log(gradRateEthnicityChartData)
             //Single Year Comparison: Grad Rate by Subgroup
             let gradRateSubgroupData = getChartData(yearData, subgroup, subject[0], selection)
             let gradRateSubgroupColumns = Object.keys(gradRateSubgroupData.find(d => d["School Name"] === schoolName));
@@ -1820,6 +1825,11 @@ function academicAnalysisPage(data) {
 
          analysisTableID = analysisGridApi[analysisTableNum].getGridId()
          analysisTableData = getAnalysisTableData(tabledata, analysisTableCategories[i], analysisTableSubjects[i], selection, colorState)
+
+         // console.log("TABLE")
+         // console.log("category")
+         // console.log(analysisTableCategories[i])
+         // console.log(analysisTableData)
 
          let missingCategories = analysisTableData.pop()
          let missingString;
@@ -2133,20 +2143,15 @@ function navigateHandler(e) {
       yearSelection.value = yearValue;
       yearSelection.setAttribute("value", yearValue);
 
-// TODO: Need to figure out how to prevent this from triggering on page change ??
-
-      // if we are here because the school type changed (e.g., K8 to HS),
-      // we need to reload the comparison school list with the new data
+      // load comparison schools based which type tab is selected
       // getComparisonSchools automatically repopulates the dropdown
-      if (target.id.match("k8Tab")) {
-         // selectedValues.school_type = "K8"
+      if (selectedValues.type_tab == "k8Tab") {
          selectedValues.school_subtype = "K8"
-         getComparisonSchools(selectedValues);
-      } else if (target.id.match("hsTab")) {
-         // selectedValues.school_type = "HS"
+      } else if (selectedValues.type_tab == "hsTab") {
          selectedValues.school_subtype = "HS"
-         getComparisonSchools(selectedValues);
       };
+
+      getComparisonSchools(selectedValues);
 
       selectedValues.year = yearValue;
       selectedValues.comparison_schools = getComparisonSchoolIDs()

@@ -373,6 +373,7 @@ function multiLine() {
               return d.id;
             });
 
+// TODO: This is still inconsistent - Revisit at some point.
           // This is an attempt to make a decent looking responsive legend (see updateWidth()),
           // it uses various calculations based on the length of the strings and legend items
           // to determine whether an item should be added to the same row or placed on a new
@@ -406,20 +407,18 @@ function multiLine() {
               // the estimated final on-DOM length of the current legend item being
               // processed- we can't get the value at this point because it hasn't
               // yet been added to the DOM. So we approximate.
-              const strLength = intArray[i] * 1.4
+              const actualStrLength = intArray[i] * 1.4;
 
               // legendItemLength is uses to store either maxStrLength or the estimated
               // final length depending on which is longer
               let legendItemLength = maxStrLength;
 
-              // Original version used maxStrLength, upgraded version uses
               // actual lengths of strings as adjusted
-              // const maxLength = (numItems * maxStrLength) + (numItems * rectOffset);
               const actualIntArray = intArray.map(element => element * 1.4);
-              const maxLength = actualIntArray.reduce((sum, num) => sum + num);
+              const maxLength = actualIntArray.reduce((sum, num) => sum + num) + (numItems * 10);
 
               // legend should exist in SVG with padding of 37.5 on either side
-              boundingArea = svgWidth - 75;
+              boundingArea = svgWidth - 100;
 
               // we are arbitrarily declaring that 4 is the most # of items that
               // we want on a single line. 
@@ -437,7 +436,7 @@ function multiLine() {
                 // single line looks too spaced out if maxStrLength is used
                 // we use rowLength to keep track of the total length of each row
                 if (isSingleLine) {
-                  rowLength = xPosition + intArray[i];
+                  rowLength = xPosition + actualStrLength;
                 }
                 else {
                   rowLength = xPosition + legendItemLength;
@@ -448,8 +447,10 @@ function multiLine() {
                 // subsequent items on single row - spaced apart by length
                 // of string + 10
                 if (isSingleLine) {
-                  xPosition = rowLength + 10;
-                  rowLength = xPosition + intArray[i];
+                  rowLength = xPosition + 10 + (intArray[i-1] * 1.4);
+                  xPosition = rowLength;
+                  // xPosition = rowLength + 10;
+                  // rowLength = xPosition + intArray[i];
                 }
                 
                 // these are legends that cannot fit on a single line by
@@ -460,10 +461,10 @@ function multiLine() {
                   // generally we use maxStrLength for uniformity of
                   // spacing, but on occasion, the actual length of 
                   // a str can exceed maxStrLength
-                  if (strLength > maxStrLength) {
-                    legendItemLength = strLength;
+                  if (actualStrLength > maxStrLength) {
+                    legendItemLength = actualStrLength;
                   } else {
-                    legendItemLength = maxStrLength;
+                    legendItemLength = maxStrLength + 30;
                   }
 
                   rowLength = rowLength + legendItemLength;
@@ -474,8 +475,8 @@ function multiLine() {
                   // and add 15 to yPosition
                   if (rowLength > boundingArea) {
 
-                    if (strLength > maxStrLength) {
-                      legendItemLength = strLength;
+                    if (actualStrLength > maxStrLength) {
+                      legendItemLength = actualStrLength;
                     } else {
                       legendItemLength = maxStrLength;
                     }
@@ -645,7 +646,6 @@ function multiLine() {
           }
         } // end updateData
 
-// TODO: LEGEND STILL OVERLAPPING IN SOME CASES, SEE 21C IREAD DATA
         updateWidth = function() {
 
           // width is passed in as window.innerWidth/2
@@ -730,14 +730,14 @@ function multiLine() {
               const intArray = lengths.map(float => Math.floor(float))
               const numItems = intArray.length
               const maxStrLength = Math.max(...intArray);
-              const strLength = intArray[i] * 1.4
+              const actualStrLength = intArray[i] * 1.4
 
-              let legendItemLength = maxStrLength;
+              legendItemLength = maxStrLength;
 
               const actualIntArray = intArray.map(element => element * 1.4);
-              const maxLength = actualIntArray.reduce((sum, num) => sum + num);
+              const maxLength = actualIntArray.reduce((sum, num) => sum + num) + (numItems * 10);
 
-              let boundingArea = svgWidth - 75;
+              boundingArea = svgWidth - 100;
 
               if ((numItems <= 4) && (maxLength < boundingArea)) {
                 isSingleLine = true;
@@ -748,8 +748,8 @@ function multiLine() {
                 yPosition = 0;
                 xPosition = legendPadding;
 
-                if (isSingleLine) {
-                  rowLength = xPosition + intArray[i];
+                if (isSingleLine) {                  
+                  rowLength = xPosition + actualStrLength;
                 }
                 else {
                   rowLength = xPosition + legendItemLength;
@@ -758,24 +758,26 @@ function multiLine() {
               } else if (i > 0) {
 
                 if (isSingleLine) {
-                  xPosition = rowLength + 10;
-                  rowLength = xPosition + intArray[i];
+
+                  rowLength = xPosition + 10 + intArray[i-1] * 1.4;
+                  xPosition = rowLength;
+
                 }
                 
                 else if ((numItems > 4) && (maxLength > svgWidth)) {
 
-                  if (strLength > maxStrLength) {
-                    legendItemLength = strLength;
+                  if (actualStrLength > maxStrLength) {
+                    legendItemLength = actualStrLength;
                   } else {
-                    legendItemLength = maxStrLength;
+                    legendItemLength = maxStrLength + 30;
                   }
 
                   rowLength = rowLength + legendItemLength;
 
                   if (rowLength > boundingArea) {
 
-                    if (strLength > maxStrLength) {
-                      legendItemLength = strLength;
+                    if (actualStrLength > maxStrLength) {
+                      legendItemLength = actualStrLength;
                     } else {
                       legendItemLength = maxStrLength;
                     }
@@ -824,12 +826,12 @@ function multiLine() {
               return "translate(" + xPosition + "," + yPosition + ")"
             });
 
-            // shift legendcontainer to center
+            // shift legendcontainer to center [Note: legendContainerWidth will always be zero because the
+            // legendcontainer element has not yet been added to DOM]
             let divElement = document.getElementById(id);
             let padding = parseInt(getComputedStyle(divElement.parentElement).padding); // acount for padding
             const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
             const shiftToCenter = ((svgWidth - legendContainerWidth) / 2) - padding;
-
             svg.selectAll(".legendcontainer")
               .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");
         };
