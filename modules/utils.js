@@ -65,6 +65,16 @@ function filterKeys(arr, keepKeys) {
   });
 }
 
+// remove object elements matching the passed string in
+// an array of objects
+function filterByValue(array, string) {
+  array.filter(obj =>
+    Object.keys(obj).forEach(key => {
+      if (obj[key] == string) delete obj[key];
+    })
+  )
+};
+
 // filter data by the key values present in categories array
 function filterCategories(data, categories) {
   let filtered = Object.fromEntries(
@@ -79,6 +89,8 @@ function filterCategories(data, categories) {
   return filtered
  }
 
+// TODO: THIS IS NOT AT ALL EFFICIENT. Apparantly loops through each line of
+// TODO: data for each matched value (e.g., 120 times for EL, 120 times for Paid)
 /**
    * Find any given number of keys and remove them
    * @param {array<object>} array - An array of objects
@@ -87,7 +99,7 @@ function filterCategories(data, categories) {
    * @return {array<object>} The array with filtered keys
    */
 function filterData(array, search_str, keys) {
-  // TODO: SHould I always clone?
+
   let clone = structuredClone(array);
 
   for (let obj of clone) {
@@ -97,11 +109,15 @@ function filterData(array, search_str, keys) {
           str = v
         }
         else {
-            str = v + search_str
+          str = v + search_str
         }
+        if (str === "Non English Learners|Graduation Rate") {
+        }
+
         if (obj[str] != "***") {
           return key.indexOf(str) >= 0; 
         }
+
        }))
       {
         return [];
@@ -110,9 +126,15 @@ function filterData(array, search_str, keys) {
     });
   }
 
+  // check for any remaining "***" values and remove
+  // TODO: Not sure why it doesn't catch them all
+  let filterValue = "***"
+  filterByValue(clone, filterValue);
+
   return clone;
 
 }
+
 
  // get ?array? of object keys
  function getKeys(data) {
@@ -177,13 +199,20 @@ function exists(arr, search) {
 }
 
 
-// remove items from an object matching the passed value
+// remove items from a single object matching the passed value
 function removeItemsByValue(obj, value) {
   for (const key in obj) {
     if (obj[key] === value) {
       delete obj[key];
     }
   }
+}
+
+
+// remove given value from an array of objects (same as above, but
+// for array of objects)
+function removeObjectWithValue(array, key, value) {
+  return array.filter(obj => obj[key] !== value);
 }
 
 

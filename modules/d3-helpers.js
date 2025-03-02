@@ -124,32 +124,49 @@ function multiLine() {
 
       updateData = function() {
 
+        console.log("MULTILINE")
+        console.log(data)
         // display empty svg is there is no data
-        if (data.length == 0 || data.columns.length == 0) {
+        if (data.length == 0) {
 
-          svg.selectAll("path.lines").remove()
-          svg.selectAll("circle.circles").remove()
-          svg.selectAll("rect.overlay").remove()
-          svg.selectAll(".legendcontainer").attr('display', 'none')
-          svg.selectAll(".x.axis").attr('display', 'none')
-          svg.selectAll(".y.axis").attr('display', 'none')
+          svg.selectAll("path.lines").remove();
+          svg.selectAll("circle.circles").remove();
+          svg.selectAll("rect.overlay").remove();
+          svg.selectAll(".tipbox").remove();
+          svg.selectAll("path.path").remove();
+          svg.selectAll("text.text").remove();
+          svg.selectAll("x-hover-line.hover-line").remove();
+          svg.selectAll(".legendcontainer").remove();
+          svg.selectAll("rect").remove();
+          svg.selectAll("text").remove();
+          svg.selectAll(".x.axis").remove();
+          svg.selectAll(".y.axis").remove();
+          
+          svg.attr("transform", "translate(0,0)");
+          dom.select("svg").attr("height", 200);
+          dom.select("svg").attr("viewBox", "0 0 1000 200");
+          dom.select("svg").attr("preserveAspectRatio", "none");
 
           svg.append("text")
             .attr('class', 'nodatatext')
             .attr("font-size","18px")
             .attr("y", height/2)
             .attr("x", width/2)
-            .attr("dy", ".47em")
+            .attr("dy", -50)
+            .attr("dx", +30)
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
             .style("fill", "steelblue")
-            .text("No data to display.");
+            .text("Selected school has insufficient data to display.");         
         }
         else {
 
           svg.selectAll(".nodatatext").remove()
 
           dataByYear = data
+
+          console.log("IN MULTILINE UPDATE")
+          console.log(dataByYear)
 
           dataProcessed = processData(dataByYear);
 
@@ -2442,7 +2459,6 @@ function verticalGroupBar() {
       const categoryKeys = Array.from(chartData).map(d => d[0]);
       const entityKeys = Array.from(Array.from(chartData)[0][1]).map(d=>d[0]);
 
-
       y.domain([0, 1]).nice();
       x0.domain(categoryKeys);
       x1.domain(entityKeys).range([0, x0.bandwidth()]);
@@ -2508,10 +2524,46 @@ function verticalGroupBar() {
 
       // NOTE: Is there a better way to do this?
       const svgWidth = width + margin.left + margin.right;
-      // const xVal = ((svgWidth - width) - (margin.left/3))/2;
 
       updateData = function() {
 
+        // console.log("UPDATE DATA")
+        // console.log(data)
+        // console.log(svg)
+
+        // display empty svg is there is no data
+        if (!data || !data.length) {
+          
+          svg.selectAll("rect").remove();
+          svg.selectAll("rect.bars").remove();
+          svg.selectAll("text").remove();
+          svg.selectAll("text.label").remove();
+
+          tooltipContainer.selectAll(".bartooltip").remove();
+          svg.selectAll("g.endtext").remove();
+          svg.selectAll("g.groupedbar").remove();
+          svg.selectAll(".x.axis").remove();
+          svg.selectAll(".y.axis").remove();
+          
+          svg.attr("transform", "translate(0,0)");
+          dom.select("svg").attr("height", 200);
+          dom.select("svg").attr("viewBox", "0 0 1000 200");
+          dom.select("svg").attr("preserveAspectRatio", "none");
+
+          svg.append("text")
+            .attr('class', 'nodatatext')
+            .attr("font-size","18px")
+            .attr("y", height/2)
+            .attr("x", width/2)
+            .attr("dy", -50)
+            .attr("dx", +30)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .style("fill", "steelblue")
+            .text("Selected school has insufficient data to display.");
+        }
+        else {
+          
         let chartData = [...data];
         // chartData = data;
 
@@ -2561,102 +2613,6 @@ function verticalGroupBar() {
             .attr('dy', 0)
             .call(wrap, 60);
         }, 0);
-
-        // legendContainer.selectAll('.legend').remove()
-        // legendContainer.attr('display', 'block');
-
-        // // transform is handled below to allow for legend to wrap
-        // const fontWidth = 6;
-        // const offset = 12;
-
-        // var legend = legendContainer.selectAll('.legend')
-        //   .data(entityKeys)
-        //   .enter().append('g')
-        //   .attr('class', 'legend')
-
-        // legend.append('rect')
-        //   .attr("x", function(d, i) {
-        //     const xPost = legendXPosition(d, i, fontWidth);
-        //     return xPost;
-        //   })
-        //   .attr('y', 20)
-        //   .attr('width', 8)
-        //   .attr('height', 8)
-        //   .style('fill', function (d) {
-        //     return color(d);
-        //   });
-
-        // legend.append("text")
-        //   .attr("x", function(d, i) {
-        //     const xPost = legendXPositionText(d, i, offset, fontWidth);
-        //     return xPost;
-        //   })
-        //   .attr('y', 27) // shifts text to middle of rect
-        //   .style("font-size", 10)
-        //   .style('fill', "#6783a9")
-        //   .text(function (d) {
-        //     return d;
-        //   })
-
-        // // offset legend labels from one another
-        // var legendItem = 0
-        // var row = 1;
-        // var yPosition = 0;
-
-        // svg.selectAll("g.legend")
-        //   .attr("transform", function (d, i) {
-
-        //     var maxStrLength = d3.select(this).select("text").node().getComputedTextLength();
-
-        //     if (maxStrLength == 0) {
-        //       maxStrLength = BrowserText.getWidth(d.id, fontSize, "Inter, sans-serif")
-        //     }
-
-        //     // width of svg
-        //     const svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
-
-        //     // offset is the length of the string plus the previous offset value
-        //     legendItem = legendItem + maxStrLength;
-
-        //     // if the length of the string + the current xposition exceeds
-        //     // the width of the svg, we want to wrap to next line - the first
-        //     // condition only triggers if the length of the string measured from
-        //     // the current offset is longer than total width of svg.
-        //     if ((svgWidth - legendItem) <= maxStrLength ) {
-
-        //       // reset legendItem to 0 (back to left side)
-        //       legendItem = 0
-        //       legendItem = legendItem + maxStrLength;
-
-        //       // shift down 15 pixels
-        //       yPosition = row * 15
-
-        //       // NOTE: because this is a "group" translation, it doesn't directly impact
-        //       // the rec/text position (x values) determined by legendXPosition functions.
-        //       // Set x value back to left edge
-        //       d3.select(this).select("rect").attr("x", 0)
-        //       d3.select(this).select("text").attr("x", offset)
-
-        //       row+=1
-        //     }
-        //     else {
-        //       // First row is at boxPosition 0
-        //       if (row == 1) {
-        //           yPosition = 0
-        //       }
-        //       else {
-
-        //         let rectWidth = parseInt(d3.select(this).select("rect")._groups[0][0].attributes[2].value)
-
-        //         // account for rect size and 12 pixel offset between rect and text
-        //         // add twice to text to account for prior and current offset
-        //         d3.select(this).select("rect").attr("x", rectWidth + offset)
-        //         d3.select(this).select("text").attr("x", rectWidth + offset + offset)
-        //       }
-        //     };
-        //     return "translate(" + (legendItem - maxStrLength) + "," + yPosition + ")"
-        //   });
-        // END LEGEND
 
         // TODO: Trying to nest groups -> entire chart -> by category -> by school -> text, rect, tooltip
         // TODO: Cannot seem to figure it out
@@ -2780,6 +2736,8 @@ function verticalGroupBar() {
           .join("text")
           .attr("text-anchor", "middle")
           .attr("y", function(d) {
+            // console.log("BARUPDATE")
+            // console.log(d)
             if (d[1] < .06) {
               return y(d[1]) - 5
             } else if ((d[1] < .08)) {
@@ -2862,7 +2820,7 @@ function verticalGroupBar() {
         //     .attr('y', -55)
         //     .text(function(d) { return d });
 
-
+      } // end else
       }; // end update Function
     }); // end each
 
@@ -3176,13 +3134,6 @@ function verticalGroupBar() {
     if (typeof updateId === 'function') updateId();
     return chart;
   };
-
-  // chart.setcolor = function(value){
-  //   if (!arguments.length) return setcolor;
-  //   setcolor = value;
-  //   if (typeof updateColors === 'function') updateColors();
-  //   return chart;
-  // };
 
   return chart;
 }; // end verticalBar

@@ -459,6 +459,7 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
   // each representing a single year of data. Final table format is school names on the left with
   // categories as column names. 
 
+// TODO: Catch empty data here?
   const schoolID = selection.school_id
   const schoolName = data.find(d => d["School ID"] === schoolID)["School Name"];
 
@@ -547,35 +548,45 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
     filteredData.push(eachYear);
   };
 
-  console.log("TABLE FILTERED DATA")
-  console.log(filteredData)
+
+  // filter out categories where the school has no data (note: this keeps
+  // insuffient n-size value "***")
+  let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
+
   // if selected school has insufficent data for all categories (e.g.,
   // either tested or proficient is "***")- then we have no data to
   // display
+  let schoolDataObject = filteredData.find(o => o.Category === schoolName);
+  delete schoolDataObject.Category;
+
+  const allInsufficient = Object.values(schoolDataObject).every((value) => value === "***");
+
+  let finalData;
+  if (allInsufficient == true) {
+    finalData = [];
+  }
+  else {
+    let academicData = filterKeys(filteredData, schoolColumns)
+
+    // Add color as separate column to table
+    finalData = academicData.map(item1 => {
+      const matchingItem = colors.find(item2 => item2.school === item1.Category);
+      if (matchingItem) {
+        return { ...item1, Color: matchingItem.color };
+      } else {
+        return item1;
+      }
+    });
   
-  // filter out categories where the school has no data
-  let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
-
-  let academicData = filterKeys(filteredData, schoolColumns)
-
-  // Add color as separate column to table
-  const finalData = academicData.map(item1 => {
-    const matchingItem = colors.find(item2 => item2.school === item1.Category);
-    if (matchingItem) {
-      return { ...item1, Color: matchingItem.color };
-    } else {
-      return item1;
-    }
-  });
-
-  // Get a list of the categories where school has no data
-  let schoolCategories = schoolColumns.filter(i => i !== "Category")
-  let missingCategories = category.filter((e) => !schoolCategories.includes(e));
-  
-  finalData.push(missingCategories)
+    // Get a list of the categories where school has no data
+    let schoolCategories = schoolColumns.filter(i => i !== "Category")
+    let missingCategories = category.filter((e) => !schoolCategories.includes(e));
+    
+    finalData.push(missingCategories)
+  }
 
   return finalData
-}
+};
 
 
 // process data for Ag Grid tables
@@ -720,8 +731,8 @@ function getTableData(data, category, subject, selection) {
     return finalData
 };
 
-
-function getChartData(data, category, subject, selection) {
+// For Academic info charts - need to add empty chart test logic
+function getInfoChartData(data, category, subject, selection) {
 
   const type = selection.school_type;
   const subtype = selection.school_subtype;
@@ -764,15 +775,115 @@ function getChartData(data, category, subject, selection) {
       })
   }
 
-  // get remaining categories after results are calculated
-  let remaining = getKeys(filteredData);
-  remaining = remaining.filter(elem => elem !== "Year");
+  return filteredData
+};
 
-  // add Column Names to data array
-  filteredData['columns'] = remaining
+
+function getAnalysisChartData(data, category, subject, selection) {
+
+  const type = selection.school_type;
+  const subtype = selection.school_subtype;
+  const schoolID = selection.school_id;
+  const schoolName = data.find(d => d["School ID"] === schoolID)["School Name"];
+
+  if (
+      type == "K8" ||
+      (type == "K12" && (subtype == "K8" || subtype == "K12")) ||
+      (typeof type === "undefined" && typeof subtype === "undefined")
+  ) {
+
+    if (['ELA', 'Math'].includes(subject)) {
+        search_str = "|" + subject + " Proficient %"
+    }
+    else {
+      search_str = "|IREAD Proficient %"
+    }
+
+  }
+  else if (type == "HS" || type == "AHS" ||
+    (type == "K12" && subtype == "HS")) {
+    if (['EBRW', 'Math'].includes(subject)) {
+      search_str = "|" + subject + " Benchmark %"
+    }
+    else {
+      search_str = "|Graduation Rate"
+    }
+  }
+
+  let allCategories = category.concat(["Year", "School Name"])
+
+  // TODO: THIS ONLY WORKS FOR ANALYSIS DATA WHERE THERE ARE MULTIPLE SCHOOLS
+  // TODO: WHEN IT IS SINGLE SCHOOL WITH MULTIPLE YEAR IS MESSES UP CAUSE
+  // TODO: IT JUST TESTS THE FIRST YEAR
+  console.log("GETCHART")
+  console.log(data)
+  console.log(search_str)
+  console.log(allCategories)
+  let filteredData = filterData(data, search_str, allCategories);
+  console.log(filteredData)
+  // if selected school has only "School Name" & "Year" it
+  // means that they have insufficient or no data for all
+  // categories - so we retunr an empty array
+  function checkSubstringsInObjectKeys(obj, substrings) {
+    console.log(obj)
+    console.log(substrings)
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        for (const substring of substrings) {
+          if (key.includes(substring)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+
+  let schoolDataObject = filteredData.find(o => o["School Name"] === schoolName);
+
+  if (!checkSubstringsInObjectKeys(schoolDataObject, category)) {
+    console.log("INSUFFFFFFFFF NSIZE FOR CHART")
+    filteredData = []
+  }
+  else {
+
+    // rename keys
+    for (let obj of filteredData) {
+      Object.keys(obj)
+        .filter(key => key.includes(search_str))
+        .forEach(key => {
+          obj[key.replace(search_str, "")] = obj[key];
+          delete obj[key];
+        })
+    }
+
+    // TODO: MOVING COLUMNS TO PROCESSDATA
+    // // get remaining categories after results are calculated
+    // let remaining = getKeys(filteredData);
+    // remaining = remaining.filter(elem => elem !== "Year");
+
+    // // add Column Names to data array
+    // filteredData['columns'] = remaining
+  }
 
   return filteredData
+};
+
+
+
+
+// pass a (single) object and a list of keys - will return
+// "true" if object contains any of the keys in the list
+function containsAnyKey(obj, keys) {
+  for (const key of keys) {
+    if (obj.hasOwnProperty(key)) {
+      return true;
+    }
+  }
+  return false;
 }
+
 
 // rename a key in an array of objects
 function renameKey(array, oldKey, newKey) {
@@ -926,6 +1037,17 @@ function getProficiencyBreakdown(data, categoryList, subject, selection) {
 
 // process data for linechart function (Academic Info Page)
 function processData (data) {
+
+  // TODO: Can we just iterate over "remaining" without adding to object?
+  // get remaining categories after results are calculated
+  let columns = getKeys(data);
+  console.log("PROCESSDATA")
+  console.log(columns)
+  columns = columns.filter(elem => elem !== "Year");
+
+
+  // add Column Names to data array
+  data['columns'] = columns
 
   // convert array of objects grouped on "Year" to an array of
   // objects with an "id" key and a "values" key where values
