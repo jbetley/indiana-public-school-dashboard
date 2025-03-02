@@ -16,7 +16,8 @@
 
    <!-- Local Modules -->
    <script src="{{ url_for('static', filename='d3-helpers.js')}}"></script>
-   <script src="{{ url_for('static', filename='helpers.js')}}"></script>
+   <script src="{{ url_for('static', filename='chart-helpers.js')}}"></script>
+   <script src="{{ url_for('static', filename='table-helpers.js')}}"></script>
    <script src="{{ url_for('static', filename='utils.js')}}"></script>
    <script src="{{ url_for('static', filename='d3-utils.js')}}"></script>
    <script src="{{ url_for('static', filename='globals.js')}}"></script>
@@ -2306,7 +2307,7 @@ function navigateHandler(e) {
          yearValue = 2019;
       }
       else if (intYear > curAcademicYear) {
-         yearValue = curAcademicYear.toString();;
+         yearValue = curAcademicYear.toString();
       }
       else {
          yearValue = strYear;

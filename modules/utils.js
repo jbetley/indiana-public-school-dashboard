@@ -1,40 +1,15 @@
 // Indiana Public School Academic Dashboard
-// javascript utility functions
+// general utility functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     07.04.24 
-
-
-// get width of text before the item has been rendered
-// otherwise can use getComputedTextLength()
-// https://stackoverflow.com/questions/29031659/calculate-width-of-text-before-drawing-the-text
-var BrowserText = (function () {
-  var canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d');
-
-    /**
-     * Measures the rendered width of arbitrary text given the font size and font face
-     * @param {string} text The text to measure
-     * @param {number} fontSize The font size in pixels
-     * @param {string} fontFace The font face ("Arial", "Helvetica", etc.)
-     * @returns {number} The width of the text
-     **/
-
-    function getWidth(text, fontSize, fontFace) {
-        context.font = fontSize + 'px ' + fontFace;
-        return context.measureText(text).width;
-    }
-    return {
-        getWidth: getWidth
-    };
-})();
+// date:     03.01.25 
 
 
 // remove "n" elements from the front of an array
 const dropElements = (arr, n = 1) => arr.slice(n);
 
 
-// uh convert an object to a string?
+// not exactly sure what this is for
 function toString(o) {
   Object.keys(o).forEach(k => {
      if (typeof o[k] === 'object') {
@@ -65,6 +40,7 @@ function filterKeys(arr, keepKeys) {
   });
 }
 
+
 // remove object elements matching the passed string in
 // an array of objects
 function filterByValue(array, string) {
@@ -74,6 +50,7 @@ function filterByValue(array, string) {
     })
   )
 };
+
 
 // filter data by the key values present in categories array
 function filterCategories(data, categories) {
@@ -88,6 +65,7 @@ function filterCategories(data, categories) {
   )
   return filtered
  }
+
 
 // TODO: THIS IS NOT AT ALL EFFICIENT. Apparantly loops through each line of
 // TODO: data for each matched value (e.g., 120 times for EL, 120 times for Paid)
@@ -127,7 +105,6 @@ function filterData(array, search_str, keys) {
   }
 
   // check for any remaining "***" values and remove
-  // TODO: Not sure why it doesn't catch them all
   let filterValue = "***"
   filterByValue(clone, filterValue);
 
@@ -172,6 +149,83 @@ function isValid(obj) {
 }
 
 
+// pass a (single) object and a list of keys - will return
+// "true" if object contains any of the keys in the list
+function containsAnyKey(obj, keys) {
+  for (const key of keys) {
+    if (obj.hasOwnProperty(key)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+
+// rename a key in an array of objects
+function renameKey(array, oldKey, newKey) {
+  return array.map(obj => {
+     if (obj.hasOwnProperty(oldKey)) {
+        obj[newKey] = obj[oldKey];
+        delete obj[oldKey];
+     }
+     return obj;
+  });
+}
+
+
+// see title of function
+function replaceSubstringInArrayOfObjects(arr, key, searchValue, replaceValue) {
+  return arr.map(obj => {
+     if (obj.hasOwnProperty(key) && typeof obj[key] === 'string') {
+        obj[key] = obj[key].replace(searchValue, replaceValue);
+     }
+     return obj;
+  });
+}
+
+
+// sort an array of objects by a provided property and list order
+function orderByProperty(arr, property, order) {
+  const orderMap = order.reduce((acc, value, index) => {
+    acc[value] = index;
+    return acc;
+  }, {});
+
+  arr.sort((a, b) => {
+
+    const aIndex = orderMap[a[property]];
+    const bIndex = orderMap[b[property]];
+
+    if (aIndex === undefined && bIndex === undefined) return 0;
+    if (aIndex === undefined) return 1;
+    if (bIndex === undefined) return -1;
+
+    return aIndex - bIndex;
+  });
+
+  return arr;
+};
+
+
+// replace the first duplicate value in the passed "obj"
+// with the passed "newValue"
+function replaceDuplicate(obj, newValue) {
+  const seenValues = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const value = obj[key];
+      if (seenValues[value]) {
+        obj[key] = newValue;
+        return obj; // Exit after replacing the first duplicate
+      } else {
+        seenValues[value] = true;
+      }
+    }
+  }
+  return obj; // No duplicates found
+};
+
+
 // converts array of objects with nested arrays of objects
 // into a single array of objects with no nesting
 function flattenObject(data) {
@@ -214,10 +268,3 @@ function removeItemsByValue(obj, value) {
 function removeObjectWithValue(array, key, value) {
   return array.filter(obj => obj[key] !== value);
 }
-
-
-// converts RGB values to their hex equivalent
-const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
-  const hex = x.toString(16)
-  return hex.length === 1 ? '0' + hex : hex
-}).join('')
