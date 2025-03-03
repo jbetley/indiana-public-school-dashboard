@@ -333,6 +333,8 @@
 // version:  0.9
 // date:     02.24.25
 
+var origSelect = {}
+
 // Max Academic and Demographic Years
 const getMaxYears = `${window.origin}/config`;
 const yearResponse = await fetch(getMaxYears);
@@ -592,6 +594,7 @@ comparisonSelection.addEventListener("change", function () {
 
    // show message when maximum # of schools have been selected
    const numX = comparisonSelect.getSelected()
+
    if (numX.length === comparisonSelect.settings.maxSelected) {
 
       const msgElement = document.createElement('div');
@@ -614,6 +617,8 @@ comparisonSelection.addEventListener("change", function () {
    let selectedValues = getSelectedValues();
 
    if (selectedValues.page_tab === "analysisTab") {
+      console.log("IS THIS A LOOP")
+      console.trace('comparisonSelection was called');
       selectedValues.comparison_schools = getComparisonSchoolIDs();
       getAcademicAnalysisData(selectedValues);
    }
@@ -967,9 +972,8 @@ async function getComparisonSchools(select) {
             alert("Network Error: Could not load data.")
          }
       })
-
       setComparisonList(comparisonSchoolList)
-}
+};
 
 /* Pages */
 
@@ -1203,27 +1207,25 @@ function academicInfoPage(data) {
    if (!academicInfoPage.initialize) {
 
 // TODO: Load blank info tables
-      const defaultInfoData = [
-         [
-            "Total",
-            [
-               [
-                  "Default School", 0
-               ]
-            ]
-         ],
-         [
-            {
-               color: "#ffffff",
-               school: "Default School"
-            }
-         ]
-      ];
+      const defaultInfoData = [];
+      //    [
+      //       "Total",
+      //       [
+      //          [
+      //             "Default School", 0
+      //          ]
+      //       ]
+      //    ],
+      //    [
+      //       {
+      //          color: "#ffffff",
+      //          school: "Default School"
+      //       }
+      //    ]
+      // ];
 
       let id, name;
-      // data = defaultInfoData;
-      // console.log("DEFAULT")
-      // console.log(data);
+
       ireadInfoTotal = multiLine().data(getInfoChartData(data, total, "IREAD", selection)).id("ireadInfoTotal");
       d3.select("#ireadInfoTotal").call(ireadInfoTotal);
 
@@ -1304,9 +1306,9 @@ function academicInfoPage(data) {
 
       // Initialize (empty) tables on-load
       for (let k = 0; k < infoTableNames.length; k++) {
-         let infoTableID = "#" + infoTableNames[k]
-         let infoTableOptions = initializeTable(infoTableID)
-         var infoGridDiv = document.querySelector(infoTableID)
+         let infoTableID = "#" + infoTableNames[k];
+         let infoTableOptions = initializeTable(infoTableID);
+         var infoGridDiv = document.querySelector(infoTableID);
          infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
       }
 
@@ -1346,9 +1348,6 @@ function academicInfoPage(data) {
             
             const elaIlearnEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selection);
             elaIlearnInfoEthnicity.data(elaIlearnEthnicityData).id("elaIlearnInfoEthnicity");
-
-            console.log("elaIlearnEthnicityData")
-            console.log(elaIlearnEthnicityData)
 
             const elaIlearnSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selection);
             elaIlearnInfoSubgroup.data(elaIlearnSubgroupData).id("elaIlearnInfoSubgroup");
@@ -1507,6 +1506,10 @@ function academicAnalysisPage(data) {
       else { subject = subjectSAT; }
    };
 
+   console.trace("academicAANLAYSIS PAGE CALLED")
+   console.log(selection)
+   console.log(data)
+
    // Single Year Analysis Page //
    let yearData = data.filter(o => o.Year == Number(year));
 
@@ -1607,7 +1610,7 @@ function academicAnalysisPage(data) {
 
    if (!academicAnalysisPage.initialize){
 
-      console.log("INITIALIZINGINS")
+      console.log("INITIALIZING ANALYSIS")
 
       // On load, initialize all tables and charts as empty (using dummy data).
       const defaultData = [
@@ -1690,6 +1693,9 @@ function academicAnalysisPage(data) {
       academicAnalysisPage.initialize = true;
 
    } else {
+
+      console.log("UPDATING ANALYSIS ANALYSIS")
+      console.trace('academicAnalysisPage was called');
 
       // Get table/chart data and build tables
       if (typeTab == "k8Tab") {
@@ -2020,6 +2026,7 @@ function academicAnalysisPage(data) {
       analysisGridApi[analysisTableNum].setGridOption("columnDefs", analysisTableOptions.columnDefs);
       analysisGridApi[analysisTableNum].setGridOption("rowData", analysisTableData);
       }
+      console.log("ANALYSIS END")
    }
    // TODO: Multi-Year Analysis Page
 };
@@ -2236,6 +2243,10 @@ function navigateHandler(e) {
          target.id.match("satTab"))
    ) {
 
+      console.log("TARGETKD")
+      console.log(target.id)
+      console.log(selectedValues)
+
       let analysisIreadContainers = document.querySelectorAll('[id^="analysis-container-iread"]');
       let analysisIlearnContainers = document.querySelectorAll('[id^="analysis-container-ilearn"]');
       let analysisSatContainers = document.querySelectorAll('[id^="analysis-container-sat"]');
@@ -2300,7 +2311,6 @@ function navigateHandler(e) {
          }
       };
 
-
       setYearList(allSchoolsObj,"academic");
 
       if (strYear == 2020) {
@@ -2329,6 +2339,8 @@ function navigateHandler(e) {
       selectedValues.year = yearValue;
       selectedValues.comparison_schools = getComparisonSchoolIDs()
 
+      console.log("NAVHANDLER-GETTING ACAD DATA WITH")
+      console.log(selectedValues)
       getAcademicAnalysisData(selectedValues);
 
       // adjust chart size based on browser window size

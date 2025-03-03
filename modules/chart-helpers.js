@@ -100,8 +100,7 @@ function processData (data) {
   // TODO: Can we just iterate over "remaining" without adding to object?
   // get remaining categories after results are calculated
   let columns = getKeys(data);
-  console.log("PROCESSDATA")
-  console.log(columns)
+
   columns = columns.filter(elem => elem !== "Year");
 
 
@@ -353,18 +352,12 @@ function getAnalysisChartData(data, category, subject, selection) {
   // TODO: THIS ONLY WORKS FOR ANALYSIS DATA WHERE THERE ARE MULTIPLE SCHOOLS
   // TODO: WHEN IT IS SINGLE SCHOOL WITH MULTIPLE YEAR IS MESSES UP CAUSE
   // TODO: IT JUST TESTS THE FIRST YEAR
-  console.log("GETCHART")
-  console.log(data)
-  console.log(search_str)
-  console.log(allCategories)
   let filteredData = filterData(data, search_str, allCategories);
-  console.log(filteredData)
+
   // if selected school has only "School Name" & "Year" it
   // means that they have insufficient or no data for all
   // categories - so we retunr an empty array
   function checkSubstringsInObjectKeys(obj, substrings) {
-    console.log(obj)
-    console.log(substrings)
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         for (const substring of substrings) {

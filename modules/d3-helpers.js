@@ -124,8 +124,6 @@ function multiLine() {
 
       updateData = function() {
 
-        console.log("MULTILINE")
-        console.log(data)
         // display empty svg is there is no data
         if (data.length == 0) {
 
@@ -164,9 +162,6 @@ function multiLine() {
           svg.selectAll(".nodatatext").remove()
 
           dataByYear = data
-
-          console.log("IN MULTILINE UPDATE")
-          console.log(dataByYear)
 
           dataProcessed = processData(dataByYear);
 
@@ -1637,6 +1632,7 @@ function horizontalGroupBar() {
 
       updateData = function() {
 
+        console.log("WHY UPDATE MORE THAN ONCE")
         chartData = data[0]
         missingString = data[1]
 
@@ -2527,10 +2523,6 @@ function verticalGroupBar() {
 
       updateData = function() {
 
-        // console.log("UPDATE DATA")
-        // console.log(data)
-        // console.log(svg)
-
         // display empty svg is there is no data
         if (!data || !data.length) {
           
@@ -2616,45 +2608,8 @@ function verticalGroupBar() {
 
         // TODO: Trying to nest groups -> entire chart -> by category -> by school -> text, rect, tooltip
         // TODO: Cannot seem to figure it out
-        // let allBars = svg.selectAll(".allbars")
-        //   .data([chartData])
-        //   .join('g')
-        //   .attr('class', 'allbars');
-
-        // // each category of bars
-        // let categoryBars = allBars.selectAll(".barcategory")
-        //   .data(chartData)
-        //   .join("g")
-        //   .attr('class', 'barcategory');
-
-        // let barx  = categoryBars.selectAll(".barx")
-        //   .data(function(d, i) {
-        //     return d[1]
-        //   })
-        //   .join("g")
-        //     .attr("transform", function(d) { return `translate(${x0(d[0])},0)` })
-        //   .attr('class', 'barx');
-
-        // barx.append("rect")
-        //   .attr('class', 'rect')
-        //   .data(function (d,i) {
-        //       console.log("WTF")
-        //       console.log(d[1])
-        //       return d[1]
-        //   })
-        //   .join("rect");
-
-        // barx.append("text")
-        //   .attr('class', 'text')
-        //   .text(function (d,i) {
-        //     console.log(d[0])
-        //     return d[0]
-        //   })
-        //   .join("text");
-
-        // console.log("TESTING")
-        // console.log(barx)
-        // TODO: TEST
+//https://stackoverflow.com/questions/27500617/d3-js-enter-update-exit-with-group-element-in-between
+//https://stackoverflow.com/questions/69819222/what-is-the-difference-between-append-and-join-in-d3-js
 
         // all bars on the page
         let barUpdate = svg.selectAll(".groupedbar")
@@ -2667,77 +2622,20 @@ function verticalGroupBar() {
           .join("g")
             .attr("transform", function(d) { return `translate(${x0(d[0])},0)` })
           .selectAll("rect")
-          .attr('class', 'bars')
           .data(function (d) { return d[1] })
           .join("rect");
 
-        bars.transition(t)
-            .attr("x", function (d) { return x1(d[0]) })
-            .attr("y", function(d) { return y(d[1]) })
-            .attr("width", x1.bandwidth())
-            .attr("height", function (d) { return height - y(d[1])} )
-            .attr("fill", function(d) {return color(d[0])});
-
-
-// TODO: errors updating bars - Too many bars causing them to overlap. Increase width? or
-// TODO: decrease bandwidth of bars
-// TODO: Getting data errors as well (hs?)
-
-        bars
-          // .on("mouseover", mouseOver)
-          // .on("mouseout", mouseOut)
-          // .on("mousemove", mouseMove)
-          .on("mouseover", function(d) {
-
-            var matrix = this.getScreenCTM()
-              .translate(+ this.getAttribute("x"), + this.getAttribute("y"));
-
-            // gets width of text string
-            boxwidth = BrowserText.getWidth(d[0], fontSize, "Inter, sans-serif")
-
-            tooltip.transition().duration(200).style('display', 'block');
-            tooltip.html(`${d[0]}<br>Proficiency: ${d3.format(".0%")(d[1])}`)
-              .style("left", (window.scrollX + matrix.e + x1.bandwidth()) + "px")
-              .style("top", (window.scrollY + matrix.f - 15) + "px") // 15 is half of box height + top/bottom padding
-              .style("width",boxwidth + 4 + "px");
-            })
-          .on('mouseout', function(d) {
-            tooltip.transition().duration(500).style('display', "none");
-          });
-
-      //   // TODO: TESTING
-      //   let tipBox = bars.selectAll(".tipbox")
-      //     // .data(chartData)
-      //     .enter().append('g')
-      //     .attr('class', 'tipbox');
-
-      //   tipBox.append('path')
-      //     .style("fill", function (d,i) { return "blue"}) //colors[d.id]})
-      //     .attr('class', 'path');
-
-      //   tipBox.append("text")
-      //     .style("fill", "white")
-      //     .style("font-size", 9)
-      //     .style("font-weight", "500")
-      //     .style("font-family", "font-family: 'Open Sans', verdana, arial, sans-serif")
-      //     .attr("z-index", 99)
-      //     .attr("dy", "0.35em")   // anchor text close to middle vertically
-      //     .attr('class', 'text');
-      //  // TODO: TESTING
-
+          
         // NOTE: All of the if/else blocks are to ensure that labels look consistent regardless
         // of how high or wide they are. Note, 0% appears as text with no bar
         labels = barUpdate.selectAll("g")
           .data(chartData)
           .join("g")
           .selectAll("text")
-          .attr('class', 'label')
           .data(function (d) { return d[1] })
           .join("text")
           .attr("text-anchor", "middle")
           .attr("y", function(d) {
-            // console.log("BARUPDATE")
-            // console.log(d)
             if (d[1] < .06) {
               return y(d[1]) - 5
             } else if ((d[1] < .08)) {
@@ -2769,7 +2667,60 @@ function verticalGroupBar() {
           .style("font-family", "Inter, sans-serif")
           .text(function(d, i) {
             return d3.format(".0%")(d[1]);
+          })
+          .style("pointer-events", "none");   // this ensures that text doesn't react to mouseover
+          
+
+        bars.transition(t)
+            .attr("x", function (d) { return x1(d[0]) })
+            .attr("y", function(d) { return y(d[1]) })
+            .attr("width", x1.bandwidth())
+            .attr("height", function (d) { return height - y(d[1])} )
+            .attr("fill", function(d) {return color(d[0])});
+
+
+        bars
+          // .on("mouseover", mouseOver)
+          // .on("mouseout", mouseOut)
+          // .on("mousemove", mouseMove)
+          .on("mouseover", function(d) {
+            var matrix = this.getScreenCTM()
+              .translate(+ this.getAttribute("x"), + this.getAttribute("y"));
+
+            // gets width of text string
+            boxwidth = BrowserText.getWidth(d[0], fontSize, "Inter, sans-serif")
+
+            tooltip.transition().duration(200).style('display', 'block');
+            tooltip.html(`${d[0]}<br>Proficiency: ${d3.format(".0%")(d[1])}`)
+              .style("left", (window.scrollX + matrix.e + x1.bandwidth()) + "px")
+              .style("top", (window.scrollY + matrix.f - 15) + "px") // 15 is half of box height + top/bottom padding
+              .style("width",boxwidth + 4 + "px");
+            })
+          .on('mouseout', function(d) {
+            tooltip.transition().duration(500).style('display', "none");
           });
+
+        // TODO: TESTING
+        // let tipBox = bars.selectAll(".tipbox")
+        //   // .data(chartData)
+        //   .enter().append('g')
+        //   .attr('class', 'tipbox');
+
+        // tipBox.append('path')
+        //   .style("fill", function (d,i) { return "blue"}) //colors[d.id]})
+        //   .attr('class', 'path');
+
+        // tipBox.append("text")
+        //   .style("fill", "white")
+        //   .style("font-size", 9)
+        //   .style("font-weight", "500")
+        //   .style("font-family", "font-family: 'Open Sans', verdana, arial, sans-serif")
+        //   .attr("z-index", 99)
+        //   .attr("dy", "0.35em")   // anchor text close to middle vertically
+        //   .attr('class', 'text');
+       // TODO: TESTING
+
+
 // TODO: ADD ENDNOTES
         // svg.selectAll("text.endtext").remove();
 

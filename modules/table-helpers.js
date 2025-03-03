@@ -247,26 +247,30 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
       filteredData.push(eachYear);
     };
   
-  
     // filter out categories where the school has no data (note: this keeps
     // insuffient n-size value "***")
     let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
-  
+
     // if selected school has insufficent data for all categories (e.g.,
     // either tested or proficient is "***")- then we have no data to
     // display
+
+    let originalData = structuredClone(filteredData);
+
+    // use this data copy to test for sets with all insufficiency
     let schoolDataObject = filteredData.find(o => o.Category === schoolName);
     delete schoolDataObject.Category;
   
     const allInsufficient = Object.values(schoolDataObject).every((value) => value === "***");
   
     let finalData;
+    
     if (allInsufficient == true) {
       finalData = [];
     }
     else {
-      let academicData = filterKeys(filteredData, schoolColumns)
-  
+      let academicData = filterKeys(originalData, schoolColumns)
+
       // Add color as separate column to table
       finalData = academicData.map(item1 => {
         const matchingItem = colors.find(item2 => item2.school === item1.Category);
@@ -283,7 +287,7 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
       
       finalData.push(missingCategories)
     }
-  
+
     return finalData
 };
 
@@ -394,7 +398,7 @@ function createInfoTable(data, tableID) {
 // initializes an "empty" table - run on page load
 function initializeTable(tableID) {
 
-  keys = ["Category", "2020", "2021", "2022", "2023", "2024"]
+  keys = ["Category", "2020", "2021", "2022", "2023", "2024"];
   data = [
     {
       "Category": "",
