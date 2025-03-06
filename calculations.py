@@ -955,7 +955,7 @@ def calculate_comparison_school_list(
 
     schools = schools.reset_index(drop=True)
 
-    # now find the comparison school list        
+    # now find the comparison school list
     school_idx = schools[schools["School ID"] == int(school_id)].index
 
     # NOTE: This should never ever happen because we've already determined

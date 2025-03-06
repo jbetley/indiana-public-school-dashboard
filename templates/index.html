@@ -354,6 +354,7 @@ allSchoolsObj.forEach(function (obj) {
 });
 
 let colorState = [];
+var selectedValues = {};
 
 // Demographic Page
 var enrollmentChart,
@@ -443,36 +444,72 @@ const comparisonSelect = new SlimSelect({
 
 /* Event Listeners */
 
-// New school corporation is selected (automatically changing school) or
-// new school is selected
+// NOTE: currently refreshes all data- may want to reuse existing dataset instead
+const yearSelection = document.getElementById("yearSelect");
+yearSelection.addEventListener("change", async () => {
+
+   selectedValues = await getSelectedValues();
+
+   if (selectedValues.page_tab === "analysisTab") {
+
+      selectedValues.comparison_schools = await updateComparisonSchools();
+      getAcademicAnalysisData(selectedValues);
+   }
+   else if (selectedValues.page_tab === "infoTab")  {
+      getAcademicInfoData(selectedValues);
+   }
+   else {
+      getDemographicData(selectedValues)
+   }
+});
+
+
+// a change here auto triggers new school list
+const corpSelection = document.getElementById("corpSelect");
+corpSelection.addEventListener("change", async () => {
+   
+   await setSchoolList(allSchoolsObj)
+
+   // new corpSelection will reset schoolSelection, so we need
+   // to force a schoolSelection event
+   var event = new Event("change");
+   schoolSelection.dispatchEvent(event);
+});
+
+
+// triggered directly by user or indirectly through
+// a change to corpSelection
 const schoolSelection = document.getElementById("schoolSelect");
+schoolSelection.addEventListener("change", async () => {
 
-schoolSelection.addEventListener("change", function () {
-   let selectedValues = getSelectedValues();
+   selectedValues = await getSelectedValues();
 
-   const mainSelection = document.querySelector(".tab.main.active").id;
+   // the various navigation buttons and tabs
+   const activePage = document.querySelector(".tab.main.active").id;
    const k8Categories = document.querySelector(".k8nav");
    const hsCategories = document.querySelector(".hsnav");
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".typenav");
 
+   // TODO: use selectedValues for all of these
    let k8TypeTab = document.getElementById("k8Tab");
    let hsTypeTab = document.getElementById("hsTab");
 
-   if (selectedValues.school_type == "K12" && mainSelection != "demoTab") {
+
+   if (selectedValues.school_type == "K12" && activePage != "demoTab") {
       typeCategories.classList.add("open");
    } else {
       typeCategories.classList.remove("open");
    }
 
-   if (mainSelection == "demoTab") {
+   if (activePage == "demoTab") {
       k8Categories.classList.remove("open");
       hsCategories.classList.remove("open");
       analysisPages.classList.remove("open");
       getDemographicData(selectedValues)
    }
 
-   else if (mainSelection == "infoTab") {
+   else if (activePage == "infoTab") {
 
       analysisPages.classList.remove("open");
 
@@ -507,7 +544,7 @@ schoolSelection.addEventListener("change", function () {
       getAcademicInfoData(selectedValues);
 
    }
-   else if (mainSelection == "analysisTab") {
+   else if (activePage == "analysisTab") {
 
       analysisPages.classList.add("open");
 
@@ -539,59 +576,23 @@ schoolSelection.addEventListener("change", function () {
          selectedValues.type_tab = "hsTab"
       }
 
+
       // populates selectedValues dict with new list of comparison school ids
-      getComparisonSchools(selectedValues);
-      selectedValues.comparison_schools = getComparisonSchoolIDs();
+      await getComparisonSchools(selectedValues);
+
+      // updates selectedValues
+      selectedValues.comparison_schools = await updateComparisonSchools();
+      
       getAcademicAnalysisData(selectedValues);
 
    };
 });
 
-function getSchoolSelection() {
-   let schoolIDValue;
-   if (schoolSelection != null && schoolSelection.value == "") {
-      schoolIDValue = allSchoolsObj.find(e => typeof e !== "undefined")["School ID"]
-   }
-   else {
-      schoolIDValue = schoolSelection.value
-   }
-   return schoolIDValue
-};
 
-
-// Select year
-// NOTE: currently refreshes all data- may want to reuse existing dataset instead
-let yearSelection = document.getElementById("yearSelect");
-
-yearSelection.addEventListener("change", function () {
-   let selectedValues = getSelectedValues();
-
-   if (selectedValues.page_tab === "analysisTab") {
-
-      selectedValues.comparison_schools = getComparisonSchoolIDs();
-      getAcademicAnalysisData(selectedValues);
-   }
-   else if (selectedValues.page_tab === "infoTab")  {
-      getAcademicInfoData(selectedValues);
-   }
-   else {
-      getDemographicData(selectedValues)
-   }
-});
-
-
-function getSelectedYear() {
-   let yearSelectionValue = yearSelection.value;
-   return yearSelectionValue;
-};
-
-
-// Select comparison schools
 const comparisonSelection = document.getElementById("comparisonSelect");
 const msgDiv = document.getElementById("max-message");
 
 comparisonSelection.addEventListener("change", function () {
-
    // show message when maximum # of schools have been selected
    const numX = comparisonSelect.getSelected()
 
@@ -613,51 +614,77 @@ comparisonSelection.addEventListener("change", function () {
             msgElement.remove();
          }
    }
-
-   let selectedValues = getSelectedValues();
-
-   // if (selectedValues.page_tab === "analysisTab") {
-   //    console.log("IS THIS A LOOP")
-   //    console.trace('comparisonSelection was called');
-   //    selectedValues.comparison_schools = getComparisonSchoolIDs();
-   //    getAcademicAnalysisData(selectedValues);
-   // }
-   });
-
-
-function getComparisonSchoolIDs() {
-   let selectedValues = getSelectedValues();
-   let comparisonSchools = comparisonSelect.getSelected();
-   return comparisonSchools
-}
-
-
-// Select new school corporation (auto triggers new school list)
-const corpSelection = document.getElementById("corpSelect");
-corpSelection.addEventListener("change", function () {
-   setSchoolList(allSchoolsObj)
 });
 
 
-function getCorpSelection() {
-   let corpIDValue;
-   if (corpSelection != null && corpSelection.value == "") {
-      // finds first element in array even if it falsy (but not if undefined)
-      corpIDValue = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
-   }
-   else {
-      corpIDValue = corpSelection.value
-   }
-   return corpIDValue
+// function getSelectedYear() {
+//    let yearSelectionValue = yearSelection.value;
+//    return yearSelectionValue;
+// };
+
+// function getCorpSelection() {
+//    let corpIDValue;
+//    if (corpSelection != null && corpSelection.value == "") {
+//       // finds first element in array even if it falsy (but not if undefined)
+//       corpIDValue = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
+//    }
+//    else {
+//       corpIDValue = corpSelection.value
+//    }
+//    return corpIDValue
+// }
+
+// function getSchoolSelection() {
+//    let schoolIDValue;
+//    if (schoolSelection != null && schoolSelection.value == "") {
+//       schoolIDValue = allSchoolsObj.find(e => typeof e !== "undefined")["School ID"]
+//    }
+//    else {
+//       schoolIDValue = schoolSelection.value
+//    }
+//    return schoolIDValue
+// };
+
+
+// TODO: This may not be the correct logic
+// use this to update selectedValues
+async function updateComparisonSchools() {
+
+   selectedValues = await getSelectedValues();
+   let schoolIDs = selectedValues.comparison_schools;
+   console.log(schoolIDs)
+   if (!Array.isArray(schoolIDs) || !schoolIDs.length || schoolIDs == undefined) {
+      console.log("TRGGERED")
+      schoolIDs = comparisonSelect.getSelected();
+      }
+   return schoolIDs
 }
 
 
 // get all active values
-function getSelectedValues() {
+async function getSelectedValues() {
 
-   const year = getSelectedYear();
-   const schoolId = getSchoolSelection();
-   const corpId = getCorpSelection();
+   const year = yearSelection.value; //getSelectedYear();
+   // const schoolId = getSchoolSelection();
+   // const corpId = getCorpSelection();
+   
+   let corpId;
+   if (corpSelection != null && corpSelection.value == "") {
+      // finds first element in array even if it falsy (but not if undefined)
+      corpId = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
+   }
+   else {
+      corpId = corpSelection.value
+   }
+
+   let schoolId;
+   if (schoolSelection != null && schoolSelection.value == "") {
+      schoolId = allSchoolsObj.find(e => typeof e !== "undefined")["School ID"]
+   }
+   else {
+      schoolId = schoolSelection.value
+   }
+
    const pageTab = document.querySelector(".tab.main.active").id;
    const typeTab = document.querySelector(".tab.type.active").id;
    const k8Tab = document.querySelector(".tab.k8info.active").id;
@@ -680,7 +707,7 @@ function getSelectedValues() {
 
    // using snake case here because we will be passing this dict
    // to python scripts
-   let selectedValues = {};
+
    selectedValues.school_id = schoolId;
    selectedValues.year = year;
    selectedValues.school_type = school_type;
@@ -719,9 +746,6 @@ const navTabs = document.querySelector("div#nav-tabs"),
 
 
 navTabs.onclick = ({target}) => {
-
-   const schoolType = getSelectedValues().school_type;
-   const schoolSubtype = getSelectedValues().school_subtype;
 
    // ignore other clicks in this area (like spaces between buttons)
    if (!target.matches("button[data-tab]")) return
@@ -775,8 +799,7 @@ analysisnav_tab_elms.forEach(elTab => {
 };
 
 
-/* App Initialization */
-function setYearList(data, id) {
+async function setYearList(data, id) {
 
    let selectedYear = yearSelection;
 
@@ -810,8 +833,10 @@ function setYearList(data, id) {
 };
 
 
-function setCorpList (data) {
-   const year = getSelectedYear();
+async function setCorpList (data) {
+   selectedValues = await getSelectedValues();
+
+   const year = selectedValues.year;
 
    let yearData = data.filter(o => o.Year == Number(year));
 
@@ -826,17 +851,30 @@ function setCorpList (data) {
    );
 
    // initialize school list
-   setSchoolList(data);
+   await setSchoolList(data);
 }
 
 
-function setSchoolList(data) {
+async function setSchoolList(data) {
    let schoolDropdown = []
-   let selectedValues = getSelectedValues();
 
-   const pageTab = selectedValues.page_tab;
-   const year = getSelectedYear();
-   const corpID = getCorpSelection();
+   console.log("SETSCHOOLLIST SELECTED BEFORE N AFTER")
+   selectedValues = await getSelectedValues();
+   console.log(selectedValues)
+
+   const year = selectedValues.year; //getSelectedYear();
+   const corpID = selectedValues.corp_id; //getCorpSelection();
+   const schoolId = selectedValues.school_id; //getSchoolSelection();
+   const typeTab = document.querySelector(".tab.type.active").id;
+
+   let schoolInfo = allSchoolsObj.filter(o => o["School ID"] == schoolId && o.Year == year);
+   let schoolType = schoolInfo[0]["School Type"]
+
+
+   // setSelectedValue("school_type", schoolType)
+   // setSelectedValue("year", year)
+   // setSelectedValue("school_id", schoolId)
+   // setSelectedValue("type_tab", typeTab)
 
    let yearData = data.filter(o => o.Year == Number(year));
 
@@ -850,41 +888,67 @@ function setSchoolList(data) {
       .appendChild(new Option(school["School Name"], school["School ID"]))
    );
 
-// TODO: Testing removing this to try to find loop
-   // // load comparison schools
-   // if (pageTab === "analysisTab") {
-   //    getComparisonSchools(selectedValues);
-   // };
-// TODO
+   // console.log("SCHOOL ADDED")
+   // console.log(schoolSelection.options[schoolSelection.selectedIndex].value)
+   // // set initial comparison school list
+   // getComparisonSchools(selectedValues);
 
-   // TODO: Should this be outside of the function??
+   // const pageTab = document.querySelector(".tab.main.active").id;
+
+   // if (pageTab == "demoTab") {
+   //    getAcademicInfoData(selectedValues)
+   // } else if (pageTab == "infoTab") {
+   //    getDemographicData(selectedValues)
+   // } else {
+   //    getAcademicAnalysisData(selectedValues)
+   // }
+// TODO: Should this be outside of the function??
    // auto trigger change event whenever School List changes
-   var event = new Event("change");
-   schoolSelection.dispatchEvent(event);
+   // var event = new Event("change");
+// schoolSelection.dispatchEvent(event);
 };
 
 
-/// Comparison List
-function setComparisonList(data) {
+// This should be called: on init, on school change, and on 
+// school type change
+async function setComparisonList(data) {
 
+   console.log("SETTING COMPARISON LIST")
    let subset = data.map(({ ["School ID"]: value, ["School Name"]: text }) => ({ text, value }));
 
    // remove selected school from dropdown
    subset = subset.slice(1);
 
+// TODO: EVERY TIME COMPARISONSELECT IS CALLED< IT CALLS ACADEMIC ANALYSIS
+// TODO: THE PROBZLEM IS HERERE
    // set list of available comparison schools
+   // clear the select element, add it items
+   console.log("CALL 1")
    comparisonSelect.setData([]);
+
+   console.log("CALL 2")
    comparisonSelect.setData(subset);
 
-   // as default, select first 4 (closest) schools
-   let initialSelections = subset.map(function (obj) {
+
+   // set as default, first 4 (closest) schools
+   let defaultSelections = subset.map(function (obj) {
       return obj.value;
    });
 
-   initialSelections = initialSelections.slice(0, 4);
-   comparisonSelect.setSelected(initialSelections);
-};
+   defaultSelections = defaultSelections.slice(0, 4);
 
+   setSelectedValue("comparison_schools", defaultSelections)
+   
+   console.log("Comparison select should have these values as default")
+   console.log(selectedValues)
+   console.log(defaultSelections)
+   
+   console.log("CALL 3")
+   comparisonSelect.setSelected(defaultSelections);
+   console.log("Comparison Schools ADDED 3")
+   console.log(comparisonSelect.getSelected())
+
+};
 
 /* Flask calls */
 // demographic data
@@ -938,6 +1002,15 @@ async function getAcademicInfoData(select) {
 // academic analysis Data
 async function getAcademicAnalysisData(select) {
 
+   // TODO: Sometimes passed is empty - presumably because at the time
+   // the data is passed, the checked schools have not been registered
+   
+   let directSelect = comparisonSelect.getSelected();
+
+   if (Array.isArray(directSelect) || directSelect.length) {
+      select.comparison_schools = directSelect;
+   }
+
    const fetchedData = await fetch(`${window.origin}/academic`, {
       method: "POST",
       headers: {
@@ -974,7 +1047,8 @@ async function getComparisonSchools(select) {
             alert("Network Error: Could not load data.")
          }
       })
-      setComparisonList(comparisonSchoolList)
+
+     await setComparisonList(comparisonSchoolList)
 };
 
 /* Pages */
@@ -1128,9 +1202,9 @@ function demographicsPage(data, select) {
 };
 
 // Academic Information
-function academicInfoPage(data) {
+async function academicInfoPage(data) {
 
-   let selection = getSelectedValues();
+   selectedValues = await getSelectedValues();
 
 // TODO: HANDLE BLANK TABLE
    if (!Array.isArray(data) || !data.length) {
@@ -1139,17 +1213,17 @@ function academicInfoPage(data) {
    }
 
    // if first school in list is K12, we need to manually set sub_type on initial load
-   if (selection.school_type == "K12" && selection.school_subtype == "K12") {
-      selection.school_subtype = "K8"
+   if (selectedValues.school_type == "K12" && selectedValues.school_subtype == "K12") {
+      selectedValues.school_subtype = "K8"
    }
 
-   const year = selection.year;
-   const schoolType = selection.school_type
-   const schoolSubtype = selection.school_subtype
-   const pageTab = selection.page_tab
-   const typeTab = selection.type_tab
-   const k8Tab = selection.k8_tab
-   const hsTab = selection.hs_tab
+   const year = selectedValues.year;
+   const schoolType = selectedValues.school_type
+   const schoolSubtype = selectedValues.school_subtype
+   const pageTab = selectedValues.page_tab
+   const typeTab = selectedValues.type_tab
+   const k8Tab = selectedValues.k8_tab
+   const hsTab = selectedValues.hs_tab
 
    let subject;
    let ireadlabels = document.querySelectorAll('[id^="info-container-iread-label"]');
@@ -1228,76 +1302,76 @@ function academicInfoPage(data) {
 
       let id, name;
 
-      ireadInfoTotal = multiLine().data(getInfoChartData(data, total, "IREAD", selection)).id("ireadInfoTotal");
+      ireadInfoTotal = multiLine().data(getInfoChartData(data, total, "IREAD", selectedValues)).id("ireadInfoTotal");
       d3.select("#ireadInfoTotal").call(ireadInfoTotal);
 
-      ireadInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "IREAD", selection)).id("ireadInfoEthnicity");
+      ireadInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "IREAD", selectedValues)).id("ireadInfoEthnicity");
       d3.select("#ireadInfoEthnicity").call(ireadInfoEthnicity);
 
-      ireadInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "IREAD", selection)).id("ireadInfoSubgroup");
+      ireadInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "IREAD", selectedValues)).id("ireadInfoSubgroup");
       d3.select("#ireadInfoSubgroup").call(ireadInfoSubgroup);
 
-      elaIlearnInfoGrade = multiLine().data(getInfoChartData(data, gradeAll, "ELA", selection)).id("elaIlearnInfoGrade");
+      elaIlearnInfoGrade = multiLine().data(getInfoChartData(data, gradeAll, "ELA", selectedValues)).id("elaIlearnInfoGrade");
       d3.select("#elaIlearnInfoGrade").call(elaIlearnInfoGrade);
 
-      elaIlearnInfoStackGrade = horizontalStackedBar().data(getProficiencyBreakdown(data, gradeAll, "ELA", selection)).id("elaIlearnInfoStackGrade");
+      elaIlearnInfoStackGrade = horizontalStackedBar().data(getProficiencyBreakdown(data, gradeAll, "ELA", selectedValues)).id("elaIlearnInfoStackGrade");
       d3.select("#elaIlearnInfoStackGrade").call(elaIlearnInfoStackGrade);
 
-      elaIlearnInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "ELA", selection)).id("elaIlearnInfoEthnicity");
+      elaIlearnInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "ELA", selectedValues)).id("elaIlearnInfoEthnicity");
       d3.select("#elaIlearnInfoEthnicity").call(elaIlearnInfoEthnicity);
 
-      elaIlearnInfoStackEthnicity = horizontalStackedBar().data(getProficiencyBreakdown(data, ethnicity, "ELA", selection)).id("elaIlearnInfoStackEthnicity");
+      elaIlearnInfoStackEthnicity = horizontalStackedBar().data(getProficiencyBreakdown(data, ethnicity, "ELA", selectedValues)).id("elaIlearnInfoStackEthnicity");
       d3.select("#elaIlearnInfoStackEthnicity").call(elaIlearnInfoStackEthnicity);
 
-      elaIlearnInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "ELA", selection)).id("elaIlearnInfoSubgroup");
+      elaIlearnInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "ELA", selectedValues)).id("elaIlearnInfoSubgroup");
       d3.select("#elaIlearnInfoSubgroup").call(elaIlearnInfoSubgroup);
 
-      elaIlearnInfoStackSubgroup = horizontalStackedBar().data(getProficiencyBreakdown(data, subgroup, "ELA", selection)).id("elaIlearnInfoStackSubgroup");
+      elaIlearnInfoStackSubgroup = horizontalStackedBar().data(getProficiencyBreakdown(data, subgroup, "ELA", selectedValues)).id("elaIlearnInfoStackSubgroup");
       d3.select("#elaIlearnInfoStackSubgroup").call(elaIlearnInfoStackSubgroup);
 
-      mathIlearnInfoGrade = multiLine().data(getInfoChartData(data, gradeAll, "Math", selection)).id("mathIlearnInfoGrade");
+      mathIlearnInfoGrade = multiLine().data(getInfoChartData(data, gradeAll, "Math", selectedValues)).id("mathIlearnInfoGrade");
       d3.select("#mathIlearnInfoGrade").call(mathIlearnInfoGrade);
 
-      mathIlearnInfoStackGrade = horizontalStackedBar().data(getProficiencyBreakdown(data, gradeAll, "Math", selection)).id("mathIlearnInfoStackGrade");
+      mathIlearnInfoStackGrade = horizontalStackedBar().data(getProficiencyBreakdown(data, gradeAll, "Math", selectedValues)).id("mathIlearnInfoStackGrade");
       d3.select("#mathIlearnInfoStackGrade").call(mathIlearnInfoStackGrade);
 
-      mathIlearnInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "Math", selection)).id("mathIlearnInfoEthnicity");
+      mathIlearnInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "Math", selectedValues)).id("mathIlearnInfoEthnicity");
       d3.select("#mathIlearnInfoEthnicity").call(mathIlearnInfoEthnicity);
 
-      mathIlearnInfoStackEthnicity = horizontalStackedBar().data(getProficiencyBreakdown(data, ethnicity, "Math", selection)).id("mathIlearnInfoStackEthnicity");
+      mathIlearnInfoStackEthnicity = horizontalStackedBar().data(getProficiencyBreakdown(data, ethnicity, "Math", selectedValues)).id("mathIlearnInfoStackEthnicity");
       d3.select("#mathIlearnInfoStackEthnicity").call(mathIlearnInfoStackEthnicity);
 
-      mathIlearnInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "Math", selection)).id("mathIlearnInfoSubgroup");
+      mathIlearnInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "Math", selectedValues)).id("mathIlearnInfoSubgroup");
       d3.select("#mathIlearnInfoSubgroup").call(mathIlearnInfoSubgroup);
 
-      mathIlearnInfoStackSubgroup = horizontalStackedBar().data(getProficiencyBreakdown(data, subgroup, "Math", selection)).id("mathIlearnInfoStackSubgroup");
+      mathIlearnInfoStackSubgroup = horizontalStackedBar().data(getProficiencyBreakdown(data, subgroup, "Math", selectedValues)).id("mathIlearnInfoStackSubgroup");
       d3.select("#mathIlearnInfoStackSubgroup").call(mathIlearnInfoStackSubgroup);
 
-      gradRateInfoTotal = multiLine().data(getInfoChartData(data, gradTotal, "Graduation", selection)).id("gradRateInfoTotal");
+      gradRateInfoTotal = multiLine().data(getInfoChartData(data, gradTotal, "Graduation", selectedValues)).id("gradRateInfoTotal");
       d3.select("#gradRateInfoTotal").call(gradRateInfoTotal);
 
-      gradRateInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "Graduation", selection)).id("gradRateInfoEthnicity");
+      gradRateInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "Graduation", selectedValues)).id("gradRateInfoEthnicity");
       d3.select("#gradRateInfoEthnicity").call(gradRateInfoEthnicity);
 
-      gradRateInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "Graduation", selection)).id("gradRateInfoSubgroup");
+      gradRateInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "Graduation", selectedValues)).id("gradRateInfoSubgroup");
       d3.select("#gradRateInfoSubgroup").call(gradRateInfoSubgroup);
 
-      ebrwSatInfoTotal = multiLine().data(getInfoChartData(data, total, "EBRW", selection)).id("ebrwSatInfoTotal");
+      ebrwSatInfoTotal = multiLine().data(getInfoChartData(data, total, "EBRW", selectedValues)).id("ebrwSatInfoTotal");
       d3.select("#ebrwSatInfoTotal").call(ebrwSatInfoTotal);
 
-      ebrwSatInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "EBRW", selection)).id("ebrwSatInfoEthnicity");
+      ebrwSatInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "EBRW", selectedValues)).id("ebrwSatInfoEthnicity");
       d3.select("#ebrwSatInfoEthnicity").call(ebrwSatInfoEthnicity);
 
-      ebrwSatInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "EBRW", selection)).id("ebrwSatInfoSubgroup");
+      ebrwSatInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "EBRW", selectedValues)).id("ebrwSatInfoSubgroup");
       d3.select("#ebrwSatInfoSubgroup").call(ebrwSatInfoSubgroup);
 
-      mathSatInfoTotal = multiLine().data(getInfoChartData(data, total, "Math", selection)).id("mathSatInfoTotal");
+      mathSatInfoTotal = multiLine().data(getInfoChartData(data, total, "Math", selectedValues)).id("mathSatInfoTotal");
       d3.select("#mathSatInfoTotal").call(mathSatInfoTotal);
 
-      mathSatInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "Math", selection)).id("mathSatInfoEthnicity");
+      mathSatInfoEthnicity = multiLine().data(getInfoChartData(data, ethnicity, "Math", selectedValues)).id("mathSatInfoEthnicity");
       d3.select("#mathSatInfoEthnicity").call(mathSatInfoEthnicity);
 
-      mathSatInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "Math", selection)).id("mathSatInfoSubgroup");
+      mathSatInfoSubgroup = multiLine().data(getInfoChartData(data, subgroup, "Math", selectedValues)).id("mathSatInfoSubgroup");
       d3.select("#mathSatInfoSubgroup").call(mathSatInfoSubgroup);
 
 // Tables
@@ -1331,13 +1405,13 @@ function academicInfoPage(data) {
             infoSubjects = ["IREAD", "IREAD", "IREAD"];
             infoCategories = [total, ethnicity, subgroup];
 
-            const ireadTotalData = getInfoChartData(data, infoCategories[0], infoSubjects[0], selection);
+            const ireadTotalData = getInfoChartData(data, infoCategories[0], infoSubjects[0], selectedValues);
             ireadInfoTotal.data(ireadTotalData).id("ireadInfoTotal");
 
-            const ireadEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selection);
+            const ireadEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selectedValues);
             ireadInfoEthnicity.data(ireadEthnicityData).id("ireadInfoEthnicity");
 
-            const ireadSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selection);
+            const ireadSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selectedValues);
             ireadInfoSubgroup.data(ireadSubgroupData).id("ireadInfoSubgroup");
          }
          else {
@@ -1345,30 +1419,30 @@ function academicInfoPage(data) {
             infoSubjects = ["ELA", "ELA", "ELA", "Math", "Math", "Math"];
             infoCategories = [gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup];
 
-            const elaIlearnGradeData = getInfoChartData(data, infoCategories[0], infoSubjects[0], selection);
+            const elaIlearnGradeData = getInfoChartData(data, infoCategories[0], infoSubjects[0], selectedValues);
             elaIlearnInfoGrade.data(elaIlearnGradeData).id("elaIlearnInfoGrade");
             
-            const elaIlearnEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selection);
+            const elaIlearnEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selectedValues);
             elaIlearnInfoEthnicity.data(elaIlearnEthnicityData).id("elaIlearnInfoEthnicity");
 
-            const elaIlearnSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selection);
+            const elaIlearnSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selectedValues);
             elaIlearnInfoSubgroup.data(elaIlearnSubgroupData).id("elaIlearnInfoSubgroup");
             
-            const mathIlearnGradeData = getInfoChartData(data, infoCategories[3], infoSubjects[3], selection);
+            const mathIlearnGradeData = getInfoChartData(data, infoCategories[3], infoSubjects[3], selectedValues);
             mathIlearnInfoGrade.data(mathIlearnGradeData).id("mathIlearnInfoGrade");
             
-            const mathIlearnEthnicityData = getInfoChartData(data, infoCategories[4], infoSubjects[4], selection);
+            const mathIlearnEthnicityData = getInfoChartData(data, infoCategories[4], infoSubjects[4], selectedValues);
             mathIlearnInfoEthnicity.data(mathIlearnEthnicityData).id("mathIlearnInfoEthnicity");
             
-            const mathIlearnSubgroupData = getInfoChartData(data, infoCategories[5], infoSubjects[5], selection);
+            const mathIlearnSubgroupData = getInfoChartData(data, infoCategories[5], infoSubjects[5], selectedValues);
             mathIlearnInfoSubgroup.data(mathIlearnSubgroupData).id("mathIlearnInfoSubgroup");
 
-            elaIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[0], infoSubjects[0], selection)).id("elaIlearnInfoStackGrade");
-            elaIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[1], infoSubjects[1], selection)).id("elaIlearnInfoStackSubgroup");
-            elaIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[2], infoSubjects[2], selection)).id("elaIlearnInfoStackEthnicity");
-            mathIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[3], infoSubjects[3], selection)).id("mathIlearnInfoStackGrade");
-            mathIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[4], infoSubjects[4], selection)).id("mathIlearnInfoStackEthnicity");
-            mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[5], infoSubjects[5], selection)).id("mathIlearnInfoStackSubgroup");
+            elaIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[0], infoSubjects[0], selectedValues)).id("elaIlearnInfoStackGrade");
+            elaIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[1], infoSubjects[1], selectedValues)).id("elaIlearnInfoStackSubgroup");
+            elaIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[2], infoSubjects[2], selectedValues)).id("elaIlearnInfoStackEthnicity");
+            mathIlearnInfoStackGrade.data(getProficiencyBreakdown(data, infoCategories[3], infoSubjects[3], selectedValues)).id("mathIlearnInfoStackGrade");
+            mathIlearnInfoStackEthnicity.data(getProficiencyBreakdown(data, infoCategories[4], infoSubjects[4], selectedValues)).id("mathIlearnInfoStackEthnicity");
+            mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(data, infoCategories[5], infoSubjects[5], selectedValues)).id("mathIlearnInfoStackSubgroup");
          }
       }
       else if (typeTab == "hsTab") {
@@ -1377,13 +1451,13 @@ function academicInfoPage(data) {
             infoSubjects = ["Graduation", "Graduation", "Graduation"];
             infoCategories = [gradTotal, ethnicity, subgroup];
 
-            const gradRateTotalData = getInfoChartData(data, infoCategories[0], infoSubjects, selection);
+            const gradRateTotalData = getInfoChartData(data, infoCategories[0], infoSubjects, selectedValues);
             gradRateInfoTotal.data(gradRateTotalData).id("gradRateInfoTotal");
             
-            const gradRateEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects, selection);
+            const gradRateEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects, selectedValues);
             gradRateInfoEthnicity.data(gradRateEthnicityData).id("gradRateInfoEthnicity");
             
-            const gradRateSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects, selection);
+            const gradRateSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects, selectedValues);
             gradRateInfoSubgroup.data(gradRateSubgroupData).id("gradRateInfoSubgroup");
          }
          else if (hsTab == "satTab") {
@@ -1391,22 +1465,22 @@ function academicInfoPage(data) {
             infoSubjects = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
             infoCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
-            const ebrwSatTotalData = getInfoChartData(data, infoCategories[0], infoSubjects[0], selection);
+            const ebrwSatTotalData = getInfoChartData(data, infoCategories[0], infoSubjects[0], selectedValues);
             ebrwSatInfoTotal.data(ebrwSatTotalData).id("ebrwSatInfoTotal");
             
-            const ebrwSatEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selection);
+            const ebrwSatEthnicityData = getInfoChartData(data, infoCategories[1], infoSubjects[1], selectedValues);
             ebrwSatInfoEthnicity.data(ebrwSatEthnicityData).id("ebrwSatInfoEthnicity");
             
-            const ebrwSatSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selection);
+            const ebrwSatSubgroupData = getInfoChartData(data, infoCategories[2], infoSubjects[2], selectedValues);
             ebrwSatInfoSubgroup.data(ebrwSatSubgroupData).id("ebrwSatInfoSubgroup");
             
-            const mathSatTotalData = getInfoChartData(data, infoCategories[3], infoSubjects[3], selection);
+            const mathSatTotalData = getInfoChartData(data, infoCategories[3], infoSubjects[3], selectedValues);
             mathSatInfoTotal.data(mathSatTotalData).id("mathSatInfoTotal");
 
-            const mathSatEthnicityData = getInfoChartData(data, infoCategories[4], infoSubjects[4], selection);
+            const mathSatEthnicityData = getInfoChartData(data, infoCategories[4], infoSubjects[4], selectedValues);
             mathSatInfoEthnicity.data(mathSatEthnicityData).id("mathSatInfoEthnicity");
 
-            const mathSatSubgroupData = getInfoChartData(data, infoCategories[5], infoSubjects[5], selection);
+            const mathSatSubgroupData = getInfoChartData(data, infoCategories[5], infoSubjects[5], selectedValues);
             mathSatInfoSubgroup.data(mathSatSubgroupData).id("mathSatInfoSubgroup");
          }
       };
@@ -1425,7 +1499,7 @@ function academicInfoPage(data) {
          let infoTableNum = infoStartingIndex + i;
 
          infoTableID = infoGridApi[infoTableNum].getGridId();
-         infoTableData = getTableData(tabledata, infoCategories[i], subject[i], selection);
+         infoTableData = getTableData(tabledata, infoCategories[i], subject[i], selectedValues);
 
          // TODO: Determine is we even need to create a table if no data exists
 
@@ -1467,20 +1541,22 @@ function academicInfoPage(data) {
    }
 };
 
-
+// TODO: DO WE WANT TO PASS VALUES THROUGH THE FUNCTION RATHER THAN MAKING IT ASYNC?
 // Chart Academic Information
-function academicAnalysisPage(data) {
+async function academicAnalysisPage(data) {
 
-   let selection = getSelectedValues();
+   console.trace("IN ACAXEMIC ANALYSIUS PAGE")
+   // let
+   selectedValues = await getSelectedValues();
 
-   const year = selection.year;
-   const schoolType = selection.school_type
-   const schoolSubtype = selection.school_subtype
-   const schoolID = selection.school_id
-   const pageTab = selection.page_tab
-   const typeTab = selection.type_tab
-   const k8Tab = selection.k8_tab
-   const hsTab = selection.hs_tab
+   const year = selectedValues.year;
+   const schoolType = selectedValues.school_type
+   const schoolSubtype = selectedValues.school_subtype
+   const schoolID = selectedValues.school_id
+   const pageTab = selectedValues.page_tab
+   const typeTab = selectedValues.type_tab
+   const k8Tab = selectedValues.k8_tab
+   const hsTab = selectedValues.hs_tab
 
    let subject;
    let newColors = [];
@@ -1694,12 +1770,13 @@ function academicAnalysisPage(data) {
 
       console.log("UPDATING ANALYSIS ANALYSIS")
       // console.trace('academicAnalysisPage was called');
+      console.log(yearData)
 
       // Get table/chart data and build tables
       if (typeTab == "k8Tab") {
          if (k8Tab == "ireadTab") {
             // Single Year Comparison: IREAD Proficiency by Total
-            let ireadTotalData = getAnalysisChartData(yearData, total, "IREAD", selection);
+            let ireadTotalData = getAnalysisChartData(yearData, total, "IREAD", selectedValues);
             if (!ireadTotalData || !ireadTotalData.length) {
                ireadTotalChartData = [];
             }
@@ -1713,7 +1790,7 @@ function academicAnalysisPage(data) {
             ireadComparisonTotal.data(ireadTotalChartData).id("ireadComparisonTotal");
 
             // Single Year Comparison: IREAD Proficiency by Ethnicity
-            let ireadEthnicityData = getAnalysisChartData(yearData, ethnicity, "IREAD", selection);
+            let ireadEthnicityData = getAnalysisChartData(yearData, ethnicity, "IREAD", selectedValues);
             if (!ireadEthnicityData || !ireadEthnicityData.length) {
                ireadEthnicityChartData = [];
             }
@@ -1727,7 +1804,7 @@ function academicAnalysisPage(data) {
             ireadComparisonEthnicity.data(ireadEthnicityChartData).id("ireadComparisonEthnicity");
 
             // Single Year Comparison: IREAD Proficiency by Subgroup
-            let ireadSubgroupData = getAnalysisChartData(yearData, subgroup, "IREAD", selection);
+            let ireadSubgroupData = getAnalysisChartData(yearData, subgroup, "IREAD", selectedValues);
             if (!ireadSubgroupData || !ireadSubgroupData.length) {
                ireadSubgroupChartData = [];
             }
@@ -1742,7 +1819,7 @@ function academicAnalysisPage(data) {
          }
          else {
             // Single Year Comparison: ELA Proficiency by Total
-            let elaILEARNTotalData = getAnalysisChartData(yearData, total, subject[0], selection);
+            let elaILEARNTotalData = getAnalysisChartData(yearData, total, subject[0], selectedValues);
 
             if (!elaILEARNTotalData || !elaILEARNTotalData.length) {
                elaILEARNTotalChartData = [];
@@ -1757,7 +1834,7 @@ function academicAnalysisPage(data) {
             elaILEARNComparisonTotal.data(elaILEARNTotalChartData).id("elaILEARNComparisonTotal");
 
             // Single Year Comparison: ELA Proficiency by Grade
-            let elaILEARNGradeData = getAnalysisChartData(yearData, grade, subject[0], selection);
+            let elaILEARNGradeData = getAnalysisChartData(yearData, grade, subject[0], selectedValues);
             if (!elaILEARNGradeData || !elaILEARNGradeData.length) {
                elaILEARNGradeChartData = [];
             }
@@ -1771,7 +1848,7 @@ function academicAnalysisPage(data) {
             elaILEARNComparisonGrade.data(elaILEARNGradeChartData).id("elaILEARNComparisonGrade");
 
             // Single Year Comparison: ELA Proficiency by Ethnicity
-            let elaILEARNGradethnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selection);
+            let elaILEARNGradethnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selectedValues);
             if (!elaILEARNGradethnicityData || !elaILEARNGradethnicityData.length) {
                elaILEARNGradethnicityChartData = [];
             }
@@ -1785,7 +1862,7 @@ function academicAnalysisPage(data) {
             elaILEARNComparisonEthnicity.data(elaILEARNGradethnicityChartData).id("elaILEARNComparisonEthnicity");
 
             //Single Year Comparison: ELA Proficiency by Subgroup
-            let elaILEARNSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selection);
+            let elaILEARNSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selectedValues);
             if (!elaILEARNSubgroupData || !elaILEARNSubgroupData.length) {
                elaILEARNSubgroupChartData = [];
             }
@@ -1799,7 +1876,7 @@ function academicAnalysisPage(data) {
             elaILEARNComparisonSubgroup.data(elaILEARNSubgroupChartData).id("elaILEARNComparisonSubgroup");
 
             // Single Year Comparison: Math Proficiency by Total
-            let mathILEARNTotalData = getAnalysisChartData(yearData, total, subject[1], selection);
+            let mathILEARNTotalData = getAnalysisChartData(yearData, total, subject[1], selectedValues);
             if (!mathILEARNTotalData || !mathILEARNTotalData.length) {
                mathILEARNTotalChartData = [];
             }
@@ -1813,7 +1890,7 @@ function academicAnalysisPage(data) {
             mathILEARNComparisonTotal.data(mathILEARNTotalChartData).id("mathILEARNComparisonTotal");
 
             // Single Year Comparison: Math Proficiency by Grade
-            let mathILEARNGradeData = getAnalysisChartData(yearData, grade, subject[0], selection);
+            let mathILEARNGradeData = getAnalysisChartData(yearData, grade, subject[0], selectedValues);
             if (!mathILEARNTotalData || !mathILEARNTotalData.length) {
                mathILEARNGradeChartData = [];
             }
@@ -1827,7 +1904,7 @@ function academicAnalysisPage(data) {
             mathILEARNComparisonGrade.data(mathILEARNGradeChartData).id("mathILEARNComparisonGrade");
 
             // Single Year Comparison: ELA Proficiency by Ethnicity
-            let mathILEARNEthnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selection);
+            let mathILEARNEthnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selectedValues);
             if (!mathILEARNEthnicityData || !mathILEARNEthnicityData.length) {
                mathILEARNEthnicityChartData = [];
             }
@@ -1841,7 +1918,7 @@ function academicAnalysisPage(data) {
             mathILEARNComparisonEthnicity.data(mathILEARNEthnicityChartData).id("mathILEARNComparisonEthnicity");
 
             //Single Year Comparison: ELA Proficiency by Subgroup
-            let mathILEARNSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selection)
+            let mathILEARNSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selectedValues)
             if (!mathILEARNSubgroupData || !mathILEARNSubgroupData.length) {
                mathILEARNSubgroupChartData = [];
             }
@@ -1860,7 +1937,7 @@ function academicAnalysisPage(data) {
          if (hsTab == "gradTab") {
 
             // Single Year Comparison: Grad Rate Total
-            let gradRateTotalData = getAnalysisChartData(yearData, gradTotal, subject[0], selection)
+            let gradRateTotalData = getAnalysisChartData(yearData, gradTotal, subject[0], selectedValues)
             if (!gradRateTotalData || !gradRateTotalData.length) {
                gradRateTotalChartData = []
             }
@@ -1874,7 +1951,7 @@ function academicAnalysisPage(data) {
             gradRateComparisonTotal.data(gradRateTotalChartData).id("gradRateComparisonTotal");
 
             // Single Year Comparison: Grad Rate by Ethnicity
-            let gradRateEthnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selection)
+            let gradRateEthnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selectedValues)
             if (!gradRateEthnicityData || !gradRateEthnicityData.length) {
                gradRateEthnicityChartData = []
             }
@@ -1888,7 +1965,7 @@ function academicAnalysisPage(data) {
             gradRateComparisonEthnicity.data(gradRateEthnicityChartData).id("gradRateComparisonEthnicity");
 
             //Single Year Comparison: Grad Rate by Subgroup
-            let gradRateSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selection)
+            let gradRateSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selectedValues)
             if (!gradRateSubgroupData || !gradRateSubgroupData.length) {
                gradRateSubgroupChartData = []
             }
@@ -1903,7 +1980,7 @@ function academicAnalysisPage(data) {
          }
       else {
          // Single Year Comparison: SAT Total
-         let satTotalData = getAnalysisChartData(yearData, total, subject[0], selection)
+         let satTotalData = getAnalysisChartData(yearData, total, subject[0], selectedValues)
          if (!satTotalData || !satTotalData.length) {
                satTotalChartData = [];
          }
@@ -1917,7 +1994,7 @@ function academicAnalysisPage(data) {
          satComparisonTotal.data(satTotalChartData).id("satComparisonTotal");
 
          // Single Year Comparison: SAT by Ethnicity
-         let satEthnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selection);
+         let satEthnicityData = getAnalysisChartData(yearData, ethnicity, subject[0], selectedValues);
          if (!satEthnicityData || !satEthnicityData.length) {
                satEthnicityChartData = [];
          }
@@ -1931,7 +2008,7 @@ function academicAnalysisPage(data) {
          satComparisonEthnicity.data(satEthnicityChartData).id("satComparisonEthnicity");
 
          //Single Year Comparison: SAT by Subgroup
-         let satSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selection);
+         let satSubgroupData = getAnalysisChartData(yearData, subgroup, subject[0], selectedValues);
          if (!satSubgroupData || !satSubgroupData.length) {
                satSubgroupChartData = [];
          }
@@ -1978,7 +2055,7 @@ function academicAnalysisPage(data) {
          let analysisTableNum = analysisTableStartingIndex + i
 
          analysisTableID = analysisGridApi[analysisTableNum].getGridId()
-         analysisTableData = getAnalysisTableData(tabledata, analysisTableCategories[i], analysisTableSubjects[i], selection, colorState)
+         analysisTableData = getAnalysisTableData(tabledata, analysisTableCategories[i], analysisTableSubjects[i], selectedValues, colorState)
 
 // TODO: Determine is we even need to create a table if no data exists
 
@@ -2039,29 +2116,36 @@ else {
 
 }
 
-function navigateHandler(e) {
-   const mainSelection = document.querySelector(".tab.main.active").id;
-   const k8Selection = document.querySelector(".tab.k8info.active").id;
-   const hsSelection = document.querySelector(".tab.hsinfo.active").id;
-   const typeSelection = document.querySelector(".tab.type.active").id;
-   const analysisSelection = document.querySelector(".tab.analysis.active").id;
 
+async function navigateHandler(e) {
+
+   // ireadTab or ilearnTab
+   // const k8Selection = document.querySelector(".tab.k8info.active").id;
    const k8Categories = document.querySelector(".k8nav");
+
+   // satTab or gradTab
+   const hsSelection = document.querySelector(".tab.hsinfo.active").id;
    const hsCategories = document.querySelector(".hsnav");
+
+   // const typeSelection = document.querySelector(".tab.type.active").id;
+   // const analysisSelection = document.querySelector(".tab.analysis.active").id;
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
 
-   // target is the button triggering the onClick
-   // mainSelection is the main nav (demoTab, infoTab, analysisTab)
-   // subSelection is info-k8nav (ireadTab, ilearnTab)
-   // typeSelection is type nav (K8, HS)
-   // target will be equal to one of the above selections
+   // target is the button triggering the onClick and (should) be equal
+   // to one of the above selections
    e = e || window.event;
-   var target = e.target || e.srcElement;
+   const target = e.target || e.srcElement;
 
-   var selectedValues = getSelectedValues();
+   selectedValues = await getSelectedValues();
 
    const selectedPage = selectedValues.page_tab;
+   const k8Selection = selectedValues.k8_tab;
+   const hsSelection2 = selectedValues.hsTab;
+   console.log("NAVHANDLER")
+   console.log(selectedValues)
+   console.log(hsSelection2)
+   console.log(hsSelection)
 
    const strYear = selectedValues.year;
    const intYear = parseInt(strYear)
@@ -2090,8 +2174,9 @@ function navigateHandler(e) {
       typeCategories.classList.remove("open");
       analysisPages.classList.remove("open");
 
-      setYearList(allSchoolsObj,"demographic");
+      await setYearList(allSchoolsObj,"demographic");
 
+      // reset year value
       yearSelection.value = strYear;
       yearSelection.setAttribute("value", strYear);
 
@@ -2203,7 +2288,7 @@ function navigateHandler(e) {
          }
       };
 
-      setYearList(allSchoolsObj,"academic");
+      await setYearList(allSchoolsObj,"academic");
 
       if (strYear == "2020") {
          yearValue = "2019";
@@ -2241,9 +2326,9 @@ function navigateHandler(e) {
          target.id.match("satTab"))
    ) {
 
-      console.log("TARGETKD")
-      console.log(target.id)
-      console.log(selectedValues)
+      // console.log("TARGETKD")
+      // console.log(target.id)
+      // console.log(selectedValues)
 
       let analysisIreadContainers = document.querySelectorAll('[id^="analysis-container-iread"]');
       let analysisIlearnContainers = document.querySelectorAll('[id^="analysis-container-ilearn"]');
@@ -2309,7 +2394,7 @@ function navigateHandler(e) {
          }
       };
 
-      setYearList(allSchoolsObj,"academic");
+      await setYearList(allSchoolsObj,"academic");
 
       if (strYear == 2020) {
          yearValue = 2019;
@@ -2325,81 +2410,89 @@ function navigateHandler(e) {
       yearSelection.setAttribute("value", yearValue);
 
       // load comparison schools based which type tab is selected
-      // getComparisonSchools automatically repopulates the dropdown
+      // getComparisonSchools automatically repopulates the dropdown -
+      // NOTE: We ONLY want to call getComparison schools with the
+      // following targets: 1) analysisTab; 2) k8Tab; 3) hsTab.
+
       if (selectedValues.type_tab == "k8Tab") {
          selectedValues.school_subtype = "K8"
       } else if (selectedValues.type_tab == "hsTab") {
          selectedValues.school_subtype = "HS"
       };
 
-      getComparisonSchools(selectedValues);
 
-      selectedValues.year = yearValue;
-      selectedValues.comparison_schools = getComparisonSchoolIDs()
+      if (target.id.match("analysisTab") || target.id.match("hsTab") ||
+         target.id.match("k8Tab")) {
 
+            console.log("GETTING COMPARISON VALS FROM NAVHANDLER")
+            console.log(selectedValues)
+
+            await getComparisonSchools(selectedValues);
+
+      }
+      // getComparisonSchools(selectedValues);
+      // selectedValues.year = yearValue;
+      // selectedValues.comparison_schools = updateComparisonSchools()
+
+// TODO: FOR SOME REASON< THIS IS GETTING TRIGGERED MULTIPLE TIMES.. WHY?
+      console.log("SENDING TO ACADEMIC ANALYSIS - AS PASSE")
+      console.log(selectedValues.comparison_schools)
+      console.log("GETTING SELECTIONS DIRECTLY")
+      selectedValues.comparison_schools = comparisonSelect.getSelected();
+
+      console.log(selectedValues.comparison_schools)
       getAcademicAnalysisData(selectedValues);
-
-      // adjust chart size based on browser window size
-      // let windowWidth = window.innerWidth/2 - 125;
-      // ireadComparisonTotal.width(windowWidth);
-      // ireadComparisonEthnicity.width(windowWidth);
-      // ireadComparisonSubgroup.width(windowWidth);
-      // elaILEARNComparisonTotal.width(windowWidth);
-      // elaILEARNComparisonGrade.width(windowWidth);
-      // elaILEARNComparisonEthnicity.width(windowWidth);
-      // elaILEARNComparisonSubgroup.width(windowWidth);
-      // mathILEARNComparisonTotal.width(windowWidth);
-      // mathILEARNComparisonGrade.width(windowWidth);
-      // mathILEARNComparisonEthnicity.width(windowWidth);
-      // mathILEARNComparisonSubgroup.width(windowWidth);
 
    } // end academic analysis
 
 };
 
-/* Main Block */
-
+/* Initialize App */
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
-   setYearList(allSchoolsObj,"demographic");
 
-   let selectedValues = getSelectedValues();
+   await setYearList(allSchoolsObj,"demographic");
+   await setCorpList(allSchoolsObj)
+   
+   selectedValues = await getSelectedValues();
 
+   await getComparisonSchools(selectedValues);
+
+   selectedValues.comparison_schools = await updateComparisonSchools();
+
+   // let comparisonSchoolIDs = selectedValues.comparison_schools;
+
+   // if (!Array.isArray(comparisonSchoolIDs) || !comparisonSchoolIDs.length || comparisonSchoolIDs == undefined) {
+   //    selectedValues.comparison_schools = comparisonSelect.getSelected()
+   // };
+   
+// TODO: FIX ALL OF THE REFERENCES TO SELECTEDVALUES
    const k8Categories = document.querySelector(".k8nav");
    const hsCategories = document.querySelector(".hsnav");
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
 
-   analysisPages.classList.remove("open");
-   typeCategories.classList.remove("open");
-   hsCategories.classList.remove("open");
    k8Categories.classList.remove("open");
+   hsCategories.classList.remove("open");
+   typeCategories.classList.remove("open");
+   analysisPages.classList.remove("open");
 
    getDemographicData(selectedValues);
    getAcademicInfoData(selectedValues);
-
-   getComparisonSchools(selectedValues);
-
-   // NOTE: on initialization, getComparisonSchoolIDs() returns [] because
-   // comparisonSelect isn't yet initialized
-   selectedValues.comparison_schools = getComparisonSchoolIDs()
-
    getAcademicAnalysisData(selectedValues);
-}
+};
 
-// initialize page by setting the corp list
-setCorpList(allSchoolsObj)
 
 d3.select(window).on("resize", resize);
 
-function resize() {
+async function resize() {
    // TODO: prob better way to do this- at this point setting size
    // as half the value of the innerwidth of the window
    // TODO: Add breakpoint for single cols
    // TODO: create function for width calls
    // TODO: Add call to fix chart legends
 
-   let selectedValues = getSelectedValues();
+   selectedValues = await getSelectedValues();
 
    let windowWidth = window.innerWidth/2 - 125;
 

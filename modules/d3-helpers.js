@@ -1632,7 +1632,6 @@ function horizontalGroupBar() {
 
       updateData = function() {
 
-        console.log("WHY UPDATE MORE THAN ONCE")
         chartData = data[0]
         missingString = data[1]
 

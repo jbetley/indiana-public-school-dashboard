@@ -84,7 +84,7 @@ def load_school_coordinates():
     school_type = selections["school_type"]
     # school_subtype = data["school_subtype"]  # noqa: ERA001
     # get coordinates for all schools for a year
-    # TODO: hardcoded temporarily until all other errors fixed
+    # TODO: year hardcoded temporarily until all other errors fixed
     # if year == 2024:
     #     year = 2023  # noqa: ERA001
 
@@ -190,9 +190,6 @@ def load_academic_data():
         data["year"],
         data["page_tab"],
     )
-
-    filename99 = "clean_data.csv"
-    data.to_csv(filename99, index=False)
 
     # df is empty or only has information cols (e.g., MS for IREAD data)
     if len(data.columns) <= 6:
