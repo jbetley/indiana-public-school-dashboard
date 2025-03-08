@@ -253,7 +253,7 @@ function exists(arr, search) {
 }
 
 
-// remove items from a single object matching the passed value
+// remove items from an object matching the passed value
 function removeItemsByValue(obj, value) {
   for (const key in obj) {
     if (obj[key] === value) {
