@@ -10,7 +10,8 @@
 # https://realpython.com/flask-javascript-frontend-for-rest-api/
 
 # https://www.codium.ai/blog/flask-sqlalchemy-dynamic-database-tutorial/
-# https://stackoverflow.com/questions/7689695/passing-variables-between-python-and-javascript
+# https://stackoverflow.com/questions/7689695/passing-variables-between-python-and-
+# javascript
 # https://blog.logrocket.com/build-interactive-charts-flask-d3js/
 
 import numpy as np
@@ -27,8 +28,6 @@ from load_data import (
     current_academic_year,
     current_demographic_year,
     get_academic_data,
-    # get_gradespan,
-    # get_academic_data,
     get_demographic_data,
     get_public_dropdown,
     get_school_coordinates,
@@ -62,8 +61,8 @@ def load_config():
 # school dropdown list
 @app.route("/load", methods=["GET"])
 def load_school_dropdown():
-    school_df = get_public_dropdown()
 
+    school_df = get_public_dropdown()
     school_df = school_df.sort_values(
         ["Corporation Name", "School Name"], ascending=[True, True])
 
@@ -73,21 +72,16 @@ def load_school_dropdown():
     ]
 
 
-
 # comparison schools list
 @app.route("/where", methods=["POST"])
 def load_school_coordinates():
-    selections = request.get_json()
 
+    selections = request.get_json()
     school_id = selections["school_id"]
     year = int(selections["year"])
     school_type = selections["school_type"]
-    # school_subtype = data["school_subtype"]  # noqa: ERA001
-    # get coordinates for all schools for a year
-    # TODO: year hardcoded temporarily until all other errors fixed
-    # if year == 2024:
-    #     year = 2023  # noqa: ERA001
 
+    # get coordinates for all schools for a year
     coordinates = get_school_coordinates(year, school_type)
 
     # Drop any school not testing at least 20 students (probably only
@@ -106,26 +100,6 @@ def load_school_coordinates():
         (coordinates["Total Student Count"].astype(int) >= 30)
         | (coordinates["School ID"] == int(school_id))
     ]
-
-    # if school_type == "K8" or (school_type == "K12" and school_subtype =="K8") :
-
-    #     coordinates["Total|ELA Total Tested"] = coordinates[
-    #         "Total|ELA Total Tested"
-    #     ].replace("", np.nan)
-
-    #  coordinates = coordinates.dropna(subset=["Total|ELA Total Tested"])# noqa: ERA001
-
-    #     coordinates["Total|ELA Total Tested"] = pd.to_numeric(
-    #         coordinates["Total|ELA Total Tested"], errors="coerce"  # noqa: ERA001
-    #   )  # noqa: ERA001, RUF100
-
-    #     coordinates = coordinates[  # noqa: ERA001, RUF100
-    #         (coordinates["Total|ELA Total Tested"].astype(int) >= 20)  # noqa: ERA001
-    #         | (coordinates["School ID"] == int(school_id))
-    #     ]  # noqa: ERA001, RUF100
-
-    # else:  # noqa: ERA001
-    #     pass
 
     # NOTE: Before we do the distance check, we reduce the size of the
     # df removing schools where there is no or only one grade overlap
@@ -172,8 +146,8 @@ def load_academic_data():
 
     # school_subtype for K12 will either be K8 or HS, school_subtype
     # for K8 will be ES, MS, or K8
-    if data["school_type"] == "K12":
 
+    if data["school_type"] == "K12":
         if data["school_subtype"] == "K12":
             school_type = "HS" if data["type_tab"] == "hsTab" else "K8"
         else:
@@ -197,7 +171,8 @@ def load_academic_data():
 
     else:
         # # clarify school type (NOTE: Bake this in to clean_data?)
-        # gradespan = get_gradespan(data["school_id"], data["school_type"], data["year"])  # noqa: E501, ERA001
+        # gradespan = get_gradespan(data["school_id"], data["school_type"],
+        # data["year"])
 
         data = data.sort_values(by="Year")
 

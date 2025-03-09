@@ -2,14 +2,15 @@
 // table processing functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     03.01.25  
+// date:     03.11.25  
 
 
 // Academic Info Tables
 function getTableData(data, category, subject, selection) {
-    // academic info data comes in as an array of objects for a single selected school, with each
-    // object representing a single year of data. Final table format is category names on the left
-    // with years years as column names.
+    // academic info data comes in as an array of objects for a single 
+    // selected school, with each object representing a single year of data.
+    // Final table format is category names on the left with years years as
+    // column names.
   
     const pageTab = selection.page_tab
     const k8Tab = selection.k8_tab
@@ -91,23 +92,6 @@ function getTableData(data, category, subject, selection) {
               eachYear[proficiency] = result
               eachYear[testedCategory] = data[i][tested]
             };
-  
-          //   result = calcProficiency(data[i], proficient, tested)
-  
-          //   // if result is NaN then TotalProficient was '***' (insufficient N-Size)
-          //   if (result != result) {
-          //     eachinsufficientN[data[i]["Year"]] = proficiency
-          //   }
-          //   // otherwise add result and N-Size for the category
-          //   else {
-          //     let testedCategory = tested.split("|")[0] + " N-Size";
-          //     eachYear[proficiency] = result
-          //     eachYear[testedCategory] = data[i][tested]
-          //   }
-          // }
-          // // if Tested is 0 or Nan then no students were tested for that category and subject
-          // else {
-          //   eachNoneTested[data[i]["Year"]] = tested
           }
         };
       }
@@ -154,9 +138,9 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
     // Hispanic|ELA: 0.0273972602739726
     // Category: "Schooly McSchool1"
   
-    // academic analysis data - single year - comes in as an array of objects for multiple schools,
-    // each representing a single year of data. Final table format is school names on the left with
-    // categories as column names. 
+    // academic analysis data - single year - comes in as an array of objects
+    // for multiple schools, each representing a single year of data. Final
+    // table format is school names on the left with categories as column names. 
   
   // TODO: Catch empty data here?
     const schoolID = selection.school_id
@@ -193,12 +177,14 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
     }
   
     // identify string of data for school
-    // 1) loop through subject|category proficient % - any value that is either *** or not existent goes in:
-    //    "Selected school has insufficient n-size or no data for: [list of categoires]".
-    // 2) get list of school categories remaining and drop all other categories from ALL objects
-    // 3) go through other schools, any remaining categories that are either *** or non-existent goes in:
-    //    Schools with insufficient n-size or no data: school name (category(ies))
-  
+    // 1) loop through subject|category proficient % - any value that is 
+    //    either *** or not existent goes in: "Selected school has insufficient
+    //    n-size or no data for: [list of categoires]" string.
+    // 2) get list of school categories remaining and drop all other categories
+    //    from ALL objects
+    // 3) go through other schools, any remaining categories that are either
+    //    "***"" or non-existent goes in: "Schools with insufficient n-size or
+    // no data: school name (category(ies))" string.
     const categoryProficient = [];
     const categoryTested = [];
   
@@ -230,7 +216,10 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
           if (data[i][tested] == "***" || data[i][proficient] == "***") {
             eachYear[proficiency] = "***"
           }
-          else if (Number(data[i][tested]) > 0 && Number(data[i][tested]) == Number(data[i][tested])) {
+          else if (
+            Number(data[i][tested]) > 0 && Number(data[i][tested])
+            == Number(data[i][tested])
+          ) {
   
             result = calcProficiency(data[i], proficient, tested)
             eachYear[proficiency] = result
@@ -249,7 +238,9 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
   
     // filter out categories where the school has no data (note: this keeps
     // insuffient n-size value "***")
-    let schoolColumns = Object.keys(filteredData.find(d => d["Category"] === schoolName));
+    let schoolColumns = Object.keys(
+      filteredData.find(d => d["Category"] === schoolName)
+    );
 
     // if selected school has insufficent data for all categories (e.g.,
     // either tested or proficient is "***")- then we have no data to
@@ -261,7 +252,8 @@ function getAnalysisTableData(data, category, subject, selection, colors) {
     let schoolDataObject = filteredData.find(o => o.Category === schoolName);
     delete schoolDataObject.Category;
   
-    const allInsufficient = Object.values(schoolDataObject).every((value) => value === "***");
+    const allInsufficient = Object.values(schoolDataObject)
+      .every((value) => value === "***");
   
     let finalData;
     

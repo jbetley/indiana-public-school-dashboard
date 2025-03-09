@@ -3,13 +3,14 @@
 # calculation functions                 #
 #########################################
 # author:   jbetley (https://github.com/jbetley)
-# version:  0.9
+# version:  0.9  # noqa: ERA001
 # date:     02/21/24
 
-import pandas as pd
+from typing import Tuple  # noqa: UP035
+
 import numpy as np
 import numpy.typing as npt
-from typing import Tuple
+import pandas as pd
 import scipy.spatial as spatial
 
 
@@ -88,20 +89,24 @@ def calculate_ahs_average(df: pd.DataFrame) -> pd.DataFrame:
     final_data["Corporation ID"] = 9999
     final_data["School ID"] = 9999
 
-    final_data = final_data.sort_values(by="Year")
+    return final_data.sort_values(by="Year")
 
-    return final_data
 
 
 def calculate_percentage(numerator: str, denominator: str) -> npt.NDArray:
     """
-    Calculates a percentage given a numerator and a denominator, while accounting for two
-    special cases: a string representing insufficent n-size ("***") and certain conditions
-    where a "0" value has a different result. The function does the following:
-        1) When either the numerator or the denominator is equal to "***", the function returns "****"
-        2) When either the numerator or the denominator is null/nan, the function returns "None"
-        3) When the numerator is null/nan, but the denominator is not, the function returns "0"
-        4) if none of the above are true, the function divides the numerator by the denominator.
+    Calculates a percentage given a numerator and a denominator, while accounting for
+    two special cases: a string representing insufficent n-size ("***") and certain
+    conditions where a "0" value has a different result. The function does the
+    following:
+      1) When either the numerator or the denominator is equal to "***", the function
+        returns "****"
+      2) When either the numerator or the denominator is null/nan, the function
+        returns "None"
+      3) When the numerator is null/nan, but the denominator is not, the function
+        returns "0"
+      4) if none of the above are true, the function divides the numerator by the
+        denominator.
     Args:
         numerator (str): numerator (is a str to account for special cases)
         denominator (str): denominator (is a str to account for special cases)
@@ -109,7 +114,7 @@ def calculate_percentage(numerator: str, denominator: str) -> npt.NDArray:
     Returns:
         float|None|str: see conditions
     """
-    result = np.where(
+    return np.where(
         (numerator == "***") | (denominator == "***"),
         "***",
         np.where(  # type: ignore
@@ -125,8 +130,6 @@ def calculate_percentage(numerator: str, denominator: str) -> npt.NDArray:
         ),
     )
 
-    return result
-
 
 def calculate_difference(value1: str, value2: str) -> npt.NDArray:
     """
@@ -141,7 +144,7 @@ def calculate_difference(value1: str, value2: str) -> npt.NDArray:
         float|None|str: see conditions
     """
 
-    result = np.where(
+    return np.where(
         (value1 == "***") | (value2 == "***"),
         "***",
         np.where(  # type: ignore
@@ -151,8 +154,6 @@ def calculate_difference(value1: str, value2: str) -> npt.NDArray:
             - pd.to_numeric(value2, errors="coerce"),
         ),
     )
-
-    return result
 
 
 def calculate_graduation_rate(data: pd.DataFrame) -> pd.DataFrame:
@@ -174,7 +175,7 @@ def calculate_graduation_rate(data: pd.DataFrame) -> pd.DataFrame:
         if cohort in data.columns:
             cat_sub = cohort.split("|Cohort Count")[0]
             data[cat_sub + "|Graduation Rate"] = calculate_percentage(
-                data[cat_sub + "|Graduates"], data[cohort]
+                data[cat_sub + "|Graduates"], data[cohort],
             )
 
     return data
@@ -200,7 +201,7 @@ def calculate_sat_rate(data: pd.DataFrame) -> pd.DataFrame:
             # get Category + Subject string
             cat_sub = test.split(" Total Tested")[0]
             data[cat_sub + " Benchmark %"] = calculate_percentage(
-                data[cat_sub + " At Benchmark"], data[test]
+                data[cat_sub + " At Benchmark"], data[test],
             )
 
     return data
@@ -208,10 +209,10 @@ def calculate_sat_rate(data: pd.DataFrame) -> pd.DataFrame:
 
 def calculate_proficiency(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Wrapper around calculate_percentage() used to calculate ILEARN Proficiency from academic
-    dataframe (Total Proficient / Total Tested) and IREAD Proficiency from (IREAD Pass N /
-    IREAD Test N ). If Tested == 0 or NaN or if Tested > 0, but Proficient is NaN,
-    all associated columns are dropped
+    Wrapper around calculate_percentage() used to calculate ILEARN Proficiency
+    from academic dataframe (Total Proficient / Total Tested) and IREAD Proficiency
+    from (IREAD Pass N / IREAD Test N ). If Tested == 0 or NaN or if Tested > 0,
+    but Proficient is NaN, all associated columns are dropped.
 
     Args:
         data (pd.DataFrame): dataframe of ILEARN data
@@ -243,7 +244,6 @@ def calculate_proficiency(df: pd.DataFrame) -> pd.DataFrame:
             # ("Tested" > 0 and "Total Proficient" is NaN. A "Total Proficient"
             # value of NaN means it was a "***" before being converted to numeric
             # we use sum/all because there could be one or many columns
-
             if (
                 pd.to_numeric(data[tested], errors="coerce").sum() == 0
                 or pd.isna(data[tested]).all()
@@ -254,20 +254,20 @@ def calculate_proficiency(df: pd.DataFrame) -> pd.DataFrame:
                 data = data.drop([tested, total_proficient], axis=1)
             else:
                 data[proficiency] = calculate_percentage(
-                    data[total_proficient], data[tested]
+                    data[total_proficient], data[tested],
                 )
 
     return data
 
 
 def recalculate_total_proficiency(
-    data: pd.DataFrame, school_data: pd.DataFrame
+    data: pd.DataFrame, school_data: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    In order for an apples to apples comparison between aggregated school corporation academic
-    data and the academic data of the selected school, we need to recalculate Total School
-    Proficiency for the school corporation in which the school is located for both Math and ELA
-    using only the grade levels for which we have school data.
+    In order for an apples to apples comparison between aggregated school corporation
+    academic data and the academic data of the selected school, we need to recalculate
+    Total School Proficiency for the school corporation in which the school is located
+    for both Math and ELA using only the grade levels for which we have school data.
 
     Args:
         corp_data (pd.DataFrame):   academic data for the school corporation in which
@@ -281,11 +281,11 @@ def recalculate_total_proficiency(
     revised_data = data.copy()
     revised_totals = pd.DataFrame()
 
-    # TODO: I put this in here temporarily for some reason - I think the commented out line is the
-    # TODO: correct one, but need to test to be sure.
+    # TODO: I put this in here temporarily for some reason - I think the commented
+    # TODO: out line is the correct one, but need to test to be sure.
     if "School Name" not in revised_data:  # remove
         revised_data["School Name"] = "TEMP"  # remove
-    # revised_totals["School ID"] = revised_data["School ID"]
+    # revised_totals["School ID"] = revised_data["School ID"]  # noqa: ERA001
     revised_totals[["Year", "School ID", "School Name"]] = revised_data[
         ["Year", "School ID", "School Name"]
     ]  # remove
@@ -331,15 +331,18 @@ def recalculate_total_proficiency(
 
 
 def calculate_year_over_year(
-    current_year: pd.Series, previous_year: pd.Series
+    current_year: pd.Series, previous_year: pd.Series,
 ) -> npt.NDArray:
     """
-    Calculates year_over_year differences, accounting for string representation ("***")
-    of insufficent n-size (there is available data, but not enough of it to show under privacy laws).
-        1) If both the current_year and previous_year values are "***" -> the result is "***"
-        2) If the previous year is either NaN or "***" and the current_year is 0 (that is 0% of students
-           were proficient) -> the result is "-***", which is a special flag used for accountability
-           purposes (a "-***" is generally treated as a Did Not Meet Standard rather than a No Rating).
+    Calculates year_over_year differences, accounting for string representation
+    ("***") of insufficent n-size (there is available data, but not enough of it
+    to show under privacy laws).
+      1) If both the current_year and previous_year values are "***" -> the result
+        is "***".
+      2) If the previous year is either NaN or "***" and the current_year is 0 (that
+        is 0% of students were proficient) -> the result is "-***", which is a special
+        flag used for accountability purposes (a "-***" is generally treated as a
+        Did Not Meet Standard rather than a No Rating).
     Thus:
         if None in Either Column -> None
         if *** in either column -> ***
@@ -352,10 +355,10 @@ def calculate_year_over_year(
         previous_year (pd.Series): a series of previous year values for all categories
 
     Returns:
-        np.ndarray: Either the difference between the current and previous year values, None,
-        or a string ("***")
+        np.ndarray: Either the difference between the current and previous year
+        values, None, or a string ("***").
     """
-    result = np.where(
+    return np.where(
         (current_year == 0) & ((previous_year.isna()) | (previous_year == "***")),
         "-***",
         np.where(
@@ -376,14 +379,12 @@ def calculate_year_over_year(
         ),
     )
 
-    return result
-
 
 def set_academic_rating(data: str | float | None, threshold: list, flag: int) -> str:
     """
-    Takes a value (which may be of type str, float, or None), a list (consisting of
-    floats defining the thresholds of the ratings), and an integer "flag," that tells the
-    function which switch to use.
+    Takes a value (which may be of type str, float, or None), a list (consisting
+    of floats defining the thresholds of the ratings), and an integer "flag," that
+    tells the function which switch to use.
 
     Args:
         data (str|float|None): a Rating value
@@ -396,17 +397,14 @@ def set_academic_rating(data: str | float | None, threshold: list, flag: int) ->
 
     # NOTE: The order of operations matter
     if data == "***" or data == "No Grade" or data == "No Data":
-        indicator = "NA"
-        return indicator
+        return "NA"
 
     if data == "-***":
-        indicator = "DNMS"
-        return indicator
+        return "DNMS"
 
     # if data is NoneType
     if data is None:
-        indicator = "NA"
-        return indicator
+        return "NA"
 
     # letter_grade ratings (type string)
     if flag == 4:
@@ -425,8 +423,7 @@ def set_academic_rating(data: str | float | None, threshold: list, flag: int) ->
 
     # if data is NaN
     if np.isnan(data):
-        indicator = "NA"
-        return indicator
+        return "NA"
 
     # academic ratings (numeric)
     if flag == 1:
@@ -465,11 +462,12 @@ def set_academic_rating(data: str | float | None, threshold: list, flag: int) ->
 def round_nearest(data: pd.DataFrame, step: int) -> int:
     """
     Determine a tick value for a plotly chart based on the maximum value in a
-    dataframe. The function divides the max valus by an arbitrarily determined "step" value
-    (which can be adjusted to increase/decrease of ticks). It then:
-        a. sets a baseline tick amount (50,000 or 500,000) based on the proportionate value
-        b. and then calculates a multipler that is the result of proportionate value
-            divided by the baseline tick amount
+    dataframe. The function divides the max valus by an arbitrarily determined
+    "step" value (which can be adjusted to increase/decrease of ticks). It then:
+      1) sets a baseline tick amount (50,000 or 500,000) based on the proportionate
+        value.
+      2) and then calculates a multipler that is the result of proportionate value
+        divided by the baseline tick amount.
     Currently only used in finacial_analysis.py.
 
     Args:
@@ -483,16 +481,11 @@ def round_nearest(data: pd.DataFrame, step: int) -> int:
     max_val = data.melt().value.max()
 
     x = max_val / step
-    if x > 1000000:
-        num = 500000
-    else:
-        num = 50000
-
+    num = 500000 if x > 1000000 else 50000
     rnd = round(float(x) / num)
     multiplier = 1 if rnd < 1 else rnd
-    tick = int(multiplier * num)
 
-    return tick
+    return int(multiplier * num)
 
 
 def round_percentages(percentages: list) -> list:
@@ -546,18 +539,18 @@ def round_percentages(percentages: list) -> list:
     return [percentage[0] for percentage in result]
 
 
-def check_for_no_data(data: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
+def check_for_no_data(data: pd.DataFrame) -> tuple[pd.DataFrame, str]:
     """
     Takes a dataframe, finds the Years where all values are "***", nan, or none
-    and turns the results into a single string listing the year(s) meeting the condition
+    and turns the results into a single string listing the year(s) meeting the
+    condition.
 
     Args:
         data (pd.DataFrame): dataframe of academic proficiency values
 
     Returns:
-        data (pd.DataFrame) & string (str): a dataframe where the years of missing data (rows) have been dropped
-        and a string of all years of missing data
-
+        data (pd.DataFrame) & string (str): a dataframe where the years of missing
+            data (rows) have been dropped and a string of all years of missing data
     """
 
     tmp = data.copy()
@@ -601,52 +594,59 @@ def check_for_insufficient_n_size(data: pd.DataFrame) -> str:
     grouped by year, where duplicates have one or more years in parenthesis.
     E.g., "White (2021, 2022); Hispanic, Multiracial (2019)"
 
-    NOTE: This turned out to be more complicated that I thought. The below solution
-    seems overly convoluted, but works. Felt cute, may refactor later.
+    NOTE: This turned out to be more complicated that I thought. The below
+    solution seems overly convoluted, but works. Felt cute, may refactor later.
 
     Args:
         data(pd.DataFrame): dataframe of academic proficiency values
 
     Returns:
-        string (str): A single string listing all years (rows) for which there is insufficient data
+        string (str): A single string listing all years (rows) for which there
+            is insufficient data
     """
 
-    #  returns the indices of elements in a tuple of arrays where the condition is satisfied
+    #  returns the indices of elements in a tuple of arrays where the condition
+    # is satisfied
     insufficient_n_size = np.where(data == "***")
 
     # creates a new dataframe from the respective indicies
     df = pd.DataFrame(
-        np.column_stack(insufficient_n_size), columns=["Year", "Category"]
+        np.column_stack(insufficient_n_size), columns=["Year", "Category"],
     )
 
     if len(df.index) > 0:
-        # use map in conjunction with mask to replace the index values in the dataframes
-        # with the Year and Category values
+        # use map in conjunction with mask to replace the index values in the
+        # dataframes with the Year and Category values
         df["Category"] = df["Category"].mask(
             df["Category"] >= 0,
             df["Category"].map(dict(enumerate(data.columns.tolist()))),
         )
         df["Year"] = df["Year"].mask(
-            df["Year"] >= 0, df["Year"].map(dict(enumerate(data["Year"].tolist())))
+            df["Year"] >= 0, df["Year"].map(dict(enumerate(data["Year"].tolist()))),
         )
 
         df["Category"] = df["Category"].str.replace(r"|.*$", "", regex=True)
 
         df = df.sort_values(by=["Year"], ascending=True)
 
-        # Shift the Year column one unit down then compare the shifted column with the
-        # non-shifted one to create a boolean mask which can be used to identify the
-        # boundaries between adjacent duplicate rows. then take the cumulative sum on
-        # the boolean mask to identify the blocks of rows where the value stays the same
+        # Shift the Year column one unit down then compare the shifted column
+        # with the non-shifted one to create a boolean mask which can be used
+        # to identify the boundaries between adjacent duplicate rows. then take
+        # the cumulative sum on the boolean mask to identify the blocks of rows
+        # where the value stays the same
         c = df["Category"].ne(df["Category"].shift()).cumsum()
 
-        # group the dataframe on the above identfied blocks and aggregate the Year column
-        # using first and Message using .join
-        df = df.groupby(c, as_index=False).agg({"Category": "first", "Year": ", ".join})
+        # group the dataframe on the above identfied blocks and aggregate the
+        # Year column using first and Message using .join
+        df = df.groupby(c, as_index=False).agg(
+            {"Category": "first", "Year": ", ".join},
+        )
 
         # then do the same thing for year
         y = df["Year"].ne(df["Year"].shift()).cumsum()
-        df = df.groupby(y, as_index=False).agg({"Year": "first", "Category": ", ".join})
+        df = df.groupby(y, as_index=False).agg(
+            {"Year": "first", "Category": ", ".join},
+            )
 
         # reverse order of columns
         df = df[df.columns[::-1]]
@@ -667,23 +667,26 @@ def check_for_insufficient_n_size(data: pd.DataFrame) -> str:
 
 
 def find_nearest(
-    school_idx: pd.Index, values: pd.DataFrame
-) -> Tuple[np.ndarray, np.ndarray]:
+    school_idx: pd.Index, values: pd.DataFrame,
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Based on https://stackoverflow.com/q/43020919/190597
 
     Used to find the nearest schools to the selected school.
 
-    Takes a dataframe of schools and their Lat and Lon coordinates and the index of the
-    selected school within that list. Calculates the distances of all schools in the
-    dataframe from the lat/lon coordinates of the selected school using the scipy.spatial
-    KDTree method, which is reasonably quick.
+    Takes a dataframe of schools and their Lat and Lon coordinates and the index
+    of the selected school within that list. Calculates the distances of all schools
+    in the dataframe from the lat/lon coordinates of the selected school using
+    the scipy.spatial KDTree method, which is reasonably quick.
 
     Other (maybe faster) options:
-    https://stackoverflow.com/questions/64996186/find-closest-lat-lon-observation-from-one-pandas-dataframe-for-each-observatio
-    https://stackoverflow.com/questions/71553537/how-to-find-nearest-nearest-place-by-lat-long-quickly
+    https://stackoverflow.com/questions/64996186/find-closest-lat-lon-observation-
+        from-one-pandas-dataframe-for-each-observatio
+    https://stackoverflow.com/questions/71553537/how-to-find-nearest-nearest-place-
+        by-lat-long-quickly
     https://medium.com/bukalapak-data/geolocation-search-optimization-5b2ff11f013b
-    https://stackoverflow.com/questions/57974283/retreiving-neighbors-with-geohash-algorithm
+    https://stackoverflow.com/questions/57974283/retreiving-neighbors-with-geohash-
+        algorithm
 
     Args:
         school_idx (pd.Index): the dataFrame index of the selected school
@@ -695,10 +698,9 @@ def find_nearest(
     """
     data = values.copy()
 
-    print("FIND NEAREST")
-    # number of schools to return (add 1 to account for the fact that the selected school
-    # is included in the return set) - number needs to be high enough to ensure there are
-    # enough left once non-comparable grades are filtered out.
+    # number of schools to return (add 1 to account for the fact that the selected
+    # school is included in the return set) - number needs to be high enough to
+    # ensure there are enough left once non-comparable grades are filtered out.
     num_hits = 41
 
     # the radius of earth in miles. For kilometers use 6372.8 km
@@ -728,8 +730,8 @@ def find_nearest(
 
 
 def get_distance(
-    school_idx: pd.Index, values: pd.DataFrame
-) -> Tuple[np.ndarray, np.ndarray]:
+    school_idx: pd.Index, values: pd.DataFrame,
+) -> tuple[np.ndarray, np.ndarray]:
 
     data = values.copy()
 
@@ -769,15 +771,15 @@ def get_distance(
 
     # Merge the index and distances lists into a dataframe
     distances = pd.DataFrame({"index": index_list, "Distance": distance_list})
-    distances = distances.set_index(list(distances)[0])
+    # distances = distances.set_index(list(distances)[0])  # noqa: ERA001
+    distances = distances.set_index(next(iter(distances)))
 
     # Merge School ID with Distances by index
-    combined = closest_schools.join(distances)
-
-    return combined
+    return closest_schools.join(distances)
 
 
-# def check_for_gradespan_overlap(selections: dict, schools: pd.DataFrame) -> pd.DataFrame:
+# def check_for_gradespan_overlap(selections: dict, schools: pd.DataFrame) ->
+# pd.DataFrame:
 #     """
 #     Gets the Low and High grades (0-12) for a selected school and then removes all
 #     schools from the supplied dataframe where there is no, or less than a specified
@@ -792,7 +794,8 @@ def get_distance(
 #     """
 
 #     # "overlap" should be one less than the the number of grades that we want as a
-#     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
+#     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, 
+#       etc.).
 #     overlap = 1
 
 #     school_id = selections["school_id"]
@@ -803,7 +806,8 @@ def get_distance(
 #     schools["High Grade"] = schools["High Grade"].astype(int)
     
 #     school_grade_span = (
-#         schools.loc[schools["School ID"] == int(school_id)][["Low Grade", "High Grade"]]
+#         schools.loc[schools["School ID"] == int(school_id)][["Low Grade", 
+#       "High Grade"]]
 #         .values[0]
 #         .tolist()
 #     )
@@ -832,26 +836,26 @@ def get_distance(
 #         school_high = school_grade_span[1]
 
 #     # In order to fit within the distance parameters, the tested school must:
-#     #   a)  have a low grade that is less than or equal to the selected school and
-#     #       a high grade minus the selected school's low grade that is greater than or
-#     #       eqaul to the overlap; or
-#     #   b) have a low grade that is greater than or equal to the selected school and
-#     #       a high grade minus the tested school's low grade that is greater than or
-#     #       equal to the overlap.
+#        a) have a low grade that is less than or equal to the selected school
+#           and a high grade minus the selected school's low grade that is
+#           greater than or eqaul to the overlap; or
+#        b) have a low grade that is greater than or equal to the selected school
+#           and a high grade minus the tested school's low grade that is greater
+#           than or equal to the overlap.
 #     # Examples -> assume a selected school with a gradespan of 5-8:
-#     #   i) a school with grades 3-7 -   [match]: low grade is less than selected school's
-#     #       low grade and high grade (7) minus selected school low grade (5) is greater (2)
-#     #       than the overlap (1).
-#     #   i) a school with grades 2-5 -   [No match]: low grade is less than selected school's
-#     #       low grade but high grade (5) minus selected school low grade (5) is not greater (0)
-#     #       than the overlap (1). In this case while there is an overlap, it is below our
-#     #       threshold (2 grades).
-#     #   c) a school with grades 6-12-   [match]: low grade is higher than selected school's
-#     #       low grade and high grade (12) minus the tested school low grade (5) is greater
-#     #       (7) than the overlap (1).
-#     #   d) a school with grades 3-4     [No match]: low grade is lower than selected school's
-#     #       low grade, but high grade (4) minus the selected school's low grade (5) is not greater
-#     #       (-1) than the overlap (1).
+#        1) a school with grades 3-7 -   [match]: low grade is less than selected
+#           school's low grade and high grade (7) minus selected school low grade
+#           (5) is greater (2) than the overlap (1).
+#        2) a school with grades 2-5 -   [No match]: low grade is less than selected
+#           school's low grade but high grade (5) minus selected school low grade (5)
+#           is not greater (0) than the overlap (1). In this case while there is an
+#           overlap, it is below our threshold (2 grades).
+#        3) a school with grades 6-12-   [match]: low grade is higher than selected
+#           school's low grade and high grade (12) minus the tested school low grade
+#           (5) is greater (7) than the overlap (1).
+#        4) a school with grades 3-4     [No match]: low grade is lower than selected
+#           school's low grade, but high grade (4) minus the selected school's low
+#           grade (5) is not greater (-1) than the overlap (1).
 
 #     schools = schools.loc[
 #         (
@@ -873,15 +877,15 @@ def get_distance(
 def calculate_comparison_school_list(
     selections: dict,
     schools: pd.DataFrame,
-    max: int,
+    grade_max: int,
 ) -> pd.DataFrame:
 
     school_id = selections["school_id"]
     selected_tab = selections["type_tab"]
-    
+
     # keep only schools which overlap a certain number of grades with
     # the selected school
-    
+
     # "overlap" should be one less than the the number of grades that we want as a
     # minimum (a value of "1" means a 2 grade overlap, "2" means 3 grade overlap, etc.).
     overlap = 1
@@ -889,57 +893,47 @@ def calculate_comparison_school_list(
     schools = schools.replace({"Low Grade": {"PK": 0, "KG": 1}})
     schools["Low Grade"] = schools["Low Grade"].astype(int)
     schools["High Grade"] = schools["High Grade"].astype(int)
-    
+
     school_grade_span = (
         schools.loc[schools["School ID"] == int(school_id)][["Low Grade", "High Grade"]]
         .values[0]
         .tolist()
     )
-    
+
     # ensure the right grade span is being compared
     if selected_tab == "k8Tab":
         school_low = school_grade_span[0]
-        
-        if school_grade_span[1] > 8:
-            school_high = 8
-        else:
-            school_high = school_grade_span[1]
-            
-    elif selected_tab == "hsTab":
-        if school_grade_span[0] < 9:
-            school_low = 9
-        else:
-            school_low = school_grade_span[0]
+        school_high = 8 if school_grade_span[1] > 8 else school_grade_span[1]
 
-        if school_grade_span[1] < 12:
-            school_high = school_grade_span[1]
-        else:
-            school_high = 12
+    elif selected_tab == "hsTab":
+        school_low = 9 if school_grade_span[0] < 9 else school_grade_span[0]
+        school_high = school_grade_span[1] if school_grade_span[1] < 12 else 12
+
     else:
         school_low = school_grade_span[0]
         school_high = school_grade_span[1]
 
     # In order to fit within the distance parameters, the tested school must:
-    #   a)  have a low grade that is less than or equal to the selected school and
-    #       a high grade minus the selected school's low grade that is greater than or
-    #       eqaul to the overlap; or
-    #   b) have a low grade that is greater than or equal to the selected school and
-    #       a high grade minus the tested school's low grade that is greater than or
-    #       equal to the overlap.
+    #   a) have a low grade that is less than or equal to the selected school
+    #      and a high grade minus the selected school's low grade that is
+    #      greater than or eqaul to the overlap; or
+    #   b) have a low grade that is greater than or equal to the selected
+    #      school and a high grade minus the tested school's low grade that
+    #      is greater than or equal to the overlap.
     # Examples -> assume a selected school with a gradespan of 5-8:
-    #   i) a school with grades 3-7 -   [match]: low grade is less than selected school's
-    #       low grade and high grade (7) minus selected school low grade (5) is greater (2)
-    #       than the overlap (1).
-    #   i) a school with grades 2-5 -   [No match]: low grade is less than selected school's
-    #       low grade but high grade (5) minus selected school low grade (5) is not greater (0)
-    #       than the overlap (1). In this case while there is an overlap, it is below our
-    #       threshold (2 grades).
-    #   c) a school with grades 6-12-   [match]: low grade is higher than selected school's
-    #       low grade and high grade (12) minus the tested school low grade (5) is greater
-    #       (7) than the overlap (1).
-    #   d) a school with grades 3-4     [No match]: low grade is lower than selected school's
-    #       low grade, but high grade (4) minus the selected school's low grade (5) is not greater
-    #       (-1) than the overlap (1).
+    #   1) a school with grades 3-7 [match]: low grade is less than selected
+    #      school's low grade and high grade (7) minus selected school low grade
+    #      (5) is greater (2) than the overlap (1).
+    #   2) a school with grades 2-5 [No match]: low grade is less than selected
+    #      school's low grade but high grade (5) minus selected school low grade (5)
+    #      is not greater (0) than the overlap (1). In this case while there is an
+    #      overlap, it is below our threshold (2 grades).
+    #   3) a school with grades 6-12 [match]: low grade is higher than selected
+    #      school's low grade and high grade (12) minus the tested school low grade
+    #      (5) is greater (7) than the overlap (1).
+    #   4) a school with grades 3-4 [No match]: low grade is lower than selected
+    #      school's low grade, but high grade (4) minus the selected school's low
+    #      grade (5) is not greater (-1) than the overlap (1).
 
     schools = schools.loc[
         (
@@ -978,7 +972,8 @@ def calculate_comparison_school_list(
 
     # Merge the index and distances lists into a dataframe
     distances = pd.DataFrame({"index": index_list, "y": distance_list})
-    distances = distances.set_index(list(distances)[0])
+    # distances = distances.set_index(list(distances)[0])  # noqa: ERA001
+    distances = distances.set_index(next(iter(distances)))
 
     # Merge School ID with Distances by index
     combined = closest_schools.join(distances)
@@ -989,15 +984,13 @@ def calculate_comparison_school_list(
     comparison_set = comparison_set.rename(columns={"y": "Distance"})
 
     # limit maximum dropdown to the [n] closest schools
-    num_schools_expanded = max
+    num_schools_expanded = grade_max
 
     comparison_set = comparison_set.sort_values(by=["Distance"], ascending=True)
 
     comparison_set = comparison_set.head(num_schools_expanded)
 
     # convert for comparison dropdown
-    comparison_dropdown = comparison_set[["School ID", "School Name"]].to_dict(
-        "records"
+    return comparison_set[["School ID", "School Name"]].to_dict(
+        "records",
     )
-
-    return comparison_dropdown

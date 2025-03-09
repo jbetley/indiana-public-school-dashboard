@@ -2,7 +2,7 @@
 // general utility functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     03.01.25 
+// date:     03.11.25 
 
 
 // remove "n" elements from the front of an array
@@ -113,7 +113,7 @@ function filterData(array, search_str, keys) {
 }
 
 
- // get ?array? of object keys
+ // get object keys as an array
  function getKeys(data) {
   let keys = Object.keys(data.reduce(function(result, obj) {
     return Object.assign(result, obj);
@@ -235,6 +235,22 @@ function flattenObject(data) {
   }
   flatArray = arrays.flat()
   return flatArray
+}
+
+// TODO: Test
+// determine whether any of a list of provided substrings is in
+// and object
+function checkSubstringsInObjectKeys(obj, substrings) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      for (const substring of substrings) {
+        if (key.includes(substring)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 

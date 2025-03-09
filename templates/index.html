@@ -416,21 +416,7 @@ var elaILEARNComparisonTotal,
 
 var analysisGridApi = [];
 
-// https://www.pluralsight.com/resources/blog/guides/handling-nested-http-requests-
-// using-the-fetch-api
-// https://dev.to/alexmercedcoder/making-multiple-api-calls-in-javascript-kip
-// https://www.makeuseof.com/tag/python-javascript-communicate-json/
-// https://stackoverflow.com/questions/66978996/is-there-a-better-way-of-creating-tabs-
-// using-vanilla-javascript-than-this
 
-// TODO: switch to search bar? Need to tweak Corp/School Dropdowns
-// https://stackoverflow.com/questions/73066547/search-bar-with-dropdown-list
-// https://stackoverflow.com/questions/68075281/search-for-item-in-long-dropdown-list-
-// with-input-filter-but-only-allow-user-to
-// https://stackoverflow.com/questions/64861548/searchable-drop-down
-
-// https://slimselectjs.com/
-// https://github.com/brianvoe/slim-select
 
 /* Navigation */
 const comparisonSelect = new SlimSelect({
@@ -447,6 +433,7 @@ const comparisonSelect = new SlimSelect({
   }
 });
 
+// TODO: switch to search bar? Need to tweak Corp/School Dropdowns
 
 /* Event Listeners */
 
@@ -475,8 +462,6 @@ const corpSelection = document.getElementById("corpSelect");
 corpSelection.addEventListener("change", async () => {
    
    await setSchoolList(allSchoolsObj)
-   console.log("schoolSELECION?")
-   console.log(allSchoolsObj)
    // new corpSelection will reset schoolSelection, so we need
    // to force a schoolSelection event
    var event = new Event("change");
@@ -490,9 +475,7 @@ const schoolSelection = document.getElementById("schoolSelect");
 schoolSelection.addEventListener("change", async () => {
 
    selectedValues = await getSelectedValues();
-   console.log("AMIHERE?")
-   // the various navigation buttons and tabs
-   // const activePage = document.querySelector(".tab.main.active").id;
+
    let k8Categories = document.querySelector(".k8nav");
    let hsCategories = document.querySelector(".hsnav");
    let typeCategories = document.querySelector(".typenav");
@@ -654,8 +637,6 @@ comparisonSelection.addEventListener("change", function () {
 // };
 
 
-// TODO: Check logic
-
 async function updateComparisonSchools() {
 
    selectedValues = await getSelectedValues();
@@ -733,15 +714,7 @@ async function getSelectedValues() {
 };
 
 
-// function setSelectedValue(key, value) {
-//    selectedValues[key] = value;
-// }
-
-
-// Navigation
-// https://stackoverflow.com/questions/66978996/is-there-a-better-way-of-creating-tabs-
-// using-vanilla-javascript-than-this
-// https://stackoverflow.com/questions/50774938/vanilla-javascript-toggle-drop-down-menu
+// Navigation //
 
 // switches active status and hides or shows subnavigation
 const navTabs = document.querySelector("div#nav-tabs"),
@@ -847,9 +820,6 @@ async function setYearList(schoolData) {
 
 
 async function setCorpList (schoolData) {
-
-   console.log("SETCORPLIST DATA")
-   console.log(schoolData)
 
    selectedValues = await getSelectedValues();
 
@@ -966,6 +936,7 @@ async function getAcademicInfoData(select) {
       })
 
       let infoData = fetchedData[0];
+
       academicInfoPage(infoData);
 };
 
@@ -974,6 +945,7 @@ async function getAcademicAnalysisData(select) {
 
 // TODO: Sometimes passed is empty - presumably because at the time
 // the data is passed, the checked schools have not been registered
+// resolve passed vs. global use
    
    let directSelect = comparisonSelect.getSelected();
 
@@ -1302,23 +1274,8 @@ async function academicInfoPage(data) {
 
    if (!academicInfoPage.initialize) {
 
-// TODO: Load blank info tables
+      // Load blank info tables
       const defaultInfoData = [];
-      //    [
-      //       "Total",
-      //       [
-      //          [
-      //             "Default School", 0
-      //          ]
-      //       ]
-      //    ],
-      //    [
-      //       {
-      //          color: "#ffffff",
-      //          school: "Default School"
-      //       }
-      //    ]
-      // ];
 
 // TODO: Turn this into a loop
       let id, name;
@@ -1444,13 +1401,6 @@ async function academicInfoPage(data) {
       d3.select("#mathSatInfoSubgroup").call(mathSatInfoSubgroup);
 
 // Tables
-// https://www.ag-grid.com/javascript-data-grid/grid-api/
-// https://javascript.plainenglish.io/angular-how-can-you-clear-the-references-of-
-// multiple-ag-grid-tables-together-353610b0c126
-// https://stackoverflow.com/questions/67917738/multiple-ag-grids-setselected-to-true-
-// is-only-working-for-the-last-grid
-// https://stackoverflow.com/questions/53920531/can-we-change-the-view-for-ag-grid-in-
-// mobile-devices
 
       // Initialize (empty) tables on-load
       for (let k = 0; k < infoTableNames.length; k++) {
@@ -1465,7 +1415,6 @@ async function academicInfoPage(data) {
    else {
 
       /* Update */
-
       let infoStartingIndex,
          infoCategories,
          infoSubjects;
@@ -1535,18 +1484,23 @@ async function academicInfoPage(data) {
             elaIlearnInfoStackGrade.data(getProficiencyBreakdown(
                data, infoCategories[0], infoSubjects[0], selectedValues)
             ).id("elaIlearnInfoStackGrade");
+
             elaIlearnInfoStackSubgroup.data(getProficiencyBreakdown(
                data, infoCategories[1], infoSubjects[1], selectedValues)
             ).id("elaIlearnInfoStackSubgroup");
+
             elaIlearnInfoStackEthnicity.data(getProficiencyBreakdown(
                data, infoCategories[2], infoSubjects[2], selectedValues)
             ).id("elaIlearnInfoStackEthnicity");
+
             mathIlearnInfoStackGrade.data(getProficiencyBreakdown(
                data, infoCategories[3], infoSubjects[3], selectedValues)
             ).id("mathIlearnInfoStackGrade");
+
             mathIlearnInfoStackEthnicity.data(getProficiencyBreakdown(
                data, infoCategories[4], infoSubjects[4], selectedValues)
             ).id("mathIlearnInfoStackEthnicity");
+
             mathIlearnInfoStackSubgroup.data(getProficiencyBreakdown(
                data, infoCategories[5], infoSubjects[5], selectedValues)
             ).id("mathIlearnInfoStackSubgroup");
@@ -1875,6 +1829,7 @@ async function academicAnalysisPage(data) {
    if (!academicAnalysisPage.initialize){
 
       // On load, initialize all tables and charts as empty (using dummy data).
+// TODO: Do we need to use default data or just blank like info tables
       const defaultData = [
          [
             "Total",
@@ -2489,6 +2444,7 @@ async function academicAnalysisPage(data) {
 
          let missingCategories = analysisTableData.pop()
          let missingString;
+
          if (typeof missingCategories !== 'undefined' && missingCategories.length > 0) {
             missingString = "<b>Selected school has no data for:</b> " + 
             missingCategories.join(", ") + ".";
@@ -2517,7 +2473,7 @@ async function academicAnalysisPage(data) {
       analysisGridApi[analysisTableNum].setGridOption("rowData", analysisTableData);
       }
    }
-// TODO: Multi-Year Analysis Page
+// TODO: ADD Multi-Year Analysis Page
 };
 
 
@@ -2537,7 +2493,9 @@ async function navigateHandler(e) {
 
    const selectedPage = selectedValues.page_tab;
    const k8Selection = selectedValues.k8_tab;
-   const hsSelection = selectedValues.hsTab;
+   // const k8Selection = document.querySelector(".tab.k8info.active").id;
+   const hsSelection = selectedValues.hs_tab;
+   // const hsSelection = document.querySelector(".tab.hsinfo.active").id;
    const typeTab = selectedValues.type_tab;
    const schoolType = selectedValues.school_type;
    const schoolSubtype = selectedValues.school_subtype;
@@ -2546,11 +2504,9 @@ async function navigateHandler(e) {
    let yearValue;
 
    // ireadTab or ilearnTab
-   // const k8Selection = document.querySelector(".tab.k8info.active").id;
    const k8Categories = document.querySelector(".k8nav");
 
    // satTab or gradTab
-   // const hsSelection = document.querySelector(".tab.hsinfo.active").id;
    const hsCategories = document.querySelector(".hsnav");
 
    const typeCategories = document.querySelector(".typenav");
@@ -2598,7 +2554,7 @@ async function navigateHandler(e) {
    }
    else if (
 
-   // Academic Information Tab and subtabs //
+    // Academic Information Tab and subtabs //
       target.id.match("infoTab") ||
       selectedPage.match("infoTab") &&
       (
@@ -2724,13 +2680,12 @@ async function navigateHandler(e) {
 
 // TODO: Is this necessary? want to make sure a HS doesn't 
 // have type ireadTab or ilearnTab
-      // if (schoolType == "HS" || schoolSubtype == "HS") {
-      //    selectedPage = "infoTab";
-      // };
-
+      if (schoolType == "HS" || schoolSubtype == "HS") {
+         selectedValues.page_tab = "infoTab";
+      };
+      
       getAcademicInfoData(selectedValues);
     }
-
     else if (
 
    // Academic Analysis Tab and subtabs //

@@ -2,7 +2,7 @@
 // d3.js utility functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     01.11.25
+// date:     03.11.25
 
 
 // function to wrap text in d3 chart
@@ -21,7 +21,8 @@ function wrap(text, width) {
       x = text.attr("x"),
       y = text.attr("y"),
       dy = parseFloat(text.attr("dy") || 0),
-      tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+      tspan = text.text(null).append("tspan").attr("x", x).attr("y", y)
+        .attr("dy", dy + "em");
 
     let tabs = d3.selectAll('div.tab-pane').classed('tab-pane', false);
 
@@ -34,8 +35,8 @@ function wrap(text, width) {
         tspan.text(line.join(" "));
         line = [word];
 
-        // TODO: This is a wacky kludge to get the words to split evenly, no idea
-        // TODO: what is happening here - need to figure it out
+// TODO: This is a wacky kludge to get the words to split evenly, no idea
+// TODO: what is happening here - need to figure it out
         let dyTmp;
         
         if (lineNumber == 1) {
@@ -45,7 +46,8 @@ function wrap(text, width) {
           dyTmp = ++lineNumber * lineHeight + dy +.1
         }
 
-        tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", dyTmp + "em").text(word);
+        tspan = text.append("tspan").attr("x", x).attr("y", y)
+          .attr("dy", dyTmp + "em").text(word);
       } 
     }
     tabs.classed('tab-pane', true);
@@ -54,7 +56,8 @@ function wrap(text, width) {
 
 
 // d3 legend functions - positions horizontal legend components (rect + text)
-//https://stackoverflow.com/questions/13954489/how-to-create-a-horizontal-legend-with-d3-js
+//https://stackoverflow.com/questions/13954489/how-to-create-a-horizontal-
+// legend-with-d3-js
 function legendXPositionText(data, position, textOffset, avgFontWidth) {
   return legendXPosition(data, position, avgFontWidth) + textOffset;
 }
@@ -67,7 +70,8 @@ function legendXPosition(data, position, avgFontWidth) {
   } else {
     var xPosition = 0;
     for (i = 0; i < position; i++) {
-// TODO: Trying to determine why data[i].length used to work but doesnt now- is 1 sufficient?
+// TODO: Trying to determine why data[i].length used to work but doesnt
+// TODO:  now- is 1 sufficient?
       // console.log(data[i].length)
       xPosition += (1 * avgFontWidth + labelWidth); //data[i].length
     }
@@ -78,13 +82,15 @@ function legendXPosition(data, position, avgFontWidth) {
 
 // get width of text before the item has been rendered
 // otherwise can use getComputedTextLength()
-// https://stackoverflow.com/questions/29031659/calculate-width-of-text-before-drawing-the-text
+// https://stackoverflow.com/questions/29031659/calculate-width-of-text-
+// before-drawing-the-text
 var BrowserText = (function () {
   var canvas = document.createElement('canvas'),
       context = canvas.getContext('2d');
 
     /**
-     * Measures the rendered width of arbitrary text given the font size and font face
+     * Measures the rendered width of arbitrary text given the font size 
+     * and font face
      * @param {string} text The text to measure
      * @param {number} fontSize The font size in pixels
      * @param {string} fontFace The font face ("Arial", "Helvetica", etc.)

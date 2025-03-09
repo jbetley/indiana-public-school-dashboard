@@ -14,7 +14,9 @@ function basicPercentageFormatter(params) {
     return "***"
   }
   else {
-    let s = Number(params.value).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+    let s = Number(params.value).toLocaleString(
+      undefined,{style: 'percent', minimumFractionDigits:2}
+    );
     return s
   }
 };
@@ -32,7 +34,9 @@ function infoPercentageFormatter(params) {
     return "***"
   }
   else {
-    let s = Number(params.value[0]).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+    let s = Number(params.value[0]).toLocaleString(
+      undefined,{style: 'percent', minimumFractionDigits:2}
+    );
     return s
   }
 };
@@ -92,17 +96,14 @@ function findMissing(schoolData, corpData) {
 };
 
 
-
-
 // process data for linechart function (Academic Info Page)
 function processData (data) {
 
-  // TODO: Can we just iterate over "remaining" without adding to object?
+// TODO: Can we just iterate over "remaining" without adding to object?
   // get remaining categories after results are calculated
   let columns = getKeys(data);
 
   columns = columns.filter(elem => elem !== "Year");
-
 
   // add Column Names to data array
   data['columns'] = columns
@@ -247,8 +248,8 @@ function transposeData(data, onKey) {
     let obj = {}
     for (let b = 0; b < data.length; b++) {
 
-      // TODO: Testing not including any undefined categories (as opposed to
-      // TODO: converting to 0) Which is better?
+// TODO: Testing not including undefined categories (as opposed to
+// TODO: converting to 0)- Test which is better.
       if (typeof data[b][category[a]] != "undefined") {
         obj[data[b][onKey]] = data[b][category[a]]
         obj["Category"] = category[a]
@@ -349,27 +350,14 @@ function getAnalysisChartData(data, category, subject, selection) {
 
   let allCategories = category.concat(["Year", "School Name"])
 
-  // TODO: THIS ONLY WORKS FOR ANALYSIS DATA WHERE THERE ARE MULTIPLE SCHOOLS
-  // TODO: WHEN IT IS SINGLE SCHOOL WITH MULTIPLE YEAR IS MESSES UP CAUSE
-  // TODO: IT JUST TESTS THE FIRST YEAR
+// TODO: THIS ONLY WORKS FOR ANALYSIS DATA WHERE THERE ARE MULTIPLE SCHOOLS
+// TODO: WHEN IT IS SINGLE SCHOOL WITH MULTIPLE YEAR IS MESSES UP CAUSE
+// TODO: IT JUST TESTS THE FIRST YEAR
   let filteredData = filterData(data, search_str, allCategories);
 
   // if selected school has only "School Name" & "Year" it
   // means that they have insufficient or no data for all
   // categories - so we retunr an empty array
-  function checkSubstringsInObjectKeys(obj, substrings) {
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        for (const substring of substrings) {
-          if (key.includes(substring)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
   let schoolDataObject = filteredData.find(o => o["School Name"] === schoolName);
 
   if (!checkSubstringsInObjectKeys(schoolDataObject, category)) {
@@ -387,14 +375,6 @@ function getAnalysisChartData(data, category, subject, selection) {
           delete obj[key];
         })
     }
-
-    // TODO: MOVING COLUMNS TO PROCESSDATA
-    // // get remaining categories after results are calculated
-    // let remaining = getKeys(filteredData);
-    // remaining = remaining.filter(elem => elem !== "Year");
-
-    // // add Column Names to data array
-    // filteredData['columns'] = remaining
   }
 
   return filteredData
@@ -418,9 +398,11 @@ function getHSLineData(data, category, subject, type) {
     }
   }
 
-  // TODO: Make sure Grad Rate and SAT Proficiency % are calculated beforehand (?)
-  // Graduation - none: category + "|" + "Cohort Count", "Graduates", [Graduation Rate]
-  // SAT - EBRW/Math: category + "|" + subject + "Total Tested", "At Benchmark", [Benchmark %]
+// TODO: Make sure Grad Rate and SAT Proficiency % are calculated beforehand (?)
+  // Graduation - none: category + "|" + "Cohort Count", "Graduates",
+  //  [Graduation Rate]
+  // SAT - EBRW/Math: category + "|" + subject + "Total Tested", "At Benchmark",
+  //  [Benchmark %]
   category = category.concat(["Year", "School Name"])
 
   let filteredData = filterData(data, subject, category);
@@ -477,10 +459,14 @@ function getProficiencyBreakdown(data, categoryList, subject, selection) {
 
       let proficiencyCount = {}
 
-        proficiencyCount["Below Proficiency"] = filteredData[categoryList[j] + "|" + subject + " Below Proficiency"]
-        proficiencyCount["Approaching Proficiency"]  = filteredData[categoryList[j] + "|" + subject + " Approaching Proficiency"]
-        proficiencyCount["At Proficiency"]  = filteredData[categoryList[j] + "|" + subject + " At Proficiency"]
-        proficiencyCount["Above Proficiency"]  = filteredData[categoryList[j] + "|" + subject + " Above Proficiency"]
+        proficiencyCount["Below Proficiency"] = filteredData[categoryList[j] + 
+          "|" + subject + " Below Proficiency"]
+        proficiencyCount["Approaching Proficiency"]  = filteredData[categoryList[j] +
+          "|" + subject + " Approaching Proficiency"]
+        proficiencyCount["At Proficiency"]  = filteredData[categoryList[j] +
+          "|" + subject + " At Proficiency"]
+        proficiencyCount["Above Proficiency"]  = filteredData[categoryList[j] +
+          "|" + subject + " Above Proficiency"]
 
         // only add non-null non-zero values to array
         if (isValid(proficiencyCount) == true) {

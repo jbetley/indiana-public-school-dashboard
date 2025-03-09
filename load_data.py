@@ -3,7 +3,7 @@
 # Database Queries (SQLite)             #
 #########################################
 # author:   jbetley (https://github.com/jbetley)
-# version:  0.9
+# version:  0.9  # noqa: ERA001
 # date:     01/06/25
 
 # NOTE: No K8 academic data exists for 2020
@@ -16,29 +16,21 @@
 # Attendance Rate - 2023
 # Chronic Absenteeism - 2024
 # Demographics - 2024 (except SPED/ELL)
-# Financial - 2023 (Audited) / 2024(Q4)
+# Financial - either 2023 (Audited) or 2024(Q4)
 # Graduation Rate - 2023
 
-import pandas as pd
-import numpy as np
 import re
-from sqlalchemy import create_engine, text
 
+import numpy as np
+import pandas as pd
 from calculations import (
     calculate_percentage,  # TODO: Move this as well
-    # conditional_fillna,
-    # get_distance,
-    # calculate_proficiency,
-    # recalculate_total_proficiency,
-    # calculate_graduation_rate,
-    # calculate_sat_rate,
 )
-
-# from process_data import transpose_data
+from sqlalchemy import create_engine, text
 
 engine = create_engine("sqlite:///data/indiana_schools_public.db")
 
-print("Database Engine Created . . .")
+print("Database Engine Created . . .")  # noqa: T201
 
 
 def run_query(q, *args):
@@ -61,16 +53,18 @@ def run_query(q, *args):
 
         df = pd.read_sql_query(q, conn, params=conditions)
 
-        # sqlite column headers do not have spaces between words. But we need to display the column names,
-        # so we have to do a bunch of str.replace to account for all conditions. May be a better way, but
-        # this is pretty fast. Adding a space between any lowercase character and any uppercase/number
-        # character takes care of most of it. The other replace functions catch edge cases.
+        # sqlite column headers do not have spaces between words. But we need to
+        # display the column names, so we have to do a bunch of str.replace to
+        # account for all conditions. May be a better way, but this is pretty fast.
+        # Adding a space between any lowercase character and any uppercase/number
+        # character takes care of most of it. The other replace functions catch
+        # edge cases.
         df.columns = df.columns.str.replace(r"([a-z])([A-Z1-9%])", r"\1 \2", regex=True)
         df.columns = df.columns.str.replace(
-            r"([WADTO])([CATPB&])", r"\1 \2", regex=True
+            r"([WADTO])([CATPB&])", r"\1 \2", regex=True,
         )
         df.columns = df.columns.str.replace(
-            "EBRWand", "EBRW and"
+            "EBRWand", "EBRW and",
         )  # better way to do this?
         df.columns = df.columns.str.replace(r"([A])([a])", r"\1 \2", regex=True)
         df.columns = df.columns.str.replace(r"([1-9])([(])", r"\1 \2", regex=True)
@@ -141,7 +135,7 @@ def get_excluded_years(year: str, category: str) -> list:
 
     if int(year) == test_year:
         return []
-    else:
+    else:  # noqa: RET505
         count = int(test_year) - int(year)
         excluded_years = []
 
@@ -154,7 +148,7 @@ def get_excluded_years(year: str, category: str) -> list:
 
 def get_geo_corp(*args):
     keys = ["id", "type"]
-    params = dict(zip(keys, args))
+    params = dict(zip(keys, args, strict=False))
     """
     Given School ID and Type returns the Corp ID of the school
     Corporation in which the school is located- distinct ensures
@@ -175,7 +169,7 @@ def get_geo_corp(*args):
             SELECT DISTINCT GEOCorp
                 FROM academic_data_k8
                 WHERE SchoolID = :id
-            """
+            """,
         )
 
     else:
@@ -184,19 +178,18 @@ def get_geo_corp(*args):
             SELECT DISTINCT GEOCorp
                 FROM academic_data_hs
                 WHERE SchoolID = :id
-            """
+            """,
         )
 
     result = run_query(q, params)
 
-    result = str(result["GEO Corp"][0])
+    return str(result["GEO Corp"][0])
 
-    return result
 
 
 def get_school_coordinates(*args):
     keys = ["year", "type"]
-    params = dict(zip(keys, args))
+    params = dict(zip(keys, args, strict=False))
 
     if params["type"] == "HS":
         q = text(
@@ -212,7 +205,7 @@ def get_school_coordinates(*args):
             SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, TotalStudentCount, "Total|ELATotalTested"
                 FROM academic_data_k8
                 WHERE Year = :year
-        """
+        """,
         )
 
     return run_query(q, params)

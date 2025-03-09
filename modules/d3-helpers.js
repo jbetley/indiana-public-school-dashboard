@@ -4,20 +4,6 @@
 // version:  0.9
 // date:     02.18.25
 
-// https://datawanderings.com/2019/10/28/tutorial-making-a-line-chart-in-d3-js-v-5/
-// https://observablehq.com/@greenafrican/grouped-bar-chart
-// https://dataviz.unhcr.org/tools/d3/d3_stacked_column_100perc_chart.html
-// https://d3-graph-gallery.com/graph/barplot_stacked_percent.html
-// https://stackoverflow.com/questions/71809474/stacked-bar-chart-with-general-update-pattern-d3-js
-// https://stackoverflow.com/questions/65568012/making-a-d3-js-stacked-bar-chart-responsive
-// https://stackoverflow.com/questions/66603432/d3-js-how-to-add-the-general-update-pattern-to-a-stacked-bar-chart
-// https://gist.github.com/jfsiii/0d4f863fec8b56d94b534db97816cd67
-// https://codereview.stackexchange.com/questions/195936/update-the-line-charts-without-deleting-the-svg
-// https://codepen.io/billdwhite/pen/OJLeLR
-// https://stackoverflow.com/questions/72630781/d3-wrapping-text-legends
-// https://dataviz.unhcr.org/tools/d3/d3_grouped_bar_chart.html
-
-
 /// Multi-Line Year over Year Chart ///
 function multiLine() {
 
