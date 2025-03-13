@@ -237,6 +237,21 @@ function flattenObject(data) {
   return flatArray
 }
 
+
+// converts an array of strings to camelcase splitting on
+// the passed delimiter
+function toCamelCase(arr,delimiter) {
+  let final = arr.map(str => {
+      return str.split(delimiter).map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }).join('');
+  });
+  let camel = final.map(str => str.charAt(0).toLowerCase() + str.slice(1));
+
+  return camel
+};
+
+
 // TODO: Test
 // determine whether any of a list of provided substrings is in
 // and object

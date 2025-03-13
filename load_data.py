@@ -194,17 +194,19 @@ def get_school_coordinates(*args):
     if params["type"] == "HS":
         q = text(
             """
-            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, TotalStudentCount
-                FROM academic_data_hs
-                WHERE Year = :year
-        """
+            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade,
+                TotalStudentCount
+            FROM academic_data_hs
+            WHERE Year = :year
+        """,
         )
     else:
         q = text(
             """
-            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade, TotalStudentCount, "Total|ELATotalTested"
-                FROM academic_data_k8
-                WHERE Year = :year
+            SELECT Lat, Lon, SchoolID, SchoolName, HighGrade, LowGrade,
+                TotalStudentCount, "Total|ELATotalTested"
+            FROM academic_data_k8
+            WHERE Year = :year
         """,
         )
 
@@ -212,12 +214,12 @@ def get_school_coordinates(*args):
 
 
 def get_public_dropdown():
-    params = dict(id="")
+    params = {"id": ""}
     q = text(
         """
         SELECT *
             FROM demographic_data_school
-        """
+        """,
     )
 
     results = run_query(q, params)
@@ -244,7 +246,7 @@ def get_public_dropdown():
         grades.dropna(how="all").notna().idxmax(axis=1).astype("string")
     )
     low_high["High Grade"] = grades.apply(
-        pd.Series.last_valid_index, axis=1
+        pd.Series.last_valid_index, axis=1,
     ).reset_index(drop=True)
 
     low_high["Low Grade"] = low_high["Low Grade"].str.replace("Grade ", "")
@@ -312,9 +314,8 @@ def get_public_dropdown():
     dropdown_list = dropdown_list.set_index(["School ID"])
 
     dropdown_list.update(ahs_data)
-    dropdown_list = dropdown_list.reset_index()
+    return dropdown_list.reset_index()
 
-    return dropdown_list
 
 
 def get_academic_dropdown_years(*args):
@@ -328,7 +329,7 @@ def get_academic_dropdown_years(*args):
         list: a list of integers representing years
     """
     keys = ["id", "type"]
-    params = dict(zip(keys, args))
+    params = dict(zip(keys, args, strict=False))
 
     if params["type"] == "K8" or params["type"] == "K12":
         q = text(
@@ -336,7 +337,7 @@ def get_academic_dropdown_years(*args):
             SELECT DISTINCT	Year
             FROM academic_data_k8
             WHERE SchoolID = :id
-        """
+        """,
         )
     else:
         q = text(
@@ -344,7 +345,7 @@ def get_academic_dropdown_years(*args):
             SELECT DISTINCT	Year
             FROM academic_data_hs
             WHERE SchoolID = :id
-        """
+        """,
         )
 
     result = run_query(q, params)
@@ -359,7 +360,7 @@ def get_gradespan(school_id, school_type, selected_year):
     # returns a list of grades for for which a school has numbers for both Tested
     # and Proficient students for the selected year (and all earlier years)
     # if no grades are found - returns an empty list
-    params = dict(id=school_id)
+    params = {"id": school_id}
 
     all_years = get_academic_dropdown_years(school_id, school_type)
 
@@ -369,14 +370,30 @@ def get_gradespan(school_id, school_type, selected_year):
     year_str = ", ".join([str(int(v)) for v in available_years])
 
     q = text(
-        """
-        SELECT "Grade3|ELATotalTested", "Grade4|ELATotalTested", "Grade5|ELATotalTested", "Grade6|ELATotalTested", "Grade7|ELATotalTested","Grade8|ELATotalTested",
-            "Grade3|ELATotalProficient", "Grade4|ELATotalProficient", "Grade5|ELATotalProficient", "Grade6|ELATotalProficient", "Grade7|ELATotalProficient","Grade8|ELATotalProficient"
+        f"""
+        SELECT "Grade3|ELATotalTested", "Grade4|ELATotalTested",
+            "Grade5|ELATotalTested", "Grade6|ELATotalTested",
+            "Grade7|ELATotalTested", "Grade8|ELATotalTested",
+            "Grade3|ELATotalProficient", "Grade4|ELATotalProficient",
+            "Grade5|ELATotalProficient", "Grade6|ELATotalProficient",
+            "Grade7|ELATotalProficient","Grade8|ELATotalProficient"
             FROM academic_data_k8
-            WHERE SchoolID = :id AND Year IN ({})""".format(
-            year_str
-        )
+            WHERE SchoolID = :id AND Year IN ({year_str})""",  # noqa: S608
     )
+
+    # q = text(
+    #     """
+    #     SELECT "Grade3|ELATotalTested", "Grade4|ELATotalTested",
+    #         "Grade5|ELATotalTested", "Grade6|ELATotalTested",
+    #         "Grade7|ELATotalTested", "Grade8|ELATotalTested",
+    #         "Grade3|ELATotalProficient", "Grade4|ELATotalProficient",
+    #         "Grade5|ELATotalProficient", "Grade6|ELATotalProficient",
+    #         "Grade7|ELATotalProficient","Grade8|ELATotalProficient"
+    #         FROM academic_data_k8
+    #         WHERE SchoolID = :id AND Year IN ({})""".format(
+    #         year_str
+    #     )
+    # )
 
     result = run_query(q, params)
 
@@ -390,8 +407,8 @@ def get_gradespan(school_id, school_type, selected_year):
     # drop those nas
     result = result.dropna(axis=1, how="all")
 
-    # get a list of remaining grades (will be duplicates where both Tested and Proficient are
-    # not nan or 0)
+    # get a list of remaining grades (will be duplicates where both Tested
+    # and Proficient are not nan or 0)
     regex = re.compile(r"\b\d\b")
     test_cols = [regex.search(i).group() for i in result.columns.tolist()]
 
@@ -407,12 +424,12 @@ def get_gradespan(school_id, school_type, selected_year):
 
 
 def get_ethnicity(
-    school_id, school_type, hs_category, subject_value, selected_year, all_years
+    school_id, school_type, hs_category, subject_value, selected_year, all_years,
 ):
     # returns a list of ethnicities for which a school has numbers for both Tested
     # and Proficient students for the selected year (and all earlier years)
 
-    params = dict(id=school_id)
+    params = {"id": school_id}
 
     idx = all_years.index(int(selected_year))
     available_years = all_years[idx:]
@@ -422,47 +439,65 @@ def get_ethnicity(
     if school_type == "hs":
         if hs_category == "SAT":
             q = text(
-                """
-                SELECT "AmericanIndian|EBRWTotalTested", "Asian|EBRWTotalTested", "Black|EBRWTotalTested", "Hispanic|EBRWTotalTested", "Multiracial|EBRWTotalTested","NativeHawaiianorOtherPacificIslander|EBRWTotalTested", "White|EBRWTotalTested",
-                    "AmericanIndian|EBRWAtBenchmark", "Asian|EBRWAtBenchmark", "Black|EBRWAtBenchmark", "Hispanic|EBRWAtBenchmark", "Multiracial|EBRWAtBenchmark","NativeHawaiianorOtherPacificIslander|EBRWAtBenchmark", "White|EBRWAtBenchmark"
+                f"""
+                SELECT "AmericanIndian|EBRWTotalTested", "Asian|EBRWTotalTested",
+                    "Black|EBRWTotalTested", "Hispanic|EBRWTotalTested",
+                    "Multiracial|EBRWTotalTested",
+                    "NativeHawaiianorOtherPacificIslander|EBRWTotalTested",
+                    "White|EBRWTotalTested",
+                    "AmericanIndian|EBRWAtBenchmark", "Asian|EBRWAtBenchmark",
+                    "Black|EBRWAtBenchmark", "Hispanic|EBRWAtBenchmark",
+                    "Multiracial|EBRWAtBenchmark",
+                    "NativeHawaiianorOtherPacificIslander|EBRWAtBenchmark",
+                    "White|EBRWAtBenchmark"
                     FROM academic_data_hs
-                    WHERE SchoolID = :id AND Year IN ({})""".format(
-                    year_str
-                )
+                    WHERE SchoolID = :id AND Year IN ({year_str})""",  # noqa: S608
             )
 
         else:
             q = text(
-                """
-                SELECT "AmericanIndian|CohortCount", "Asian|CohortCount", "Black|CohortCount", "Hispanic|CohortCount", "Multiracial|CohortCount","NativeHawaiianorOtherPacificIslander|CohortCount", "White|CohortCount",
-                    "AmericanIndian|Graduates", "Asian|Graduates", "Black|Graduates", "Hispanic|Graduates", "Multiracial|Graduates","NativeHawaiianorOtherPacificIslander|Graduates", "White|Graduates"
+                f"""
+                SELECT "AmericanIndian|CohortCount", "Asian|CohortCount",
+                "Black|CohortCount", "Hispanic|CohortCount",
+                "Multiracial|CohortCount",
+                "NativeHawaiianorOtherPacificIslander|CohortCount",
+                "White|CohortCount", "AmericanIndian|Graduates", "Asian|Graduates",
+                "Black|Graduates", "Hispanic|Graduates", "Multiracial|Graduates",
+                "NativeHawaiianorOtherPacificIslander|Graduates", "White|Graduates"
                     FROM academic_data_hs
-                    WHERE SchoolID = :id AND Year IN ({})""".format(
-                    year_str
-                )
+                    WHERE SchoolID = :id AND Year IN ({year_str})""",  # noqa: S608
             )
 
     else:
         # k8
         if subject_value == "IREAD":
             q = text(
-                """
-                SELECT "AmericanIndian|IREADTestN", "Asian|IREADTestN", "Black|IREADTestN", "Hispanic|IREADTestN", "Multiracial|IREADTestN","NativeHawaiianorOtherPacificIslander|IREADTestN", "White|IREADTestN",
-                    "AmericanIndian|IREADPassN", "Asian|IREADPassN", "Black|IREADPassN", "Hispanic|IREADPassN", "Multiracial|IREADPassN","NativeHawaiianorOtherPacificIslander|IREADPassN", "White|IREADPassN"
+                f"""
+                SELECT "AmericanIndian|IREADTestN", "Asian|IREADTestN",
+                    "Black|IREADTestN", "Hispanic|IREADTestN","Multiracial|IREADTestN",
+                    "NativeHawaiianorOtherPacificIslander|IREADTestN",
+                    "White|IREADTestN", "AmericanIndian|IREADPassN",
+                    "Asian|IREADPassN", "Black|IREADPassN", "Hispanic|IREADPassN",
+                    "Multiracial|IREADPassN",
+                    "NativeHawaiianorOtherPacificIslander|IREADPassN",
+                    "White|IREADPassN"
                     FROM academic_data_k8
-                    WHERE SchoolID = :id AND Year IN ({})""".format(
-                    year_str
-                )
+                    WHERE SchoolID = :id AND Year IN ({year_str})""",  # noqa: S608
             )
         else:
             q = text(
-                """
-                SELECT "AmericanIndian|ELATotalTested", "Asian|ELATotalTested", "Black|ELATotalTested", "Hispanic|ELATotalTested", "Multiracial|ELATotalTested","NativeHawaiianorOtherPacificIslander|ELATotalTested", "White|ELATotalTested",
-                    "AmericanIndian|ELATotalProficient", "Asian|ELATotalProficient", "Black|ELATotalProficient", "Hispanic|ELATotalProficient", "Multiracial|ELATotalProficient","NativeHawaiianorOtherPacificIslander|ELATotalProficient", "White|ELATotalProficient"
+                f"""
+                SELECT "AmericanIndian|ELATotalTested", "Asian|ELATotalTested",
+                    "Black|ELATotalTested", "Hispanic|ELATotalTested",
+                    "Multiracial|ELATotalTested",
+                    "NativeHawaiianorOtherPacificIslander|ELATotalTested",
+                    "White|ELATotalTested", "AmericanIndian|ELATotalProficient",
+                    "Asian|ELATotalProficient", "Black|ELATotalProficient",
+                    "Hispanic|ELATotalProficient", "Multiracial|ELATotalProficient",
+                    "NativeHawaiianorOtherPacificIslander|ELATotalProficient",
+                    "White|ELATotalProficient"
                     FROM academic_data_k8
-                    WHERE SchoolID = :id AND Year IN ({})""".format(
-                    year_str
-                )
+                    WHERE SchoolID = :id AND Year IN ({year_str})""",  # noqa: S608
             )
 
     result = run_query(q, params)
@@ -478,9 +513,8 @@ def get_ethnicity(
 
     dupe_cols = [i for i in test_cols if test_cols.count(i) > 1]
 
-    result = list(set(dupe_cols))
+    return list(set(dupe_cols))
 
-    return result
 
 
 def get_subgroup(
@@ -489,7 +523,7 @@ def get_subgroup(
     # returns a list of subgroups for which a school has numbers for both Tested
     # and Proficient students for the selected year (and all earlier years)
 
-    params = dict(id=school_id)
+    params = {"id": school_id}
 
     idx = all_years.index(int(selected_year))
     available_years = all_years[idx:]
