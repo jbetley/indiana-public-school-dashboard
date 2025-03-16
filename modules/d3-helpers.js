@@ -654,9 +654,6 @@ function multiLine() {
 
           svgParent.transition().duration(200).attr('width', widthScale + transformAdjust);
 
-          console.log("HERE")
-          console.log(svgParent._groups[0][0].parentNode.attributes[0].nodeValue)
-
           // reset xScale range and redraw everything
           x.range([0, widthScale]);
 

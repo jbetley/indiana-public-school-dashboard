@@ -38,8 +38,7 @@
       <label>Select Year:</label>
       <select name="year" id="yearSelect"></select>
    </form>
-
-   <div id ="allnav">
+   <div id ="tabnavigation">
       <div class="row">
          <div class="nav-container twelve columns">
             <div id="nav-tabs" class="nav">
@@ -81,7 +80,7 @@
             </div>
          </div>
       </div>
-   </div>
+   </div>  <!-- tabnavigation block -->
    <div class="row">
       <div class="panel-container">
          <div id="tab-content">
@@ -331,11 +330,11 @@
 // Indiana Public School Academic Dashboard
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     02.24.25
+// date:     03.14.25
 
 var origSelect = {}
 
-// Max Academic and Demographic Years
+/* Backend calls */
 const getMaxYears = `${window.origin}/config`;
 const yearResponse = await fetch(getMaxYears);
 const maxYears = await yearResponse.json();
@@ -349,554 +348,14 @@ const allSchoolsResponse = await fetch(allSchoolsUrl);
 var allSchoolsObj = await allSchoolsResponse.json();
 
 allSchoolsObj.forEach(function (obj) {
-   obj["Corporation Name"] = obj["Corporation Name"] + " (" + 
+   obj["Corporation Name"] = obj["Corporation Name"] + " (" +
    toString(obj["Corporation ID"]) + ")";
-   
-   obj["School Name"] = obj["School Name"] + " (" + 
+
+   obj["School Name"] = obj["School Name"] + " (" +
    toString(obj["School ID"]) + ")";
 });
 
-let colorState = [];
-var selectedValues = {};
 
-// Demographic Page
-var enrollmentChart,
-   attendanceChart,
-   ethnicityDemoChart,
-   statusDemoChart,
-   enrollmentTableGridApi,
-   attendanceTableGridApi;
-
-// Academic Info Page
-var infoChart = [];
-var infoStack = [];
-
-var ireadInfoTotal,
-   // ireadInfoEthnicity,
-   // ireadInfoSubgroup,
-   // elaIlearnInfoGrade,
-   // elaIlearnInfoStackGrade,
-   // elaIlearnInfoEthnicity,
-   // elaIlearnInfoStackEthnicity,
-   // elaIlearnInfoSubgroup,
-   // elaIlearnInfoStackSubgroup,
-   // mathIlearnInfoGrade,
-   // mathIlearnInfoStackGrade,
-   // mathIlearnInfoEthnicity,
-   // mathIlearnInfoStackEthnicity,
-   // mathIlearnInfoSubgroup,
-   // mathIlearnInfoStackSubgroup,
-   gradRateInfoTotal,
-   gradRateInfoEthnicity,
-   gradRateInfoSubgroup,
-   ebrwSatInfoTotal,
-   ebrwSatInfoEthnicity,
-   ebrwSatInfoSubgroup,
-   mathSatInfoTotal,
-   mathSatInfoEthnicity,
-   mathSatInfoSubgroup;
-
-var infoGridApi = [];
-
-// Analysis Page
-var elaILEARNComparisonTotal,
-   elaILEARNComparisonGrade,
-   elaILEARNComparisonEthnicity,
-   elaILEARNComparisonSubgroup,
-   ireadComparisonTotal,
-   ireadComparisonEthnicity,
-   ireadComparisonSubgroup,
-   mathILEARNComparisonTotal,
-   mathILEARNComparisonGrade,
-   mathILEARNComparisonEthnicity,
-   mathILEARNComparisonSubgroup,
-   gradRateComparisonTotal,
-   gradRateComparisonEthnicity,
-   gradRateComparisonSubgroup,
-   satComparisonTotal,
-   satComparisonEthnicity,
-   satComparisonSubgroup;
-
-var analysisGridApi = [];
-
-
-
-/* Navigation */
-const comparisonSelect = new SlimSelect({
-  select: "#comparisonSelect",
-  settings: {
-    alwaysOpen: false,
-    contentPosition: "absolute",
-    placeholderText: "",
-    minSelected: 1,
-    maxSelected: 8,
-    showSearch: true,
-    closeOnSelect: true,
-    hideSelected: true
-  }
-});
-
-// TODO: switch to search bar? Need to tweak Corp/School Dropdowns
-
-/* Event Listeners */
-
-// NOTE: currently refreshes all data- may want to reuse existing dataset instead
-const yearSelection = document.getElementById("yearSelect");
-yearSelection.addEventListener("change", async () => {
-
-   selectedValues = await getSelectedValues();
-
-   if (selectedValues.page_tab === "analysisTab") {
-
-      selectedValues.comparison_schools = await updateComparisonSchools();
-      getAcademicAnalysisData(selectedValues);
-   }
-   else if (selectedValues.page_tab === "infoTab")  {
-      getAcademicInfoData(selectedValues);
-   }
-   else {
-      getDemographicData(selectedValues)
-   }
-});
-
-
-// a change here auto triggers new school list
-const corpSelection = document.getElementById("corpSelect");
-corpSelection.addEventListener("change", async () => {
-   
-   await setSchoolList(allSchoolsObj)
-   // new corpSelection will reset schoolSelection, so we need
-   // to force a schoolSelection event
-   var event = new Event("change");
-   schoolSelection.dispatchEvent(event);
-});
-
-
-// triggered directly by user or indirectly through
-// a change to corpSelection
-const schoolSelection = document.getElementById("schoolSelect");
-schoolSelection.addEventListener("change", async () => {
-
-   selectedValues = await getSelectedValues();
-
-   let k8Categories = document.querySelector(".k8nav");
-   let hsCategories = document.querySelector(".hsnav");
-   let typeCategories = document.querySelector(".typenav");
-   let analysisPages = document.querySelector(".typenav");
-   let k8TypeTab = document.getElementById("k8Tab");
-   let hsTypeTab = document.getElementById("hsTab");
-
-   if (selectedValues.school_type == "K12" &&
-      selectedValues.page_tab != "demoTab") {
-      typeCategories.classList.add("open");
-   } else {
-      typeCategories.classList.remove("open");
-   };
-
-   if (selectedValues.page_tab == "demoTab") {
-      k8Categories.classList.remove("open");
-      hsCategories.classList.remove("open");
-      analysisPages.classList.remove("open");
-      getDemographicData(selectedValues);
-   }
-   else if (selectedValues.page_tab == "infoTab") {
-
-      analysisPages.classList.remove("open");
-
-      if (selectedValues.school_type == "K8" ||
-         (selectedValues.school_type == "K12" &&
-         selectedValues.school_subtype == "K8")
-      ) {
-
-         hsCategories.classList.remove("open");
-         hsTypeTab.classList.remove("active");
-
-         // no "IREAD" option for middle schools
-         if (selectedValues.school_subtype == "MS") {
-            k8Categories.classList.remove("open");
-         } else {
-            k8Categories.classList.add("open");
-         }
-         k8TypeTab.classList.add("active");
-
-         selectedValues.type_tab = "k8Tab";
-      }
-      else if (selectedValues.school_type == "HS" ||
-         (selectedValues.school_type == "K12" &&
-         selectedValues.school_subtype == "HS")
-      ) {
-         k8Categories.classList.remove("open");
-         hsCategories.classList.add("open");
-         k8TypeTab.classList.remove("active");
-         hsTypeTab.classList.add("active");
-
-         selectedValues.type_tab = "hsTab";
-      }
-
-      getAcademicInfoData(selectedValues);
-
-   }
-   else if (selectedValues.page_tab == "analysisTab") {
-
-      analysisPages.classList.add("open");
-
-      if (selectedValues.school_type == "K8" ||
-         (selectedValues.school_type == "K12" &&
-         selectedValues.school_subtype == "K8")
-      ) {
-
-         hsCategories.classList.remove("open");
-         hsTypeTab.classList.remove("active");
-
-         // no "IREAD" option for middle schools
-         if (selectedValues.school_subtype == "MS") {
-            k8Categories.classList.remove("open");
-         } else {
-            k8Categories.classList.add("open");
-         }
-         k8TypeTab.classList.add("active");
-
-         selectedValues.type_tab = "k8Tab";
-      }
-      else if (selectedValues.school_type == "HS" ||
-         (selectedValues.school_type == "K12" &&
-         selectedValues.school_subtype == "HS")
-      ) {
-         k8Categories.classList.remove("open");
-         hsCategories.classList.add("open");
-         k8TypeTab.classList.remove("active");
-         hsTypeTab.classList.add("active");
-
-         selectedValues.type_tab = "hsTab";
-      };
-
-      // populates selectedValues dict with new list of comparison school ids
-      await getComparisonSchools(selectedValues);
-
-      // updates selectedValues
-      selectedValues.comparison_schools = await updateComparisonSchools();
-      
-      getAcademicAnalysisData(selectedValues);
-
-   };
-});
-
-
-const comparisonSelection = document.getElementById("comparisonSelect");
-const msgDiv = document.getElementById("max-message");
-
-comparisonSelection.addEventListener("change", function () {
-
-   // show message when maximum # of schools have been selected
-   const numX = comparisonSelect.getSelected().length;
-
-   if (numX === comparisonSelect.settings.maxSelected) {
-
-      const msgElement = document.createElement('div');
-      msgElement.classList.add('ss-max-selection-message');
-      msgElement.textContent = 'Maximum number of schools (8) reached.';
-      msgDiv.appendChild(msgElement);
-
-      // Automatically hide the message after 5 seconds
-      setTimeout(() => {
-         msgElement.remove();
-      }, 4000);
-      } else {
-         // remove if selections are reduced
-         const msgElement = msgDiv.querySelector('.ss-max-selection-message');
-         if (msgElement) {
-            msgElement.remove();
-         }
-   }
-});
-
-
-// function getSelectedYear() {
-//    let yearSelectionValue = yearSelection.value;
-//    return yearSelectionValue;
-// };
-
-// function getCorpSelection() {
-//    let corpIdValue;
-//    if (corpSelection != null && corpSelection.value == "") {
-//       // finds first element in array even if it falsy (but not if undefined)
-//     corpIdValue = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
-//    }
-//    else {
-//       corpIdValue = corpSelection.value
-//    }
-//    return corpIdValue
-// }
-
-// function getSchoolSelection() {
-//    let schoolIDValue;
-//    if (schoolSelection != null && schoolSelection.value == "") {
-//       schoolIDValue = allSchoolsObj.find(e => typeof e !== "undefined")["School ID"]
-//    }
-//    else {
-//       schoolIDValue = schoolSelection.value
-//    }
-//    return schoolIDValue
-// };
-
-
-async function updateComparisonSchools() {
-
-   selectedValues = await getSelectedValues();
-   let schoolIDs = selectedValues.comparison_schools;
-
-   if (!Array.isArray(schoolIDs) || !schoolIDs.length || schoolIDs == undefined) {
-      schoolIDs = comparisonSelect.getSelected();
-      };
-
-   return schoolIDs
-};
-
-
-// get all active values
-async function getSelectedValues() {
-
-   const year = yearSelection.value;
-
-   let corpId;
-   
-   if (corpSelection != null && corpSelection.value == "") {
-      // finds first element in array even if it falsy (but not if undefined)
-      corpId = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
-   }
-   else {
-      corpId = corpSelection.value
-   };
-
-   let schoolId;
-
-   if (schoolSelection != null && schoolSelection.value == "") {
-      schoolId = allSchoolsObj.find(
-         e => typeof e !== "undefined")["School ID"].toString();
-   }
-   else {
-      schoolId = schoolSelection.value.toString();
-   };
-
-   const pageTab = document.querySelector(".tab.main.active").id;
-   const typeTab = document.querySelector(".tab.type.active").id;
-   const k8Tab = document.querySelector(".tab.k8info.active").id;
-   const hsTab = document.querySelector(".tab.hsinfo.active").id;
-   const analysisTab = document.querySelector(".tab.analysis.active").id;
-
-   let schoolInfo = allSchoolsObj.filter(
-      o => o["School ID"] == schoolId && o.Year == year
-   );
-
-   let school_type = schoolInfo[0]["School Type"];
-   let school_subtype = schoolInfo[0]["Sub Type"];
-
-   if (pageTab != "demoTab" && school_type == "K12") {
-      if (typeTab == "hsTab") {
-         school_subtype = "HS"
-      }
-      else {
-         school_subtype = "K8"
-      }
-   };
-
-   // using snake case here because we will be passing this dict
-   // to python scripts
-   selectedValues.school_id = schoolId;
-   selectedValues.year = year;
-   selectedValues.school_type = school_type;
-   selectedValues.school_subtype = school_subtype;
-   selectedValues.comparison_schools = [];
-   selectedValues.page_tab = pageTab;
-   selectedValues.k8_tab = k8Tab;
-   selectedValues.hs_tab = hsTab;
-   selectedValues.type_tab = typeTab;
-   selectedValues.analysis_tab = analysisTab;
-
-   return selectedValues
-};
-
-
-// Navigation //
-
-// switches active status and hides or shows subnavigation
-const navTabs = document.querySelector("div#nav-tabs"),
-   nav_tab_elms = document.querySelectorAll("button[data-tab], div[data-tab]"),
-   k8navTabs = document.querySelector("div#k8nav-tabs"),
-   k8nav_tab_elms = document.querySelectorAll("button[data-k8tab]"),
-   hsnavTabs = document.querySelector("div#hsnav-tabs"),
-   hsnav_tab_elms = document.querySelectorAll("button[data-hstab]"),
-   typenavTabs = document.querySelector("div#typenav-tabs"),
-   typenav_tab_elms = document.querySelectorAll("button[data-typetab]"),
-   analysisnavTabs = document.querySelector("div#analysisnav-tabs"),
-   analysisnav_tab_elms = document.querySelectorAll("button[data-analysistab]");
-
-navTabs.onclick = ({target}) => {
-
-   // ignore other clicks in this area (like spaces between buttons)
-   if (!target.matches("button[data-tab]")) return;
-
-   // cycling through "dataset", tab-n-1", "tab-n-2", etc. and setting
-   // class to active where the target.dataset equals the class
-   nav_tab_elms.forEach(elTab => {
-      elTab.classList
-      .toggle("active", (elTab.dataset.tab===target.dataset.tab))
-   })
-};
-
-
-// ILEARN/IREAD
-k8navTabs.onclick = ({target}) => {
-   if (!target.matches("button[data-k8tab]")) return
-   k8nav_tab_elms.forEach(elTab => {
-      elTab.classList
-      .toggle("active", (elTab.dataset.k8tab===target.dataset.k8tab))
-   })
-};
-
-
-// Graduation Rate/SAT
-hsnavTabs.onclick = ({target}) => {
-   if (!target.matches("button[data-hstab]")) return
-   hsnav_tab_elms.forEach(elTab => {
-      elTab.classList
-      .toggle("active", (elTab.dataset.hstab===target.dataset.hstab))
-   })
-};
-
-
-// School type
-typenavTabs.onclick = ({target}) => {
-   if (!target.matches("button[data-typetab]")) return
-   typenav_tab_elms.forEach(elTab => {
-      elTab.classList
-      .toggle("active", (elTab.dataset.typetab===target.dataset.typetab))
-   })
-};
-
-
-// Analysis Year
-analysisnavTabs.onclick = ({target}) => {
-   if (!target.matches("button[data-analysistab]")) return
-   analysisnav_tab_elms.forEach(elTab => {
-      elTab.classList
-      .toggle("active", (elTab.dataset.analysistab===target.dataset.analysistab))
-   })
-};
-
-
-// Populate data driven navigation
-async function setYearList(schoolData) {
-
-   const pageTab = document.querySelector(".tab.main.active").id;
-
-   let selectedYear = yearSelection;
-
-   removeOptions(selectedYear);
-
-   let yearValue,
-      maxYear;
-
-   let availableYears = [... new Set(schoolData.map(o => o.Year))];
-
-   if (pageTab == "demoTab") {
-      maxYear = curDemographicYear;
-   }
-   else {
-      maxYear = curAcademicYear;
-   };
-
-   // make sure selected Year is not greater than max academic year
-   availableYears = availableYears.filter(arr => arr <= maxYear);
-   availableYears.sort((a, b) => (a > b ? -1 : 1))
-
-   if (pageTab != "demoTab") {
-// TODO: temporarily removing "2020" because there is no
-// academic data for k8 - eventually need to add it back for HS
-      const index = availableYears.indexOf(2020);
-      if (index > -1) {
-         availableYears.splice(index, 1);
-      }
-   }
-   availableYears.forEach((year) => selectedYear.appendChild(new Option(year, year)));
-};
-
-
-async function setCorpList (schoolData) {
-
-   selectedValues = await getSelectedValues();
-
-   const year = selectedValues.year;
-
-   let yearData = schoolData.filter(o => o.Year == Number(year));
-
-   // remove duplicates
-   let corpDropdown = yearData.filter(
-      (v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i
-   );
-
-   corpDropdown.forEach(
-      (corp) => corpSelection
-      .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
-   );
-
-   // initialize school list
-   await setSchoolList(schoolData);
-}
-
-
-async function setSchoolList(schoolData) {
-
-   let schoolDropdown = [];
-
-   selectedValues = await getSelectedValues();
-
-   const corpId = corpSelection.value;
-   const year = selectedValues.year;
-
-   let yearData = schoolData.filter(o => o.Year == Number(year));
-
-   schoolDropdown = yearData.filter(obj => obj["Corporation ID"] == corpId);
-
-   // clears school dropdown element before rebuilding
-   removeOptions(schoolSelection);
-
-   schoolDropdown.forEach(
-      (school) => schoolSelection
-      .appendChild(new Option(school["School Name"], school["School ID"]))
-   );
-};
-
-
-// This should be called: on init, on school change, and on 
-// school type change
-async function setComparisonList(data) {
-
-   let subset = data.map((
-      { ["School ID"]: value, ["School Name"]: text }) => ({ text, value }
-   ));
-
-   // remove selected school from dropdown
-   subset = subset.slice(1);
-
-   // clear the select element and add items
-   comparisonSelect.setData([]);
-   comparisonSelect.setData(subset);
-
-   // set as default, first 4 (closest) schools
-   let defaultSelections = subset.map(function (obj) {
-      return obj.value;
-   });
-
-   defaultSelections = defaultSelections.slice(0, 4);
-
-   // set selectedValues
-   selectedValues.comparison_schools = defaultSelections;
-   comparisonSelect.setSelected(defaultSelections);
-};
-
-
-/* Flask calls */
 async function getDemographicData(select) {
    const fetchedData = await fetch(`${window.origin}/demographic`, {
       method: "POST",
@@ -945,11 +404,10 @@ async function getAcademicInfoData(select) {
 
 
 async function getAcademicAnalysisData(select) {
+// TODO: Sometimes "select.comparison_schools" is empty - presumably
+// because at the time the data is passed, the checked schools have
+// not been registered resolve passed vs. global use
 
-// TODO: Sometimes passed is empty - presumably because at the time
-// the data is passed, the checked schools have not been registered
-// resolve passed vs. global use
-   
    let directSelect = comparisonSelect.getSelected();
 
    if (Array.isArray(directSelect) || directSelect.length) {
@@ -994,6 +452,919 @@ async function getComparisonSchools(select) {
      await setComparisonList(comparisonSchoolList);
 };
 
+let colorState = [];
+
+// Demographic Page
+var enrollmentChart,
+   attendanceChart,
+   ethnicityDemoChart,
+   statusDemoChart,
+   enrollmentTableGridApi,
+   attendanceTableGridApi;
+
+// Academic Info Page
+var infoChart = [];
+var infoStack = [];
+
+var infoGridApi = [];
+
+// Analysis Page
+var elaILEARNComparisonTotal,
+   elaILEARNComparisonGrade,
+   elaILEARNComparisonEthnicity,
+   elaILEARNComparisonSubgroup,
+   ireadComparisonTotal,
+   ireadComparisonEthnicity,
+   ireadComparisonSubgroup,
+   mathILEARNComparisonTotal,
+   mathILEARNComparisonGrade,
+   mathILEARNComparisonEthnicity,
+   mathILEARNComparisonSubgroup,
+   gradRateComparisonTotal,
+   gradRateComparisonEthnicity,
+   gradRateComparisonSubgroup,
+   satComparisonTotal,
+   satComparisonEthnicity,
+   satComparisonSubgroup;
+
+var analysisGridApi = [];
+
+// global function to gather all current/default selections
+// in a dict.
+var selectedValues = {};
+
+async function getSelectedValues() {
+
+   const year = yearSelection.value;
+
+   let corpId;
+   let schoolId;
+
+   if (corpSelection != null && corpSelection.value == "") {
+      // finds first element in array even if it falsy (but not if undefined)
+      corpId = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
+   }
+   else {
+      corpId = corpSelection.value
+   };
+
+   if (schoolSelection != null && schoolSelection.value == "") {
+      schoolId = allSchoolsObj.find(
+         e => typeof e !== "undefined")["School ID"].toString();
+   }
+   else {
+      schoolId = schoolSelection.value.toString();
+   };
+
+   const pageTab = document.querySelector(".tab.main.active").id;
+   const typeTab = document.querySelector(".tab.type.active").id;
+   const k8Tab = document.querySelector(".tab.k8info.active").id;
+   const hsTab = document.querySelector(".tab.hsinfo.active").id;
+   const analysisTab = document.querySelector(".tab.analysis.active").id;
+
+   let schoolInfo = allSchoolsObj.filter(
+      o => o["School ID"] == schoolId && o.Year == year
+   );
+
+   let school_type = schoolInfo[0]["School Type"];
+   let school_subtype = schoolInfo[0]["Sub Type"];
+
+   if (pageTab != "demoTab" && school_type == "K12") {
+      if (typeTab == "hsTab") {
+         school_subtype = "HS"
+      }
+      else {
+         school_subtype = "K8"
+      }
+   };
+
+   // using snake case here because we will be passing this dict
+   // to python
+   selectedValues.school_id = schoolId;
+   selectedValues.year = year;
+   selectedValues.school_type = school_type;
+   selectedValues.school_subtype = school_subtype;
+   selectedValues.comparison_schools = [];
+   selectedValues.page_tab = pageTab;
+   selectedValues.k8_tab = k8Tab;
+   selectedValues.hs_tab = hsTab;
+   selectedValues.type_tab = typeTab;
+   selectedValues.analysis_tab = analysisTab;
+
+   return selectedValues
+};
+
+
+/* Dropdown functions */
+async function setYearList(schoolData) {
+
+   const pageTab = document.querySelector(".tab.main.active").id;
+   const schoolID = schoolSelection.value;
+   let selectedYear = yearSelection;
+
+   removeOptions(selectedYear);
+
+   let yearValue,
+      maxYear;
+
+   let selectedSchoolData = schoolData.filter(
+      (o) => o["School ID"] === parseInt(schoolID)
+   );
+
+   // Get available years for the selected school
+   let availableYears = [... new Set(selectedSchoolData.map(o => o.Year))];
+
+   if (pageTab == "demoTab") {
+      maxYear = curDemographicYear;
+   }
+   else {
+      maxYear = curAcademicYear;
+   };
+
+   // make sure selected Year is not greater than max academic year
+   availableYears = availableYears.filter(arr => arr <= maxYear);
+   availableYears.sort((a, b) => (a > b ? -1 : 1))
+
+   if (pageTab != "demoTab") {
+// TODO: temporarily removing "2020" because there is no
+// academic data for k8 - eventually need to add it back for HS
+      const index = availableYears.indexOf(2020);
+      if (index > -1) {
+         availableYears.splice(index, 1);
+      }
+   }
+   availableYears.forEach((year) => 
+      selectedYear.appendChild(new Option(year, year)));
+};
+
+
+async function setCorpList(schoolData) {
+
+   let selectedYear;
+
+   // Need this because we need to run setCorpList before
+   // setYearList on app load (because we need schoolID to
+   // be set before setYearList is called to be able to set
+   // the correct number of years). Only necessary on load,
+   // should hit else clause every other time.
+   if (yearSelection.value == "") {
+      const pageTab = document.querySelector(".tab.main.active").id;
+      if (pageTab == "demoTab") {
+         selectedYear = curDemographicYear;
+      }
+      else {
+         selectedYear = curAcademicYear;
+      };
+   } else {
+      selectedValues = await getSelectedValues();
+      selectedYear = selectedValues.year;
+   }
+
+   let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
+
+   // remove duplicates
+   let corpDropdown = yearData.filter(
+      (v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i
+   );
+
+   corpDropdown.forEach(
+      (corp) => corpSelection
+      .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
+   );
+
+   // initialize school list
+   await setSchoolList(schoolData);
+};
+
+
+async function setSchoolList(schoolData) {
+
+   let schoolDropdown = [];
+   let selectedYear;
+   
+   if (yearSelection.value == "") {
+      const pageTab = document.querySelector(".tab.main.active").id;
+      if (pageTab == "demoTab") {
+         selectedYear = curDemographicYear;
+      }
+      else {
+         selectedYear = curAcademicYear;
+      };
+   } else {
+      selectedValues = await getSelectedValues();
+      selectedYear = selectedValues.year;
+   };
+
+   const corpId = corpSelection.value;
+
+   let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
+
+   schoolDropdown = yearData.filter(obj => obj["Corporation ID"] == corpId);
+
+   // clears school dropdown element before rebuilding
+   removeOptions(schoolSelection);
+
+   schoolDropdown.forEach(
+      (school) => schoolSelection
+      .appendChild(new Option(school["School Name"], school["School ID"]))
+   );
+
+   // reset yearList
+   await setYearList(schoolData);
+};
+
+
+// This should be called: on init, on school change, and on
+// school type change
+async function setComparisonList(data) {
+
+   let subset = data.map((
+      { ["School ID"]: value, ["School Name"]: text }) => ({ text, value }
+   ));
+
+   // remove selected school from dropdown
+   subset = subset.slice(1);
+
+   // clear the select element and add items
+   comparisonSelect.setData([]);
+   comparisonSelect.setData(subset);
+
+   // set as default, first 4 (closest) schools
+   let defaultSelections = subset.map(function (obj) {
+      return obj.value;
+   });
+
+   defaultSelections = defaultSelections.slice(0, 4);
+
+   // set selectedValues
+   selectedValues.comparison_schools = defaultSelections;
+   comparisonSelect.setSelected(defaultSelections);
+};
+
+
+async function getComparisonList() {
+
+selectedValues = await getSelectedValues();
+let schoolIDs = selectedValues.comparison_schools;
+
+if (!Array.isArray(schoolIDs) || !schoolIDs.length || schoolIDs == undefined) {
+   schoolIDs = comparisonSelect.getSelected();
+   };
+
+return schoolIDs
+};
+
+
+/* Navigation */
+const comparisonSelect = new SlimSelect({
+  select: "#comparisonSelect",
+  settings: {
+    alwaysOpen: false,
+    contentPosition: "absolute",
+    placeholderText: "",
+    minSelected: 1,
+    maxSelected: 8,
+    showSearch: true,
+    closeOnSelect: true,
+    hideSelected: true
+  }
+});
+
+
+const msgDiv = document.getElementById("max-message");
+const comparisonSelection = document.getElementById("comparisonSelect");
+comparisonSelection.addEventListener("change", function () {
+
+   // show message when maximum # of schools have been selected
+   const numX = comparisonSelect.getSelected().length;
+
+   if (numX === comparisonSelect.settings.maxSelected) {
+      const msgElement = document.createElement('div');
+      msgElement.classList.add('ss-max-selection-message');
+      msgElement.textContent = 'Maximum number of schools (8) reached.';
+      msgDiv.appendChild(msgElement);
+
+      // Automatically hide the message after 5 seconds
+      setTimeout(() => {
+         msgElement.remove();
+      }, 4000);
+      } else {
+         // remove if selections are reduced
+         const msgElement = msgDiv.querySelector('.ss-max-selection-message');
+         if (msgElement) {
+            msgElement.remove();
+         }
+   }
+});
+
+
+// declare these here, but using event delegation in the
+// dropdown addEvent listener for processing
+const yearSelection = document.getElementById("yearSelect");
+yearSelection.addEventListener("change", async () => {
+
+   selectedValues = await getSelectedValues();
+
+   if (selectedValues.page_tab === "analysisTab") {
+      selectedValues.comparison_schools = await getComparisonList();
+      getAcademicAnalysisData(selectedValues);
+   }
+   else if (selectedValues.page_tab === "infoTab")  {
+      getAcademicInfoData(selectedValues);
+   }
+   else {
+      getDemographicData(selectedValues)
+   }
+});
+
+
+// TODO: switch to search bar? Need to tweak Corp/School Dropdowns
+const corpSelection = document.getElementById("corpSelect");
+corpSelection.addEventListener("change", async () => {
+
+   await setSchoolList(allSchoolsObj)
+   // new corpSelection will reset schoolSelection, so we need
+   // to force a schoolSelection event
+   var event = new Event("change");
+   schoolSelection.dispatchEvent(event);
+});
+
+
+const schoolSelection = document.getElementById("schoolSelect");
+schoolSelection.addEventListener("change", async () => {
+
+   selectedValues = await getSelectedValues();
+   
+   const selectedPage = selectedValues.page_tab;
+   const k8Selection = selectedValues.k8_tab;
+   const hsSelection = selectedValues.hs_tab;
+   const typeTab = selectedValues.type_tab;
+   const schoolType = selectedValues.school_type;
+   const schoolSubtype = selectedValues.school_subtype;
+
+   let k8Categories = document.querySelector(".k8nav");
+   let hsCategories = document.querySelector(".hsnav");
+   let typeCategories = document.querySelector(".typenav");
+   let analysisPages = document.querySelector(".typenav");
+   let k8TypeTab = document.getElementById("k8Tab");
+   let hsTypeTab = document.getElementById("hsTab");
+
+   if (schoolType == "K12" && selectedPage != "demoTab") {
+      typeCategories.classList.add("open");
+   } else {
+      typeCategories.classList.remove("open");
+   };
+
+   if (selectedPage == "demoTab") {
+      k8Categories.classList.remove("open");
+      hsCategories.classList.remove("open");
+      analysisPages.classList.remove("open");
+      getDemographicData(selectedValues);
+   }
+   else if (selectedPage == "infoTab") {
+
+      analysisPages.classList.remove("open");
+
+      let infoIreadContainers = document.querySelectorAll(
+         '[id^="info-container-iread"]'
+      );
+      let infoIlearnContainers = document.querySelectorAll(
+         '[id^="info-container-ilearn"]'
+      );
+      let infoSatContainers = document.querySelectorAll(
+         '[id^="info-container-sat"]'
+      );
+      let infoGradRateContainers = document.querySelectorAll(
+         '[id^="info-container-gradrate"]'
+      );
+
+      if (schoolType == "K8" || 
+         (schoolType == "K12" && schoolSubtype == "K8")
+      ) {
+
+         infoGradRateContainers.forEach(el => {
+            el.style.display = "none";
+         });
+         infoSatContainers.forEach(el => {
+            el.style.display = "none";
+         });    
+
+         if (k8Selection == "ireadTab") {
+            infoIlearnContainers.forEach(el => {
+               el.style.display = "none";
+            });
+            infoIreadContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+         }
+         else {
+            infoIlearnContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+            infoIreadContainers.forEach(el => {
+               el.style.display = "none";
+            });
+         }
+
+         hsCategories.classList.remove("open");
+         hsTypeTab.classList.remove("active");
+
+         // no "IREAD" option for middle schools
+         if (schoolSubtype == "MS") {
+            k8Categories.classList.remove("open");
+         } else {
+            k8Categories.classList.add("open");
+         }
+         k8TypeTab.classList.add("active");
+
+         selectedValues.type_tab = "k8Tab";
+      }
+      else if (schoolType == "HS" || 
+         (schoolType == "K12" && schoolSubtype == "HS")
+      ) {
+         infoIreadContainers.forEach(el => {
+            el.style.display = "none";
+         });
+         infoIlearnContainers.forEach(el => {
+            el.style.display = "none";
+         });
+
+         if (hsSelection == "gradTab") {
+            infoGradRateContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+            infoSatContainers.forEach(el => {
+               el.style.display = "none";
+            });
+         }
+         else {
+            infoSatContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+            infoGradRateContainers.forEach(el => {
+               el.style.display = "none";
+            });
+         }
+
+         k8Categories.classList.remove("open");
+         hsCategories.classList.add("open");
+         k8TypeTab.classList.remove("active");
+         hsTypeTab.classList.add("active");
+
+         selectedValues.type_tab = "hsTab";
+      }
+      getAcademicInfoData(selectedValues);
+   }
+   else if (selectedPage == "analysisTab") {
+
+      analysisPages.classList.add("open");
+
+      if (schoolType == "K8" ||
+         (schoolType == "K12" && schoolSubtype == "K8")
+      ) {
+         hsCategories.classList.remove("open");
+         hsTypeTab.classList.remove("active");
+
+         if (schoolSubtype == "MS") {
+            k8Categories.classList.remove("open");
+         } else {
+            k8Categories.classList.add("open");
+         }
+         k8TypeTab.classList.add("active");
+
+         selectedValues.type_tab = "k8Tab";
+      }
+      else if (schoolType == "HS" ||
+         (schoolType == "K12" && schoolSubtype == "HS")
+      ) {
+         k8Categories.classList.remove("open");
+         hsCategories.classList.add("open");
+         k8TypeTab.classList.remove("active");
+         hsTypeTab.classList.add("active");
+
+         selectedValues.type_tab = "hsTab";
+      };
+
+      // populates selectedValues dict with new list of comparison school ids
+      await getComparisonSchools(selectedValues);
+
+      // update comparison school list
+      selectedValues.comparison_schools = await getComparisonList();
+
+      getAcademicAnalysisData(selectedValues);
+   };
+});
+
+
+// switches active status for tabs
+const navTabs = document.querySelector("div#nav-tabs"),
+   nav_tab_elms = document.querySelectorAll("button[data-tab], div[data-tab]"),
+   k8navTabs = document.querySelector("div#k8nav-tabs"),
+   k8nav_tab_elms = document.querySelectorAll("button[data-k8tab]"),
+   hsnavTabs = document.querySelector("div#hsnav-tabs"),
+   hsnav_tab_elms = document.querySelectorAll("button[data-hstab]"),
+   typenavTabs = document.querySelector("div#typenav-tabs"),
+   typenav_tab_elms = document.querySelectorAll("button[data-typetab]"),
+   analysisnavTabs = document.querySelector("div#analysisnav-tabs"),
+   analysisnav_tab_elms = document.querySelectorAll("button[data-analysistab]");
+
+navTabs.onclick = ({target}) => {
+
+   // ignore other clicks in this area (like spaces between buttons)
+   if (!target.matches("button[data-tab]")) return;
+
+   // cycling through "dataset", tab-n-1", "tab-n-2", etc. and setting
+   // class to active where the target.dataset equals the class
+   nav_tab_elms.forEach(elTab => {
+      elTab.classList
+      .toggle("active", (elTab.dataset.tab===target.dataset.tab))
+   })
+};
+
+// ILEARN/IREAD
+k8navTabs.onclick = ({target}) => {
+   if (!target.matches("button[data-k8tab]")) return
+   k8nav_tab_elms.forEach(elTab => {
+      elTab.classList
+      .toggle("active", (elTab.dataset.k8tab===target.dataset.k8tab))
+   })
+};
+
+// Graduation Rate/SAT
+hsnavTabs.onclick = ({target}) => {
+   if (!target.matches("button[data-hstab]")) return
+   hsnav_tab_elms.forEach(elTab => {
+      elTab.classList
+      .toggle("active", (elTab.dataset.hstab===target.dataset.hstab))
+   })
+};
+
+// School type
+typenavTabs.onclick = ({target}) => {
+   if (!target.matches("button[data-typetab]")) return
+   typenav_tab_elms.forEach(elTab => {
+      elTab.classList
+      .toggle("active", (elTab.dataset.typetab===target.dataset.typetab))
+   })
+};
+
+// Analysis Year
+analysisnavTabs.onclick = ({target}) => {
+   if (!target.matches("button[data-analysistab]")) return
+   analysisnav_tab_elms.forEach(elTab => {
+      elTab.classList
+      .toggle("active", (elTab.dataset.analysistab===target.dataset.analysistab))
+   })
+};
+
+
+// Navigation Tabs //
+if (tabnavigation.addEventListener) {
+   tabnavigation.addEventListener('click',navigateHandler,false);
+}
+else {
+   tabnavigation.addEventListener('onclick',navigateHandler);
+};
+
+async function navigateHandler(e) {
+
+   selectedValues = await getSelectedValues();
+
+   const selectedPage = selectedValues.page_tab;
+   const k8Selection = selectedValues.k8_tab;
+   const hsSelection = selectedValues.hs_tab;
+   const typeTab = selectedValues.type_tab;
+   const schoolType = selectedValues.school_type;
+   const schoolSubtype = selectedValues.school_subtype;
+   const strYear = selectedValues.year;
+   const intYear = parseInt(strYear);
+   let yearValue;
+
+   // ireadTab or ilearnTab
+   const k8Categories = document.querySelector(".k8nav");
+
+   // satTab or gradTab
+   const hsCategories = document.querySelector(".hsnav");
+
+   const typeCategories = document.querySelector(".typenav");
+   const analysisPages = document.querySelector(".analysisnav");
+
+   e = e || window.event;
+   const target = e.target || e.srcElement;
+
+   // the iread/ilearn tabs should never be visible when HS is selected
+   // and should always be available when K8 is selected
+   if (target.id.match("hsTab")) {
+      k8Categories.classList.remove("open");
+      hsCategories.classList.add("open");
+   };
+
+   if (target.id.match("k8Tab")) {
+      k8Categories.classList.add("open");
+      hsCategories.classList.remove("open");
+   };
+
+   // Demographic Tab //
+   if (target.id.match("demoTab")) {
+
+      k8Categories.classList.remove("open");
+      hsCategories.classList.remove("open");
+      typeCategories.classList.remove("open");
+      analysisPages.classList.remove("open");
+
+      await setYearList(allSchoolsObj);
+
+      // reset year value
+      yearSelection.value = strYear;
+      yearSelection.setAttribute("value", strYear);
+
+      getDemographicData(selectedValues);
+
+      // adjust chart size based on browser window size
+      let windowWidth = window.innerWidth/2 - 125;
+
+      enrollmentChart.width(windowWidth);
+      attendanceChart.width(windowWidth);
+      ethnicityDemoChart.width(windowWidth);
+      statusDemoChart.width(windowWidth);
+   }
+   else if (
+
+    // Academic Information Tab and subtabs //
+      target.id.match("infoTab") ||
+      selectedPage.match("infoTab") &&
+      (
+         target.id.match("ilearnTab") ||
+         target.id.match("ireadTab") ||
+         target.id.match("k8Tab") ||
+         target.id.match("hsTab") ||
+         target.id.match("gradTab") ||
+         target.id.match("satTab")
+      )
+   ) {
+
+      let windowWidth = window.innerWidth/2 - 125;
+
+      let infoIreadContainers = document.querySelectorAll(
+         '[id^="info-container-iread"]'
+      );
+
+      // find the indices of respective charts - used for the
+      // loops below to call chart width
+      let ireadChartEle = [...document.querySelectorAll(
+         '[id^="info-container-iread-chart"]')].map(item => item.id);
+      let ireadChartIndices = scrapeNumbers(ireadChartEle);
+
+      let infoIlearnContainers = document.querySelectorAll(
+         '[id^="info-container-ilearn"]'
+      );
+      let ilearnChartEle = [...document.querySelectorAll(
+         '[id^="info-container-ilearn-chart"]')].map(item => item.id);
+      let ilearnChartIndices = scrapeNumbers(ilearnChartEle);
+
+      let infoSatContainers = document.querySelectorAll(
+         '[id^="info-container-sat"]'
+      );
+      let satChartElem = [...document.querySelectorAll(
+         '[id^="info-container-gradrate-chart"]')].map(item => item.id);
+      let satChartIndices = scrapeNumbers(ilearnChartEle);
+
+      let infoGradRateContainers = document.querySelectorAll(
+         '[id^="info-container-gradrate"]'
+      );
+      let gradChartElem = [...document.querySelectorAll(
+         '[id^="info-container-sat-chart"]')].map(item => item.id);
+      let gradChartIndices = scrapeNumbers(gradChartElem);
+
+      infoIreadContainers.forEach(el => {
+         el.style.display = "none";
+      });
+      infoIlearnContainers.forEach(el => {
+         el.style.display = "none";
+      });
+      infoGradRateContainers.forEach(el => {
+         el.style.display = "none";
+      });
+      infoSatContainers.forEach(el => {
+         el.style.display = "none";
+      });
+
+      analysisPages.classList.remove("open");
+
+      if (schoolType == "K12") {
+         typeCategories.classList.add("open");
+      }
+      else {
+         typeCategories.classList.remove("open");
+      };
+
+      if (
+         (schoolType == "K8" && schoolSubtype != "MS") ||
+         (schoolType == "K12" && schoolSubtype == "K8") ||
+         schoolSubtype == "K8"
+      ) {
+
+         k8Categories.classList.add("open");
+
+         if (k8Selection == "ireadTab") {
+            infoIreadContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+
+            // adjust width for iread charts
+            const ireadStart = ireadChartIndices[0]-1;
+            const ireadEnd = ireadChartIndices.length-1;
+
+            for (let i = ireadStart; i < ireadEnd; i++) {
+               infoChart[i].width(windowWidth);
+            }
+         }
+         else if (k8Selection == "ilearnTab") {
+            infoIlearnContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+
+            const ilearnStart = ilearnChartIndices[0]-1;
+            const ilearnEnd = ilearnChartIndices.length-1;
+
+            for (let i = ilearnStart; i < ilearnEnd; i++) {
+               infoChart[i].width(windowWidth);
+            }
+         }
+      }
+      else if (
+         (schoolType == "K12" && schoolSubtype == "HS") ||
+         schoolType == "HS"
+      ) {
+         k8Categories.classList.remove("open");
+         hsCategories.classList.add("open");
+
+         if (hsSelection == "gradTab") {
+            infoGradRateContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+
+            const gradStart = gradChartIndices[0]-1;
+            const gradEnd = gradChartIndices.length-1;
+
+            for (let i = gradStart; i < gradEnd; i++) {
+               infoChart[i].width(windowWidth);
+            }
+         }
+         else if (hsSelection == "satTab") {
+            infoSatContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+
+            const satStart = satChartIndices[0]-1;
+            const satEnd = satChartIndices.length-1;
+
+            for (let i = satStart; i < satEnd; i++) {
+               infoChart[i].width(windowWidth);
+            }
+         }
+      };
+
+      await setYearList(allSchoolsObj);
+
+      if (strYear == "2020") {
+         yearValue = "2019";
+      }
+      else if (intYear > curAcademicYear) {
+         yearValue = curAcademicYear.toString();
+      }
+      else {
+         yearValue = strYear;
+      };
+
+      yearSelection.value = yearValue;
+      yearSelection.setAttribute("value", yearValue);
+
+      selectedValues.year = yearValue;
+
+      getAcademicInfoData(selectedValues);
+    }
+    else if (
+
+      target.id.match("analysisTab") ||
+      selectedPage.match("analysisTab") &&
+      (
+         target.id.match("ilearnTab") ||
+         target.id.match("ireadTab") ||
+         target.id.match("k8Tab") ||
+         target.id.match("hsTab") ||
+         target.id.match("gradTab") ||
+         target.id.match("satTab")
+      )
+   ) {
+
+      let analysisIreadContainers = document.querySelectorAll(
+         '[id^="analysis-container-iread"]'
+      );
+      let analysisIlearnContainers = document.querySelectorAll(
+         '[id^="analysis-container-ilearn"]'
+      );
+      let analysisSatContainers = document.querySelectorAll(
+         '[id^="analysis-container-sat"]'
+      );
+      let analysisGradRateContainers = document.querySelectorAll(
+         '[id^="analysis-container-gradrate"]'
+      );
+
+      analysisIreadContainers.forEach(el => {
+         el.style.display = "none";
+      });
+      analysisIlearnContainers.forEach(el => {
+         el.style.display = "none";
+      });
+      analysisGradRateContainers.forEach(el => {
+         el.style.display = "none";
+      });
+      analysisSatContainers.forEach(el => {
+         el.style.display = "none";
+      });
+
+      analysisPages.classList.add("open");
+
+      if (schoolType == "K12") {
+         typeCategories.classList.add("open");
+      }
+      else {
+         typeCategories.classList.remove("open");
+      }
+
+      if (
+         (schoolType == "K8" && schoolSubtype != "MS") ||
+         (schoolType == "K12" && schoolSubtype == "K8") ||
+         schoolSubtype == "K8"
+      ) {
+         k8Categories.classList.add("open");
+
+         if (k8Selection == "ireadTab") {
+            analysisIreadContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+         }
+         else if (k8Selection == "ilearnTab") {
+            analysisIlearnContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+         };
+
+       } else if (
+         (schoolType == "K12" && schoolSubtype == "HS") ||
+         schoolType == "HS"
+      ) {
+         k8Categories.classList.remove("open");
+         hsCategories.classList.add("open");
+
+         if (hsSelection == "gradTab") {
+            analysisGradRateContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+         }
+         else if (hsSelection == "satTab") {
+            analysisSatContainers.forEach(el => {
+               el.style.display = "flex";
+            });
+         }
+      };
+
+      await setYearList(allSchoolsObj);
+
+      if (strYear == 2020) {
+         yearValue = 2019;
+      }
+      else if (intYear > curAcademicYear) {
+         yearValue = curAcademicYear.toString();
+      }
+      else {
+         yearValue = strYear;
+      };
+
+      yearSelection.value = yearValue;
+      yearSelection.setAttribute("value", yearValue);
+
+      // load comparison schools based which type tab is selected
+      // getComparisonSchools automatically repopulates the dropdown -
+      // NOTE: We ONLY want to call getComparison schools with the
+      // following targets: 1) analysisTab; 2) k8Tab; 3) hsTab.
+      if (typeTab == "k8Tab") {
+         selectedValues.school_subtype = "K8"
+      } else {
+         selectedValues.school_subtype = "HS"
+      };
+
+      if (target.id.match("analysisTab") || target.id.match("hsTab") ||
+         target.id.match("k8Tab")) {
+
+            await getComparisonSchools(selectedValues);
+      };
+
+      selectedValues.comparison_schools = comparisonSelect.getSelected();
+      getAcademicAnalysisData(selectedValues);
+   };
+};
 
 /* Pages */
 async function demographicsPage(data) {
@@ -1008,7 +1379,7 @@ async function demographicsPage(data) {
 
    // number of years to limit data - each element in the array
    // represents one year in descending order- so we  remove
-   // elements from the front of the array to get array size 
+   // elements from the front of the array to get array size
    // to yearLimit
    const yearLimit = 5;
 
@@ -1191,6 +1562,7 @@ async function demographicsPage(data) {
    }
 };
 
+
 // Academic Information
 async function academicInfoPage(data) {
 
@@ -1292,7 +1664,7 @@ async function academicInfoPage(data) {
 
       // NOTE: all "chart" ids are generic. Changing the order of these
       // two arrays will change the order in which the charts are displayed.
-// TODO: Use a dict? does it matter?
+
       let lineCategory = [
          total, ethnicity, subgroup, gradeAll, ethnicity, subgroup,
          gradeAll, ethnicity, subgroup, gradTotal, ethnicity, subgroup,
@@ -1304,18 +1676,18 @@ async function academicInfoPage(data) {
          "Graduation", "Graduation", "Graduation", "EBRW", "EBRW", "EBRW",
          "Math", "Math", "Math",
       ];
-      
+
       // there are 18 possible line charts (3 iread, 6 ilearn, 3 grad rate, and
       // 6 SAT) and 6 possible stack charts (ilearn). "infoChart" is declared
       // at the top of the script as an empty array global variable.
-      console.log(infoChartIds)
+
       for (let i = 0; i < infoChartIds.length; i++) {
          infoChart[i] = multiLine().data(
             getInfoChartData(data, lineCategory[i], lineSubject[i], selectedValues)
          ).id(infoChartIds[i])
          d3.select("#" + infoChartIds[i]).call(infoChart[i]);
       };
-      
+
       let stackCategory = [
          gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup
       ];
@@ -1433,14 +1805,12 @@ async function academicInfoPage(data) {
             infoChartSubjects = [
                "EBRW", "EBRW", "EBRW", "Math", "Math", "Math"
             ];
-            
+
             infoChartCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
             const satChartUpdate = [...document.querySelectorAll(
                '[id^="info-container-sat-chart"]'
             )].map(item => item.id);
-
-            console.log(satChartUpdate)
 
             const satChartEndIndex = infoChartStartingIndex + satChartUpdate.length;
 
@@ -1477,7 +1847,7 @@ async function academicInfoPage(data) {
          // if infoTableData is an empty list- the school has insufficient data for
          // all categories - so we hide it
          let infoTableOptions;
-         
+
          if (!infoTableData || !infoTableData.length) {
             infoTableOptions = {
                columnDefs: [],
@@ -1550,10 +1920,10 @@ async function academicAnalysisPage(data) {
       schoolType == "HS" || schoolType == "AHS" ||
       (schoolType == "K12" && schoolSubtype == "HS")
    ) {
-      if (hsTab == "gradTab") { 
+      if (hsTab == "gradTab") {
          subject = subjectGrad;
       }
-      else { 
+      else {
          subject = subjectSAT;
       }
    };
@@ -1581,11 +1951,11 @@ async function academicAnalysisPage(data) {
    });
 
    // See: https://stackoverflow.com/questions/21987909/how-to-get-the-difference-
-   // between-two-arrays-of-objects-in-javascript (using the answer provided 
+   // between-two-arrays-of-objects-in-javascript (using the answer provided
    // by "pantaflex44")
-   const addSchool = newColors.filter(({ school: id1 }) => 
+   const addSchool = newColors.filter(({ school: id1 }) =>
       !colorState.some(({ school: id2 }) => id2 === id1));
-   const removeSchool = colorState.filter(({ school: id1 }) => 
+   const removeSchool = colorState.filter(({ school: id1 }) =>
       !newColors.some(({ school: id2 }) => id2 === id1));
 
    usedColors = colorState.map(function (obj) { return  obj.color});
@@ -1625,87 +1995,87 @@ async function academicAnalysisPage(data) {
    let ireadTotalLabel = document.getElementById(
       "analysis-container-iread-label-1"
    );
-   ireadTotalLabel.firstChild.textContent = 
+   ireadTotalLabel.firstChild.textContent =
       "Current Year IREAD Proficiency (" + yearString + ")";
    let ireadEthnicityLabel = document.getElementById(
       "analysis-container-iread-label-2"
    );
-   ireadEthnicityLabel.firstChild.textContent = 
+   ireadEthnicityLabel.firstChild.textContent =
       "Current Year IREAD Proficiency by Ethnicity(" + yearString + ")";
    let ireadSubgroupLabel = document.getElementById(
       "analysis-container-iread-label-3"
    );
-   ireadSubgroupLabel.firstChild.textContent = 
+   ireadSubgroupLabel.firstChild.textContent =
    "Current Year IREAD Proficiency by Subgroup (" + yearString + ")";
    let elaILEARNTotalLabel = document.getElementById(
       "analysis-container-ilearn-label-4"
    );
-   elaILEARNTotalLabel.firstChild.textContent = 
+   elaILEARNTotalLabel.firstChild.textContent =
       "Current Year ELA Proficiency (" + yearString + ")";
    let elaILEARNGradeLabel = document.getElementById(
       "analysis-container-ilearn-label-5"
    );
-   elaILEARNGradeLabel.firstChild.textContent = 
+   elaILEARNGradeLabel.firstChild.textContent =
       "Current Year ELA Proficiency by Grade (" + yearString + ")";
    let elaILEARNGradethnicityLabel = document.getElementById(
       "analysis-container-ilearn-label-6"
    );
-   elaILEARNGradethnicityLabel.firstChild.textContent = 
+   elaILEARNGradethnicityLabel.firstChild.textContent =
       "Current Year ELA Proficiency by Ethnicity (" + yearString + ")";
    let elaILEARNSubgroupLabel = document.getElementById(
       "analysis-container-ilearn-label-7"
    );
-   elaILEARNSubgroupLabel.firstChild.textContent = 
+   elaILEARNSubgroupLabel.firstChild.textContent =
       "Current Year ELA Proficiency by Subgroup (" + yearString + ")";
    let mathILEARNTotalLabel = document.getElementById(
       "analysis-container-ilearn-label-8"
    );
-   mathILEARNTotalLabel.firstChild.textContent = 
+   mathILEARNTotalLabel.firstChild.textContent =
       "Current Year Math Proficiency (" + yearString + ")";
    let mathILEARNGradeLabel = document.getElementById(
       "analysis-container-ilearn-label-9"
    );
-   mathILEARNGradeLabel.firstChild.textContent = 
+   mathILEARNGradeLabel.firstChild.textContent =
       "Current Year Math Proficiency by Grade (" + yearString + ")";
    let mathILEARNEthnicityLabel = document.getElementById(
       "analysis-container-ilearn-label-10"
    );
-   mathILEARNEthnicityLabel.firstChild.textContent = 
+   mathILEARNEthnicityLabel.firstChild.textContent =
       "Current Year Math Proficiency by Ethnicity (" + yearString + ")";
    let mathILEARNSubgroupLabel = document.getElementById(
       "analysis-container-ilearn-label-11"
    );
-   mathILEARNSubgroupLabel.firstChild.textContent = 
+   mathILEARNSubgroupLabel.firstChild.textContent =
       "Current Year Math Proficiency by Subgroup (" + yearString + ")";
    let gradRateTotalLabel = document.getElementById(
       "analysis-container-gradrate-label-12"
    );
-   gradRateTotalLabel.firstChild.textContent = 
+   gradRateTotalLabel.firstChild.textContent =
       "Current Year Graduation Rate (" + yearString + ")";
    let gradRateEthnicityLabel = document.getElementById(
       "analysis-container-gradrate-label-13"
    );
-   gradRateEthnicityLabel.firstChild.textContent = 
+   gradRateEthnicityLabel.firstChild.textContent =
       "Current Year Graduation Rate by Ethnicity (" + yearString + ")";
    let gradRateSubgroupLabel = document.getElementById(
       "analysis-container-gradrate-label-14"
    );
-   gradRateSubgroupLabel.firstChild.textContent = 
+   gradRateSubgroupLabel.firstChild.textContent =
       "Current Year Graduation Rate by Subgroup (" + yearString + ")";
    let satTotalLabel = document.getElementById(
       "analysis-container-sat-label-15"
    );
-   satTotalLabel.firstChild.textContent = 
+   satTotalLabel.firstChild.textContent =
       "Current Year SAT Proficiency (" + yearString + ")";
    let satEthnicityLabel = document.getElementById(
       "analysis-container-sat-label-16"
    );
-   satEthnicityLabel.firstChild.textContent = 
+   satEthnicityLabel.firstChild.textContent =
       "Current Year SAT Proficiency by Ethnicity (" + yearString + ")";
    let satSubgroupLabel = document.getElementById(
       "analysis-container-sat-label-17"
    );
-   satSubgroupLabel.firstChild.textContent = 
+   satSubgroupLabel.firstChild.textContent =
       "Current Year SAT Proficiency by Subgroup (" + yearString + ")";
 
    // get table names from document (querySelector returns a collection,
@@ -2305,14 +2675,14 @@ async function academicAnalysisPage(data) {
 
          analysisTableID = analysisGridApi[analysisTableNum].getGridId()
          analysisTableData = getAnalysisTableData(
-            tabledata, analysisTableCategories[i], analysisTableSubjects[i], 
+            tabledata, analysisTableCategories[i], analysisTableSubjects[i],
             selectedValues, colorState
          );
 
 // TODO: Determine is we even need to create a table if no data exists
 
          let analysisTableOptions;
-         
+
          if (!analysisTableData || !analysisTableData.length) {
             analysisTableOptions = {
                columnDefs: [],
@@ -2334,7 +2704,7 @@ async function academicAnalysisPage(data) {
          let missingString;
 
          if (typeof missingCategories !== 'undefined' && missingCategories.length > 0) {
-            missingString = "<b>Selected school has no data for:</b> " + 
+            missingString = "<b>Selected school has no data for:</b> " +
             missingCategories.join(", ") + ".";
 
             const msgId = analysisTableID.replace("table", "msg").replace("#","");
@@ -2366,384 +2736,574 @@ async function academicAnalysisPage(data) {
 
 
 // Navigation //
-if (allnav.addEventListener) {
-   allnav.addEventListener('click',navigateHandler,false);
-}
-else {
-   allnav.addEventListener('onclick',navigateHandler);
 
-};
+// // This triggers any time one of the dropdowns is selected (yearSelect,
+// // schoolSelect, corpSelect)- it manages containers- the individual
+// // listeners handle everything else
+// if (dropdown.addEventListener) {
+//    dropdown.addEventListener('click',manageContainers,false);
+// }
+// else {
+//    dropdown.addEventListener('onclick',manageContainers);
+// };
+
+// async function manageContainers(e) {
+
+//    e = e || window.event;
+//    const target = e.target || e.srcElement;
+
+//    console.log(target)
+
+//    selectedValues = await getSelectedValues();
+
+//    console.log(selectedValues)
+//    const selectedPage = selectedValues.page_tab;
+//    const k8Selection = selectedValues.k8_tab;
+//    const hsSelection = selectedValues.hs_tab;
+//    const typeTab = selectedValues.type_tab;
+//    const schoolType = selectedValues.school_type;
+//    const schoolSubtype = selectedValues.school_subtype;
+
+//    if (target.id.match("corpSelect") || target.id.match("schoolSelect") ) {
+//       if (selectedpage == "infoTab") {
+
+//          let infoIreadContainers = document.querySelectorAll(
+//             '[id^="info-container-iread"]'
+//          );
+
+//          let infoIlearnContainers = document.querySelectorAll(
+//             '[id^="info-container-ilearn"]'
+//          );
+
+//          let infoSatContainers = document.querySelectorAll(
+//             '[id^="info-container-sat"]'
+//          );
+
+//          let infoGradRateContainers = document.querySelectorAll(
+//             '[id^="info-container-gradrate"]'
+//          );
+
+//          if (schoolType == "HS") {
+//             infoIreadContainers.forEach(el => {
+//                el.style.display = "none";
+//             });
+//             infoIlearnContainers.forEach(el => {
+//                el.style.display = "none";
+//             });
+
+//             if (hsSelection == "gradTab") {
+//                infoGradRateContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//                infoSatContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//             }
+//             else {
+//                infoSatContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//                infoGradRateContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//             }
+//          }
+//          else if (schoolType == "K8") {
+//             infoGradRateContainers.forEach(el => {
+//                el.style.display = "none";
+//             });
+//             infoSatContainers.forEach(el => {
+//                el.style.display = "none";
+//             });    
+
+//             if (k8Selection == "ireadTab") {
+//                infoIlearnContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//                infoIreadContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//             }
+//             else {
+//                infoIlearnContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//                infoIreadContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//             }
+//          }
+//       }
+//       else if (selectedPage == "analysisTab") {
+
+//          let analysisIreadContainers = document.querySelectorAll(
+//             '[id^="analysis-container-iread"]'
+//          );
+//          let analysisIlearnContainers = document.querySelectorAll(
+//             '[id^="analysis-container-ilearn"]'
+//          );
+//          let analysisSatContainers = document.querySelectorAll(
+//             '[id^="analysis-container-sat"]'
+//          );
+//          let analysisGradRateContainers = document.querySelectorAll(
+//             '[id^="analysis-container-gradrate"]'
+//          );
+
+//          if (schoolType == "HS") {
+//             analysisIreadContainers.forEach(el => {
+//                el.style.display = "none";
+//             });
+//             analysisIlearnContainers.forEach(el => {
+//                el.style.display = "none";
+//             });
+
+//             if (hsSelection == "gradTab") {
+//                analysisGradRateContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//                analysisSatContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//             }
+//             else {
+//                analysisSatContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//                analysisGradRateContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//             }
+//          }
+//          else if (schoolType == "K8") {
+//             analysisGradRateContainers.forEach(el => {
+//                el.style.display = "none";
+//             });
+//             analysisSatContainers.forEach(el => {
+//                el.style.display = "none";
+//             });    
+
+//             if (k8Selection == "ireadTab") {
+//                analysisIlearnContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//                analysisIreadContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//             }
+//             else {
+//                analysisIlearnContainers.forEach(el => {
+//                   el.style.display = "flex";
+//                });
+//                analysisIreadContainers.forEach(el => {
+//                   el.style.display = "none";
+//                });
+//             }
+//          }
+//       }
 
 
-async function navigateHandler(e) {
 
-   selectedValues = await getSelectedValues();
 
-   const selectedPage = selectedValues.page_tab;
-   const k8Selection = selectedValues.k8_tab;
-   // const k8Selection = document.querySelector(".tab.k8info.active").id;
-   const hsSelection = selectedValues.hs_tab;
-   // const hsSelection = document.querySelector(".tab.hsinfo.active").id;
-   const typeTab = selectedValues.type_tab;
-   const schoolType = selectedValues.school_type;
-   const schoolSubtype = selectedValues.school_subtype;
-   const strYear = selectedValues.year;
-   const intYear = parseInt(strYear);
-   let yearValue;
+// //       analysisIreadContainers.forEach(el => {
+// //          el.style.display = "none";
+// //       });
+// //       analysisIlearnContainers.forEach(el => {
+// //          el.style.display = "none";
+// //       });
+// //       analysisGradRateContainers.forEach(el => {
+// //          el.style.display = "none";
+// //       });
+// //       analysisSatContainers.forEach(el => {
+// //          el.style.display = "none";
+// //       });
 
-   // ireadTab or ilearnTab
-   const k8Categories = document.querySelector(".k8nav");
+// //       analysisIreadContainers.forEach(el => {
+// //          el.style.display = "flex";
+// //       });
 
-   // satTab or gradTab
-   const hsCategories = document.querySelector(".hsnav");
+// //       analysisIlearnContainers.forEach(el => {
+// //          el.style.display = "flex";
+// //       });
 
-   const typeCategories = document.querySelector(".typenav");
-   const analysisPages = document.querySelector(".analysisnav");
+// //       analysisGradRateContainers.forEach(el => {
+// //          el.style.display = "flex";
+// //       });
 
-   // target is the button triggering the onClick and (should) be equal
-   // to one of the above selections
-   e = e || window.event;
-   const target = e.target || e.srcElement;
+// //       analysisSatContainers.forEach(el => {
+// //          el.style.display = "flex";
+// //       });
+//   };
+// }
 
-   // the iread/ilearn tabs should never be visible when HS is selected
-   // and should always be available when K8 is selected
-   if (target.id.match("hsTab")) {
-      k8Categories.classList.remove("open");
-      hsCategories.classList.add("open");
-   };
+// // TODO END ?????
 
-   if (target.id.match("k8Tab")) {
-      k8Categories.classList.add("open");
-      hsCategories.classList.remove("open");
-   };
 
-   // Demographic Tab //
-   if (target.id.match("demoTab")) {
+// // Tabs //
+// if (tabnavigation.addEventListener) {
+//    tabnavigation.addEventListener('click',navigateHandler,false);
+// }
+// else {
+//    tabnavigation.addEventListener('onclick',navigateHandler);
+// };
 
-      k8Categories.classList.remove("open");
-      hsCategories.classList.remove("open");
-      typeCategories.classList.remove("open");
-      analysisPages.classList.remove("open");
 
-      await setYearList(allSchoolsObj);
+// async function navigateHandler(e) {
 
-      // reset year value
-      yearSelection.value = strYear;
-      yearSelection.setAttribute("value", strYear);
+//    selectedValues = await getSelectedValues();
 
-      getDemographicData(selectedValues);
+//    const selectedPage = selectedValues.page_tab;
+//    const k8Selection = selectedValues.k8_tab;
+//    const hsSelection = selectedValues.hs_tab;
+//    const typeTab = selectedValues.type_tab;
+//    const schoolType = selectedValues.school_type;
+//    const schoolSubtype = selectedValues.school_subtype;
+//    const strYear = selectedValues.year;
+//    const intYear = parseInt(strYear);
+//    let yearValue;
 
-      // adjust chart size based on browser window size
-      let windowWidth = window.innerWidth/2 - 125;
-      
-      enrollmentChart.width(windowWidth);
-      attendanceChart.width(windowWidth);
-      ethnicityDemoChart.width(windowWidth);
-      statusDemoChart.width(windowWidth);
-   }
-   else if (
+//    // ireadTab or ilearnTab
+//    const k8Categories = document.querySelector(".k8nav");
 
-    // Academic Information Tab and subtabs //
-      target.id.match("infoTab") ||
-      selectedPage.match("infoTab") &&
-      (
-         target.id.match("ilearnTab") ||
-         target.id.match("ireadTab") ||
-         target.id.match("k8Tab") ||
-         target.id.match("hsTab") ||
-         target.id.match("gradTab") ||
-         target.id.match("satTab")
-      )
-   ) {
+//    // satTab or gradTab
+//    const hsCategories = document.querySelector(".hsnav");
 
-      // adjust chart size based on browser window size
-      function scrapeNumbers(arr) {
-         return arr.map(str => parseInt(str.replace(/[^0-9]/g, '')));
-      }
+//    const typeCategories = document.querySelector(".typenav");
+//    const analysisPages = document.querySelector(".analysisnav");
 
-      let windowWidth = window.innerWidth/2 - 125;
+//    // target is the button triggering the onClick and (should) be equal
+//    // to one of the above selections
+//    e = e || window.event;
+//    const target = e.target || e.srcElement;
 
-      // get container elements for display toggle
-      let infoIreadContainers = document.querySelectorAll(
-         '[id^="info-container-iread"]'
-      );
+//    // the iread/ilearn tabs should never be visible when HS is selected
+//    // and should always be available when K8 is selected
+//    if (target.id.match("hsTab")) {
+//       k8Categories.classList.remove("open");
+//       hsCategories.classList.add("open");
+//    };
 
-      // find the indices of respective charts - used for the
-      // loops below to call chart width
-      let ireadChartEle = [...document.querySelectorAll(
-         '[id^="info-container-iread-chart"]')].map(item => item.id);
-      let ireadChartIndices = scrapeNumbers(ireadChartEle);
+//    if (target.id.match("k8Tab")) {
+//       k8Categories.classList.add("open");
+//       hsCategories.classList.remove("open");
+//    };
 
-      let infoIlearnContainers = document.querySelectorAll(
-         '[id^="info-container-ilearn"]'
-      );
-      let ilearnChartEle = [...document.querySelectorAll(
-         '[id^="info-container-ilearn-chart"]')].map(item => item.id);
-      let ilearnChartIndices = scrapeNumbers(ilearnChartEle);
+//    // Demographic Tab //
+//    if (target.id.match("demoTab")) {
 
-      let infoSatContainers = document.querySelectorAll(
-         '[id^="info-container-sat"]'
-      );
-      let satChartElem = [...document.querySelectorAll(
-         '[id^="info-container-gradrate-chart"]')].map(item => item.id);
-      let satChartIndices = scrapeNumbers(ilearnChartEle);
+//       k8Categories.classList.remove("open");
+//       hsCategories.classList.remove("open");
+//       typeCategories.classList.remove("open");
+//       analysisPages.classList.remove("open");
 
-      let infoGradRateContainers = document.querySelectorAll(
-         '[id^="info-container-gradrate"]'
-      );
-      let gradChartElem = [...document.querySelectorAll(
-         '[id^="info-container-sat-chart"]')].map(item => item.id);
-      let gradChartIndices = scrapeNumbers(gradChartElem);
+//       await setYearList(allSchoolsObj);
 
-      infoIreadContainers.forEach(el => {
-         el.style.display = "none";
-      });
-      infoIlearnContainers.forEach(el => {
-         el.style.display = "none";
-      });
-      infoGradRateContainers.forEach(el => {
-         el.style.display = "none";
-      });
-      infoSatContainers.forEach(el => {
-         el.style.display = "none";
-      });
+//       // reset year value
+//       yearSelection.value = strYear;
+//       yearSelection.setAttribute("value", strYear);
 
-      analysisPages.classList.remove("open");
+//       getDemographicData(selectedValues);
 
-      if (schoolType == "K12") {
-         typeCategories.classList.add("open");
-      }
-      else {
-         typeCategories.classList.remove("open");
-      };
+//       // adjust chart size based on browser window size
+//       let windowWidth = window.innerWidth/2 - 125;
 
-      if (
-         (schoolType == "K8" && schoolSubtype != "MS") ||
-         (schoolType == "K12" && schoolSubtype == "K8") ||
-         schoolSubtype == "K8"
-      ) {
+//       enrollmentChart.width(windowWidth);
+//       attendanceChart.width(windowWidth);
+//       ethnicityDemoChart.width(windowWidth);
+//       statusDemoChart.width(windowWidth);
+//    }
+//    else if (
 
-         k8Categories.classList.add("open");
+//     // Academic Information Tab and subtabs //
+//       target.id.match("infoTab") ||
+//       selectedPage.match("infoTab") &&
+//       (
+//          target.id.match("ilearnTab") ||
+//          target.id.match("ireadTab") ||
+//          target.id.match("k8Tab") ||
+//          target.id.match("hsTab") ||
+//          target.id.match("gradTab") ||
+//          target.id.match("satTab")
+//       )
+//    ) {
 
-         if (k8Selection == "ireadTab") {
-            infoIreadContainers.forEach(el => {
-               el.style.display = "flex";
-            });
+//       let windowWidth = window.innerWidth/2 - 125;
 
-            // adjust width for iread charts
-            const ireadStart = ireadChartIndices[0]-1;
-            const ireadEnd = ireadChartIndices.length-1;
+//       // get container elements for display toggle
+//       let infoIreadContainers = document.querySelectorAll(
+//          '[id^="info-container-iread"]'
+//       );
 
-            for (let i = ireadStart; i < ireadEnd; i++) {
-               infoChart[i].width(windowWidth);
-            }
-         }
-         else if (k8Selection == "ilearnTab") {
-            infoIlearnContainers.forEach(el => {
-               el.style.display = "flex";
-            });
+//       // find the indices of respective charts - used for the
+//       // loops below to call chart width
+//       let ireadChartEle = [...document.querySelectorAll(
+//          '[id^="info-container-iread-chart"]')].map(item => item.id);
+//       let ireadChartIndices = scrapeNumbers(ireadChartEle);
 
-            const ilearnStart = ilearnChartIndices[0]-1;
-            const ilearnEnd = ilearnChartIndices.length-1;
+//       let infoIlearnContainers = document.querySelectorAll(
+//          '[id^="info-container-ilearn"]'
+//       );
+//       let ilearnChartEle = [...document.querySelectorAll(
+//          '[id^="info-container-ilearn-chart"]')].map(item => item.id);
+//       let ilearnChartIndices = scrapeNumbers(ilearnChartEle);
 
-            for (let i = ilearnStart; i < ilearnEnd; i++) {            
-               infoChart[i].width(windowWidth);
-            }
-         }
-      }
-      else if (
-         (schoolType == "K12" && schoolSubtype == "HS") ||
-         schoolType == "HS"
-      ) {
-         k8Categories.classList.remove("open");
-         hsCategories.classList.add("open");
+//       let infoSatContainers = document.querySelectorAll(
+//          '[id^="info-container-sat"]'
+//       );
+//       let satChartElem = [...document.querySelectorAll(
+//          '[id^="info-container-gradrate-chart"]')].map(item => item.id);
+//       let satChartIndices = scrapeNumbers(ilearnChartEle);
 
-         if (hsSelection == "gradTab") {
-            infoGradRateContainers.forEach(el => {
-               el.style.display = "flex";
-            });
+//       let infoGradRateContainers = document.querySelectorAll(
+//          '[id^="info-container-gradrate"]'
+//       );
+//       let gradChartElem = [...document.querySelectorAll(
+//          '[id^="info-container-sat-chart"]')].map(item => item.id);
+//       let gradChartIndices = scrapeNumbers(gradChartElem);
 
-            const gradStart = gradChartIndices[0]-1;
-            const gradEnd = gradChartIndices.length-1;
+//       infoIreadContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
+//       infoIlearnContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
+//       infoGradRateContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
+//       infoSatContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
 
-            for (let i = gradStart; i < gradEnd; i++) {
-               infoChart[i].width(windowWidth);
-            }
-         }
-         else if (hsSelection == "satTab") {
-            infoSatContainers.forEach(el => {
-               el.style.display = "flex";
-            });
+//       analysisPages.classList.remove("open");
 
-            const satStart = satChartIndices[0]-1;
-            const satEnd = satChartIndices.length-1;
+//       if (schoolType == "K12") {
+//          typeCategories.classList.add("open");
+//       }
+//       else {
+//          typeCategories.classList.remove("open");
+//       };
 
-            for (let i = satStart; i < satEnd; i++) {
-               infoChart[i].width(windowWidth);
-            }
-         }
-      };
+//       if (
+//          (schoolType == "K8" && schoolSubtype != "MS") ||
+//          (schoolType == "K12" && schoolSubtype == "K8") ||
+//          schoolSubtype == "K8"
+//       ) {
 
-      await setYearList(allSchoolsObj);
+//          k8Categories.classList.add("open");
 
-      if (strYear == "2020") {
-         yearValue = "2019";
-      }
-      else if (intYear > curAcademicYear) {
-         yearValue = curAcademicYear.toString();
-      }
-      else {
-         yearValue = strYear;
-      };
+//          if (k8Selection == "ireadTab") {
+//             infoIreadContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
 
-      yearSelection.value = yearValue;
-      yearSelection.setAttribute("value", yearValue);
+//             // adjust width for iread charts
+//             const ireadStart = ireadChartIndices[0]-1;
+//             const ireadEnd = ireadChartIndices.length-1;
 
-      selectedValues.year = yearValue;
+//             for (let i = ireadStart; i < ireadEnd; i++) {
+//                infoChart[i].width(windowWidth);
+//             }
+//          }
+//          else if (k8Selection == "ilearnTab") {
+//             infoIlearnContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
 
-// TODO: Is this necessary? want to make sure a HS doesn't 
-// have type ireadTab or ilearnTab
-      // if (schoolType == "HS" || schoolSubtype == "HS") {
-      //    selectedValues.page_tab = "infoTab";
-      // };
-      
-      getAcademicInfoData(selectedValues);
-    }
-    else if (
+//             const ilearnStart = ilearnChartIndices[0]-1;
+//             const ilearnEnd = ilearnChartIndices.length-1;
 
-   // Academic Analysis Tab and subtabs //
-      target.id.match("analysisTab") ||
-      selectedPage.match("analysisTab") &&
-      (
-         target.id.match("ilearnTab") ||
-         target.id.match("ireadTab") ||
-         target.id.match("k8Tab") ||
-         target.id.match("hsTab") ||
-         target.id.match("gradTab") ||
-         target.id.match("satTab")
-      )
-   ) {
+//             for (let i = ilearnStart; i < ilearnEnd; i++) {
+//                infoChart[i].width(windowWidth);
+//             }
+//          }
+//       }
+//       else if (
+//          (schoolType == "K12" && schoolSubtype == "HS") ||
+//          schoolType == "HS"
+//       ) {
+//          k8Categories.classList.remove("open");
+//          hsCategories.classList.add("open");
 
-      let analysisIreadContainers = document.querySelectorAll(
-         '[id^="analysis-container-iread"]'
-      );
-      let analysisIlearnContainers = document.querySelectorAll(
-         '[id^="analysis-container-ilearn"]'
-      );
-      let analysisSatContainers = document.querySelectorAll(
-         '[id^="analysis-container-sat"]'
-      );
-      let analysisGradRateContainers = document.querySelectorAll(
-         '[id^="analysis-container-gradrate"]'
-      );
+//          if (hsSelection == "gradTab") {
+//             infoGradRateContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
 
-      analysisIreadContainers.forEach(el => {
-         el.style.display = "none";
-      });
-      analysisIlearnContainers.forEach(el => {
-         el.style.display = "none";
-      });
-      analysisGradRateContainers.forEach(el => {
-         el.style.display = "none";
-      });
-      analysisSatContainers.forEach(el => {
-         el.style.display = "none";
-      });
+//             const gradStart = gradChartIndices[0]-1;
+//             const gradEnd = gradChartIndices.length-1;
 
-      analysisPages.classList.add("open");
+//             for (let i = gradStart; i < gradEnd; i++) {
+//                infoChart[i].width(windowWidth);
+//             }
+//          }
+//          else if (hsSelection == "satTab") {
+//             infoSatContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
 
-      if (schoolType == "K12") {
-         typeCategories.classList.add("open");
-      }
-      else {
-         typeCategories.classList.remove("open");
-      }
+//             const satStart = satChartIndices[0]-1;
+//             const satEnd = satChartIndices.length-1;
 
-      if (
-         (schoolType == "K8" && schoolSubtype != "MS") ||
-         (schoolType == "K12" && schoolSubtype == "K8") ||
-         schoolSubtype == "K8"
-      ) {
-         k8Categories.classList.add("open");
+//             for (let i = satStart; i < satEnd; i++) {
+//                infoChart[i].width(windowWidth);
+//             }
+//          }
+//       };
 
-         if (k8Selection == "ireadTab") {
-            analysisIreadContainers.forEach(el => {
-               el.style.display = "flex";
-            });
-         }
-         else if (k8Selection == "ilearnTab") {
-            analysisIlearnContainers.forEach(el => {
-               el.style.display = "flex";
-            });
-         };
+//       await setYearList(allSchoolsObj);
 
-       } else if (
-         (schoolType == "K12" && schoolSubtype == "HS") ||
-         schoolType == "HS"
-      ) {
-         k8Categories.classList.remove("open");
-         hsCategories.classList.add("open");
+//       if (strYear == "2020") {
+//          yearValue = "2019";
+//       }
+//       else if (intYear > curAcademicYear) {
+//          yearValue = curAcademicYear.toString();
+//       }
+//       else {
+//          yearValue = strYear;
+//       };
 
-         if (hsSelection == "gradTab") {
-            analysisGradRateContainers.forEach(el => {
-               el.style.display = "flex";
-            });
-         }
-         else if (hsSelection == "satTab") {
-            analysisSatContainers.forEach(el => {
-               el.style.display = "flex";
-            });
-         }
-      };
+//       yearSelection.value = yearValue;
+//       yearSelection.setAttribute("value", yearValue);
 
-      await setYearList(allSchoolsObj);
+//       selectedValues.year = yearValue;
 
-      if (strYear == 2020) {
-         yearValue = 2019;
-      }
-      else if (intYear > curAcademicYear) {
-         yearValue = curAcademicYear.toString();
-      }
-      else {
-         yearValue = strYear;
-      };
+//       getAcademicInfoData(selectedValues);
+//     }
+//     else if (
 
-      yearSelection.value = yearValue;
-      yearSelection.setAttribute("value", yearValue);
+//    // Academic Analysis Tab and subtabs //
+//       target.id.match("analysisTab") ||
+//       selectedPage.match("analysisTab") &&
+//       (
+//          target.id.match("ilearnTab") ||
+//          target.id.match("ireadTab") ||
+//          target.id.match("k8Tab") ||
+//          target.id.match("hsTab") ||
+//          target.id.match("gradTab") ||
+//          target.id.match("satTab")
+//       )
+//    ) {
 
-      // load comparison schools based which type tab is selected
-      // getComparisonSchools automatically repopulates the dropdown -
-      // NOTE: We ONLY want to call getComparison schools with the
-      // following targets: 1) analysisTab; 2) k8Tab; 3) hsTab.
-      if (typeTab == "k8Tab") {
-         selectedValues.school_subtype = "K8"
-      } else {//if (typeTab == "hsTab") {
-         selectedValues.school_subtype = "HS"
-      };
+//       let analysisIreadContainers = document.querySelectorAll(
+//          '[id^="analysis-container-iread"]'
+//       );
+//       let analysisIlearnContainers = document.querySelectorAll(
+//          '[id^="analysis-container-ilearn"]'
+//       );
+//       let analysisSatContainers = document.querySelectorAll(
+//          '[id^="analysis-container-sat"]'
+//       );
+//       let analysisGradRateContainers = document.querySelectorAll(
+//          '[id^="analysis-container-gradrate"]'
+//       );
 
-      if (target.id.match("analysisTab") || target.id.match("hsTab") ||
-         target.id.match("k8Tab")) {
+//       analysisIreadContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
+//       analysisIlearnContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
+//       analysisGradRateContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
+//       analysisSatContainers.forEach(el => {
+//          el.style.display = "none";
+//       });
 
-            await getComparisonSchools(selectedValues);
-      };
+//       analysisPages.classList.add("open");
 
-      selectedValues.comparison_schools = comparisonSelect.getSelected();
-      getAcademicAnalysisData(selectedValues);
-   };
-};
+//       if (schoolType == "K12") {
+//          typeCategories.classList.add("open");
+//       }
+//       else {
+//          typeCategories.classList.remove("open");
+//       }
+
+//       if (
+//          (schoolType == "K8" && schoolSubtype != "MS") ||
+//          (schoolType == "K12" && schoolSubtype == "K8") ||
+//          schoolSubtype == "K8"
+//       ) {
+//          k8Categories.classList.add("open");
+
+//          if (k8Selection == "ireadTab") {
+//             analysisIreadContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
+//          }
+//          else if (k8Selection == "ilearnTab") {
+//             analysisIlearnContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
+//          };
+
+//        } else if (
+//          (schoolType == "K12" && schoolSubtype == "HS") ||
+//          schoolType == "HS"
+//       ) {
+//          k8Categories.classList.remove("open");
+//          hsCategories.classList.add("open");
+
+//          if (hsSelection == "gradTab") {
+//             analysisGradRateContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
+//          }
+//          else if (hsSelection == "satTab") {
+//             analysisSatContainers.forEach(el => {
+//                el.style.display = "flex";
+//             });
+//          }
+//       };
+
+//       await setYearList(allSchoolsObj);
+
+//       if (strYear == 2020) {
+//          yearValue = 2019;
+//       }
+//       else if (intYear > curAcademicYear) {
+//          yearValue = curAcademicYear.toString();
+//       }
+//       else {
+//          yearValue = strYear;
+//       };
+
+//       yearSelection.value = yearValue;
+//       yearSelection.setAttribute("value", yearValue);
+
+//       // load comparison schools based which type tab is selected
+//       // getComparisonSchools automatically repopulates the dropdown -
+//       // NOTE: We ONLY want to call getComparison schools with the
+//       // following targets: 1) analysisTab; 2) k8Tab; 3) hsTab.
+//       if (typeTab == "k8Tab") {
+//          selectedValues.school_subtype = "K8"
+//       } else {//if (typeTab == "hsTab") {
+//          selectedValues.school_subtype = "HS"
+//       };
+
+//       if (target.id.match("analysisTab") || target.id.match("hsTab") ||
+//          target.id.match("k8Tab")) {
+
+//             await getComparisonSchools(selectedValues);
+//       };
+
+//       selectedValues.comparison_schools = comparisonSelect.getSelected();
+//       getAcademicAnalysisData(selectedValues);
+//    };
+// };
 
 /* Initialize App */
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
 
-   await setYearList(allSchoolsObj);
+
    await setCorpList(allSchoolsObj)
-   
+   await setYearList(allSchoolsObj);
+
    selectedValues = await getSelectedValues();
 
    await getComparisonSchools(selectedValues);
 
-   selectedValues.comparison_schools = await updateComparisonSchools();
+   selectedValues.comparison_schools = await getComparisonList();
 
    const k8Categories = document.querySelector(".k8nav");
    const hsCategories = document.querySelector(".hsnav");

@@ -18,13 +18,13 @@ function toString(o) {
      o[k] = '' + o[k];
   });
   return o;
-}
+};
 
 
 // filter an array of objects by the keys listed in "keep"
 function filterObj(list, kept) {
   return list.map(o => Object.fromEntries(kept.map(k => [k, o[k]])))
-}
+};
 
 
 // remove keys from an array of objects if they are not present in array
@@ -38,7 +38,7 @@ function filterKeys(arr, keepKeys) {
     }
     return newObj;
   });
-}
+};
 
 
 // remove object elements matching the passed string in
@@ -64,7 +64,7 @@ function filterCategories(data, categories) {
       )
   )
   return filtered
- }
+};
 
 
 // TODO: THIS IS NOT AT ALL EFFICIENT. Apparantly loops through each line of
@@ -110,7 +110,14 @@ function filterData(array, search_str, keys) {
 
   return clone;
 
-}
+};
+
+
+// remove all letters and symbols from a string and return the
+// remaining numerals as an Int
+function scrapeNumbers(arr) {
+  return arr.map(str => parseInt(str.replace(/[^0-9]/g, '')));
+};
 
 
  // get object keys as an array
@@ -120,7 +127,7 @@ function filterData(array, search_str, keys) {
   }, {}))
 
   return keys
-}
+};
 
 
 // convert 4 digit year to six digit (2024 -> 2023-24)
@@ -128,13 +135,13 @@ function longYear(year) {
   let prevYear = Number(year) - 1;
   let fullYear = toString(prevYear) + "-" + year.slice(2);
   return fullYear
-}
+};
 
 
 // Sort object as an array based on values
 function sortObj(obj) {
   return Object.keys(obj).map(k => ([k, obj[k]])).sort((a, b) => (b[1] - a[1]))
-}
+};
 
 
 // returns true if sum of all values is either Nan/Null or 0
@@ -146,7 +153,7 @@ function isValid(obj) {
   else {
     return true
   }
-}
+};
 
 
 // pass a (single) object and a list of keys - will return
@@ -170,7 +177,7 @@ function renameKey(array, oldKey, newKey) {
      }
      return obj;
   });
-}
+};
 
 
 // see title of function
@@ -181,7 +188,7 @@ function replaceSubstringInArrayOfObjects(arr, key, searchValue, replaceValue) {
      }
      return obj;
   });
-}
+};
 
 
 // sort an array of objects by a provided property and list order
@@ -235,7 +242,7 @@ function flattenObject(data) {
   }
   flatArray = arrays.flat()
   return flatArray
-}
+};
 
 
 // converts an array of strings to camelcase splitting on
@@ -266,13 +273,13 @@ function checkSubstringsInObjectKeys(obj, substrings) {
     }
   }
   return false;
-}
+};
 
 
 // determine whether passed string exists in the passed array
 function exists(arr, search) {
   return arr.some(row => row.includes(search));
-}
+};
 
 
  // removes all existing elements from select element (dropdown)
@@ -281,7 +288,7 @@ function exists(arr, search) {
   for(i = L; i >= 0; i--) {
      selectElement.remove(i);
   }
-}
+};
 
 
 // remove items from an object matching the passed value
@@ -291,11 +298,11 @@ function removeItemsByValue(obj, value) {
       delete obj[key];
     }
   }
-}
+};
 
 
 // remove given value from an array of objects (same as above, but
 // for array of objects)
 function removeObjectWithValue(array, key, value) {
   return array.filter(obj => obj[key] !== value);
-}
+};
