@@ -28,6 +28,7 @@ from load_data import (
     current_academic_year,
     current_demographic_year,
     get_academic_data,
+    get_available_years,
     get_demographic_data,
     get_public_dropdown,
     get_school_coordinates,
@@ -134,6 +135,34 @@ def load_demographic_data():
 
     return [all_demographic_data_object]
 
+
+@app.route("/years", methods=["POST"])
+def get_years():
+
+    data = request.get_json()
+
+    print(data)
+
+    school_id = int(data["school_id"])
+
+    # school_subtype for K12 will either be K8 or HS, school_subtype
+    # for K8 will be ES, MS, or K8
+
+    if data["school_type"] == "K12":
+        if data["school_subtype"] == "K12":
+            school_type = "HS" if data["type_tab"] == "hsTab" else "K8"
+        else:
+            school_type = data["school_subtype"]
+    else:
+        school_type = data["school_type"]
+
+    category = data["k8_tab"] if school_type == "K8" else data["hs_tab"]
+
+    available_years = get_available_years(school_id, category)
+
+    print(available_years)
+
+    return available_years
 
 
 # academic data

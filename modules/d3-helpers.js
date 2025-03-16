@@ -109,9 +109,10 @@ function multiLine() {
         .attr('class', 'legendcontainer');
 
       updateData = function() {
-
-        // display empty svg is there is no data
-        if (data.length == 0) {
+        
+        // NOTE: empty data includes both an empty array and an array where
+        // all objects in the array includes only 2 keys (School Name & Year)
+        if (data.length == 0 || areAllObjectKeysLessThan(data, 3)) {
 
           svg.selectAll("path.lines").remove();
           svg.selectAll("circle.circles").remove();

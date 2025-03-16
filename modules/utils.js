@@ -52,6 +52,13 @@ function filterByValue(array, string) {
 };
 
 
+// returns true if all objects within an array have less than
+// "threshold" keys
+function areAllObjectKeysLessThan(arr, threshold) {
+  return arr.every(obj => Object.keys(obj).length < threshold);
+}
+
+
 // filter data by the key values present in categories array
 function filterCategories(data, categories) {
   let filtered = Object.fromEntries(
@@ -75,7 +82,7 @@ function filterCategories(data, categories) {
    * @param {string} search_str - string suffix to add to keys (if applicable)
    * @param {array<string>} keys - List of keys to keep
    * @return {array<object>} The array with filtered keys
-   */
+**/
 function filterData(array, search_str, keys) {
 
   let clone = structuredClone(array);

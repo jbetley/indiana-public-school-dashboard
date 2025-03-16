@@ -403,6 +403,28 @@ async function getAcademicInfoData(select) {
 };
 
 
+async function getAvailableYears(select) {
+   const yearData = await fetch(`${window.origin}/years`, {
+      method: "POST",
+         credentials: "include",
+         cache: "no-cache",
+         headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+      },
+      body:JSON.stringify(select)})
+      .then(response=>{
+         if (response.ok) {
+            return response.json()
+         } else {
+            alert("Network Error: Could not load data.")
+         }
+      })
+
+      return yearData
+      // academicInfoPage(infoData);
+};
+
 async function getAcademicAnalysisData(select) {
 // TODO: Sometimes "select.comparison_schools" is empty - presumably
 // because at the time the data is passed, the checked schools have
@@ -558,6 +580,15 @@ async function getSelectedValues() {
 /* Dropdown functions */
 async function setYearList(schoolData) {
 
+   if (yearSelection.value != "") {
+      selectedValues = await getSelectedValues();
+      let booty = await getAvailableYears(selectedValues);
+      console.log("BOOTY")
+      console.log(booty)
+   }
+// TODO: THIS APPEARS TO BE WORKING, NED TO INCORPORATE BOOTZY
+// TODO: MAY NEED TO DTRILL DOWN TO MAKE SURE IT DOESN"T RUN ON
+// TODO: ALL TABS
    const pageTab = document.querySelector(".tab.main.active").id;
    const schoolID = schoolSelection.value;
    let selectedYear = yearSelection;
@@ -570,7 +601,7 @@ async function setYearList(schoolData) {
    let selectedSchoolData = schoolData.filter(
       (o) => o["School ID"] === parseInt(schoolID)
    );
-
+   
    // Get available years for the selected school
    let availableYears = [... new Set(selectedSchoolData.map(o => o.Year))];
 
@@ -1716,6 +1747,8 @@ async function academicInfoPage(data) {
    }
    else {
 
+// TODO: Need to determine if ALL charts will be blank - so we dont
+// just display a bunch of empy charts - we display one
       /* Update */
       var infoChartStartingIndex,
          infoStackStartingIndex,
@@ -2735,566 +2768,9 @@ async function academicAnalysisPage(data) {
 };
 
 
-// Navigation //
-
-// // This triggers any time one of the dropdowns is selected (yearSelect,
-// // schoolSelect, corpSelect)- it manages containers- the individual
-// // listeners handle everything else
-// if (dropdown.addEventListener) {
-//    dropdown.addEventListener('click',manageContainers,false);
-// }
-// else {
-//    dropdown.addEventListener('onclick',manageContainers);
-// };
-
-// async function manageContainers(e) {
-
-//    e = e || window.event;
-//    const target = e.target || e.srcElement;
-
-//    console.log(target)
-
-//    selectedValues = await getSelectedValues();
-
-//    console.log(selectedValues)
-//    const selectedPage = selectedValues.page_tab;
-//    const k8Selection = selectedValues.k8_tab;
-//    const hsSelection = selectedValues.hs_tab;
-//    const typeTab = selectedValues.type_tab;
-//    const schoolType = selectedValues.school_type;
-//    const schoolSubtype = selectedValues.school_subtype;
-
-//    if (target.id.match("corpSelect") || target.id.match("schoolSelect") ) {
-//       if (selectedpage == "infoTab") {
-
-//          let infoIreadContainers = document.querySelectorAll(
-//             '[id^="info-container-iread"]'
-//          );
-
-//          let infoIlearnContainers = document.querySelectorAll(
-//             '[id^="info-container-ilearn"]'
-//          );
-
-//          let infoSatContainers = document.querySelectorAll(
-//             '[id^="info-container-sat"]'
-//          );
-
-//          let infoGradRateContainers = document.querySelectorAll(
-//             '[id^="info-container-gradrate"]'
-//          );
-
-//          if (schoolType == "HS") {
-//             infoIreadContainers.forEach(el => {
-//                el.style.display = "none";
-//             });
-//             infoIlearnContainers.forEach(el => {
-//                el.style.display = "none";
-//             });
-
-//             if (hsSelection == "gradTab") {
-//                infoGradRateContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//                infoSatContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//             }
-//             else {
-//                infoSatContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//                infoGradRateContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//             }
-//          }
-//          else if (schoolType == "K8") {
-//             infoGradRateContainers.forEach(el => {
-//                el.style.display = "none";
-//             });
-//             infoSatContainers.forEach(el => {
-//                el.style.display = "none";
-//             });    
-
-//             if (k8Selection == "ireadTab") {
-//                infoIlearnContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//                infoIreadContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//             }
-//             else {
-//                infoIlearnContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//                infoIreadContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//             }
-//          }
-//       }
-//       else if (selectedPage == "analysisTab") {
-
-//          let analysisIreadContainers = document.querySelectorAll(
-//             '[id^="analysis-container-iread"]'
-//          );
-//          let analysisIlearnContainers = document.querySelectorAll(
-//             '[id^="analysis-container-ilearn"]'
-//          );
-//          let analysisSatContainers = document.querySelectorAll(
-//             '[id^="analysis-container-sat"]'
-//          );
-//          let analysisGradRateContainers = document.querySelectorAll(
-//             '[id^="analysis-container-gradrate"]'
-//          );
-
-//          if (schoolType == "HS") {
-//             analysisIreadContainers.forEach(el => {
-//                el.style.display = "none";
-//             });
-//             analysisIlearnContainers.forEach(el => {
-//                el.style.display = "none";
-//             });
-
-//             if (hsSelection == "gradTab") {
-//                analysisGradRateContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//                analysisSatContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//             }
-//             else {
-//                analysisSatContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//                analysisGradRateContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//             }
-//          }
-//          else if (schoolType == "K8") {
-//             analysisGradRateContainers.forEach(el => {
-//                el.style.display = "none";
-//             });
-//             analysisSatContainers.forEach(el => {
-//                el.style.display = "none";
-//             });    
-
-//             if (k8Selection == "ireadTab") {
-//                analysisIlearnContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//                analysisIreadContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//             }
-//             else {
-//                analysisIlearnContainers.forEach(el => {
-//                   el.style.display = "flex";
-//                });
-//                analysisIreadContainers.forEach(el => {
-//                   el.style.display = "none";
-//                });
-//             }
-//          }
-//       }
-
-
-
-
-// //       analysisIreadContainers.forEach(el => {
-// //          el.style.display = "none";
-// //       });
-// //       analysisIlearnContainers.forEach(el => {
-// //          el.style.display = "none";
-// //       });
-// //       analysisGradRateContainers.forEach(el => {
-// //          el.style.display = "none";
-// //       });
-// //       analysisSatContainers.forEach(el => {
-// //          el.style.display = "none";
-// //       });
-
-// //       analysisIreadContainers.forEach(el => {
-// //          el.style.display = "flex";
-// //       });
-
-// //       analysisIlearnContainers.forEach(el => {
-// //          el.style.display = "flex";
-// //       });
-
-// //       analysisGradRateContainers.forEach(el => {
-// //          el.style.display = "flex";
-// //       });
-
-// //       analysisSatContainers.forEach(el => {
-// //          el.style.display = "flex";
-// //       });
-//   };
-// }
-
-// // TODO END ?????
-
-
-// // Tabs //
-// if (tabnavigation.addEventListener) {
-//    tabnavigation.addEventListener('click',navigateHandler,false);
-// }
-// else {
-//    tabnavigation.addEventListener('onclick',navigateHandler);
-// };
-
-
-// async function navigateHandler(e) {
-
-//    selectedValues = await getSelectedValues();
-
-//    const selectedPage = selectedValues.page_tab;
-//    const k8Selection = selectedValues.k8_tab;
-//    const hsSelection = selectedValues.hs_tab;
-//    const typeTab = selectedValues.type_tab;
-//    const schoolType = selectedValues.school_type;
-//    const schoolSubtype = selectedValues.school_subtype;
-//    const strYear = selectedValues.year;
-//    const intYear = parseInt(strYear);
-//    let yearValue;
-
-//    // ireadTab or ilearnTab
-//    const k8Categories = document.querySelector(".k8nav");
-
-//    // satTab or gradTab
-//    const hsCategories = document.querySelector(".hsnav");
-
-//    const typeCategories = document.querySelector(".typenav");
-//    const analysisPages = document.querySelector(".analysisnav");
-
-//    // target is the button triggering the onClick and (should) be equal
-//    // to one of the above selections
-//    e = e || window.event;
-//    const target = e.target || e.srcElement;
-
-//    // the iread/ilearn tabs should never be visible when HS is selected
-//    // and should always be available when K8 is selected
-//    if (target.id.match("hsTab")) {
-//       k8Categories.classList.remove("open");
-//       hsCategories.classList.add("open");
-//    };
-
-//    if (target.id.match("k8Tab")) {
-//       k8Categories.classList.add("open");
-//       hsCategories.classList.remove("open");
-//    };
-
-//    // Demographic Tab //
-//    if (target.id.match("demoTab")) {
-
-//       k8Categories.classList.remove("open");
-//       hsCategories.classList.remove("open");
-//       typeCategories.classList.remove("open");
-//       analysisPages.classList.remove("open");
-
-//       await setYearList(allSchoolsObj);
-
-//       // reset year value
-//       yearSelection.value = strYear;
-//       yearSelection.setAttribute("value", strYear);
-
-//       getDemographicData(selectedValues);
-
-//       // adjust chart size based on browser window size
-//       let windowWidth = window.innerWidth/2 - 125;
-
-//       enrollmentChart.width(windowWidth);
-//       attendanceChart.width(windowWidth);
-//       ethnicityDemoChart.width(windowWidth);
-//       statusDemoChart.width(windowWidth);
-//    }
-//    else if (
-
-//     // Academic Information Tab and subtabs //
-//       target.id.match("infoTab") ||
-//       selectedPage.match("infoTab") &&
-//       (
-//          target.id.match("ilearnTab") ||
-//          target.id.match("ireadTab") ||
-//          target.id.match("k8Tab") ||
-//          target.id.match("hsTab") ||
-//          target.id.match("gradTab") ||
-//          target.id.match("satTab")
-//       )
-//    ) {
-
-//       let windowWidth = window.innerWidth/2 - 125;
-
-//       // get container elements for display toggle
-//       let infoIreadContainers = document.querySelectorAll(
-//          '[id^="info-container-iread"]'
-//       );
-
-//       // find the indices of respective charts - used for the
-//       // loops below to call chart width
-//       let ireadChartEle = [...document.querySelectorAll(
-//          '[id^="info-container-iread-chart"]')].map(item => item.id);
-//       let ireadChartIndices = scrapeNumbers(ireadChartEle);
-
-//       let infoIlearnContainers = document.querySelectorAll(
-//          '[id^="info-container-ilearn"]'
-//       );
-//       let ilearnChartEle = [...document.querySelectorAll(
-//          '[id^="info-container-ilearn-chart"]')].map(item => item.id);
-//       let ilearnChartIndices = scrapeNumbers(ilearnChartEle);
-
-//       let infoSatContainers = document.querySelectorAll(
-//          '[id^="info-container-sat"]'
-//       );
-//       let satChartElem = [...document.querySelectorAll(
-//          '[id^="info-container-gradrate-chart"]')].map(item => item.id);
-//       let satChartIndices = scrapeNumbers(ilearnChartEle);
-
-//       let infoGradRateContainers = document.querySelectorAll(
-//          '[id^="info-container-gradrate"]'
-//       );
-//       let gradChartElem = [...document.querySelectorAll(
-//          '[id^="info-container-sat-chart"]')].map(item => item.id);
-//       let gradChartIndices = scrapeNumbers(gradChartElem);
-
-//       infoIreadContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-//       infoIlearnContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-//       infoGradRateContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-//       infoSatContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-
-//       analysisPages.classList.remove("open");
-
-//       if (schoolType == "K12") {
-//          typeCategories.classList.add("open");
-//       }
-//       else {
-//          typeCategories.classList.remove("open");
-//       };
-
-//       if (
-//          (schoolType == "K8" && schoolSubtype != "MS") ||
-//          (schoolType == "K12" && schoolSubtype == "K8") ||
-//          schoolSubtype == "K8"
-//       ) {
-
-//          k8Categories.classList.add("open");
-
-//          if (k8Selection == "ireadTab") {
-//             infoIreadContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-
-//             // adjust width for iread charts
-//             const ireadStart = ireadChartIndices[0]-1;
-//             const ireadEnd = ireadChartIndices.length-1;
-
-//             for (let i = ireadStart; i < ireadEnd; i++) {
-//                infoChart[i].width(windowWidth);
-//             }
-//          }
-//          else if (k8Selection == "ilearnTab") {
-//             infoIlearnContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-
-//             const ilearnStart = ilearnChartIndices[0]-1;
-//             const ilearnEnd = ilearnChartIndices.length-1;
-
-//             for (let i = ilearnStart; i < ilearnEnd; i++) {
-//                infoChart[i].width(windowWidth);
-//             }
-//          }
-//       }
-//       else if (
-//          (schoolType == "K12" && schoolSubtype == "HS") ||
-//          schoolType == "HS"
-//       ) {
-//          k8Categories.classList.remove("open");
-//          hsCategories.classList.add("open");
-
-//          if (hsSelection == "gradTab") {
-//             infoGradRateContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-
-//             const gradStart = gradChartIndices[0]-1;
-//             const gradEnd = gradChartIndices.length-1;
-
-//             for (let i = gradStart; i < gradEnd; i++) {
-//                infoChart[i].width(windowWidth);
-//             }
-//          }
-//          else if (hsSelection == "satTab") {
-//             infoSatContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-
-//             const satStart = satChartIndices[0]-1;
-//             const satEnd = satChartIndices.length-1;
-
-//             for (let i = satStart; i < satEnd; i++) {
-//                infoChart[i].width(windowWidth);
-//             }
-//          }
-//       };
-
-//       await setYearList(allSchoolsObj);
-
-//       if (strYear == "2020") {
-//          yearValue = "2019";
-//       }
-//       else if (intYear > curAcademicYear) {
-//          yearValue = curAcademicYear.toString();
-//       }
-//       else {
-//          yearValue = strYear;
-//       };
-
-//       yearSelection.value = yearValue;
-//       yearSelection.setAttribute("value", yearValue);
-
-//       selectedValues.year = yearValue;
-
-//       getAcademicInfoData(selectedValues);
-//     }
-//     else if (
-
-//    // Academic Analysis Tab and subtabs //
-//       target.id.match("analysisTab") ||
-//       selectedPage.match("analysisTab") &&
-//       (
-//          target.id.match("ilearnTab") ||
-//          target.id.match("ireadTab") ||
-//          target.id.match("k8Tab") ||
-//          target.id.match("hsTab") ||
-//          target.id.match("gradTab") ||
-//          target.id.match("satTab")
-//       )
-//    ) {
-
-//       let analysisIreadContainers = document.querySelectorAll(
-//          '[id^="analysis-container-iread"]'
-//       );
-//       let analysisIlearnContainers = document.querySelectorAll(
-//          '[id^="analysis-container-ilearn"]'
-//       );
-//       let analysisSatContainers = document.querySelectorAll(
-//          '[id^="analysis-container-sat"]'
-//       );
-//       let analysisGradRateContainers = document.querySelectorAll(
-//          '[id^="analysis-container-gradrate"]'
-//       );
-
-//       analysisIreadContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-//       analysisIlearnContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-//       analysisGradRateContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-//       analysisSatContainers.forEach(el => {
-//          el.style.display = "none";
-//       });
-
-//       analysisPages.classList.add("open");
-
-//       if (schoolType == "K12") {
-//          typeCategories.classList.add("open");
-//       }
-//       else {
-//          typeCategories.classList.remove("open");
-//       }
-
-//       if (
-//          (schoolType == "K8" && schoolSubtype != "MS") ||
-//          (schoolType == "K12" && schoolSubtype == "K8") ||
-//          schoolSubtype == "K8"
-//       ) {
-//          k8Categories.classList.add("open");
-
-//          if (k8Selection == "ireadTab") {
-//             analysisIreadContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-//          }
-//          else if (k8Selection == "ilearnTab") {
-//             analysisIlearnContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-//          };
-
-//        } else if (
-//          (schoolType == "K12" && schoolSubtype == "HS") ||
-//          schoolType == "HS"
-//       ) {
-//          k8Categories.classList.remove("open");
-//          hsCategories.classList.add("open");
-
-//          if (hsSelection == "gradTab") {
-//             analysisGradRateContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-//          }
-//          else if (hsSelection == "satTab") {
-//             analysisSatContainers.forEach(el => {
-//                el.style.display = "flex";
-//             });
-//          }
-//       };
-
-//       await setYearList(allSchoolsObj);
-
-//       if (strYear == 2020) {
-//          yearValue = 2019;
-//       }
-//       else if (intYear > curAcademicYear) {
-//          yearValue = curAcademicYear.toString();
-//       }
-//       else {
-//          yearValue = strYear;
-//       };
-
-//       yearSelection.value = yearValue;
-//       yearSelection.setAttribute("value", yearValue);
-
-//       // load comparison schools based which type tab is selected
-//       // getComparisonSchools automatically repopulates the dropdown -
-//       // NOTE: We ONLY want to call getComparison schools with the
-//       // following targets: 1) analysisTab; 2) k8Tab; 3) hsTab.
-//       if (typeTab == "k8Tab") {
-//          selectedValues.school_subtype = "K8"
-//       } else {//if (typeTab == "hsTab") {
-//          selectedValues.school_subtype = "HS"
-//       };
-
-//       if (target.id.match("analysisTab") || target.id.match("hsTab") ||
-//          target.id.match("k8Tab")) {
-
-//             await getComparisonSchools(selectedValues);
-//       };
-
-//       selectedValues.comparison_schools = comparisonSelect.getSelected();
-//       getAcademicAnalysisData(selectedValues);
-//    };
-// };
-
 /* Initialize App */
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
-
 
    await setCorpList(allSchoolsObj)
    await setYearList(allSchoolsObj);
