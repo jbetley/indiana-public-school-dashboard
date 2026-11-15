@@ -22,7 +22,7 @@
    <script src="{{ url_for('static', filename='d3-utils.js')}}"></script>
    <script src="{{ url_for('static', filename='globals.js')}}"></script>
 
-   <!-- Imported Stylesheets -->
+   <!-- Local Stylesheets -->
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='slim-select.css')}}">
 </head>
@@ -345,7 +345,7 @@ const curDemographicYear = maxYears.demographic_year;
 // List of Corporation and School Names for dropdown
 const allSchoolsUrl = `${window.origin}/load`;
 const allSchoolsResponse = await fetch(allSchoolsUrl);
-var allSchoolsObj = await allSchoolsResponse.json();
+var allSchoolsObj = await allSchoolsResponse.json();     // GLOBAL
 
 allSchoolsObj.forEach(function (obj) {
    obj["Corporation Name"] = obj["Corporation Name"] + " (" +
@@ -422,13 +422,12 @@ async function getAvailableYears(select) {
       })
 
       return yearData
-      // academicInfoPage(infoData);
 };
 
 async function getAcademicAnalysisData(select) {
 // TODO: Sometimes "select.comparison_schools" is empty - presumably
 // because at the time the data is passed, the checked schools have
-// not been registered resolve passed vs. global use
+// not been registered - resolve passed vs. global use
 
    let directSelect = comparisonSelect.getSelected();
 
@@ -474,6 +473,7 @@ async function getComparisonSchools(select) {
      await setComparisonList(comparisonSchoolList);
 };
 
+// TODO: Get rid of these GLOBALS
 let colorState = [];
 
 // Demographic Page
@@ -523,7 +523,7 @@ async function getSelectedValues() {
    let schoolId;
 
    if (corpSelection != null && corpSelection.value == "") {
-      // finds first element in array even if it falsy (but not if undefined)
+      // finds first element in array even if it is falsy (but not if undefined)
       corpId = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
    }
    else {
@@ -560,8 +560,8 @@ async function getSelectedValues() {
       }
    };
 
-   // using snake case here because we will be passing this dict
-   // to python
+   // using snake case here because we will be passing
+   // this dict to python
    selectedValues.school_id = schoolId;
    selectedValues.year = year;
    selectedValues.school_type = school_type;
@@ -580,17 +580,22 @@ async function getSelectedValues() {
 /* Dropdown functions */
 async function setYearList(schoolData) {
 
+   const schoolID = schoolSelection.value;
+   const pageTab = document.querySelector(".tab.main.active").id;
+
    if (yearSelection.value != "") {
       selectedValues = await getSelectedValues();
       let booty = await getAvailableYears(selectedValues);
-      console.log("BOOTY")
-      console.log(booty)
    }
-// TODO: THIS APPEARS TO BE WORKING, NED TO INCORPORATE BOOTZY
-// TODO: MAY NEED TO DTRILL DOWN TO MAKE SURE IT DOESN"T RUN ON
-// TODO: ALL TABS
-   const pageTab = document.querySelector(".tab.main.active").id;
-   const schoolID = schoolSelection.value;
+
+//// TODO ////
+// Initially, the idea was to eventually substitute booty for the
+// below JS code because it does all of the necessaryt checks - but
+// do we really need to do this? booty itself appears to adapt the
+// get_available_years python function
+// TODO: Test booty to make sure it doesn't run on all tabs
+
+
    let selectedYear = yearSelection;
 
    removeOptions(selectedYear);
@@ -599,7 +604,7 @@ async function setYearList(schoolData) {
       maxYear;
 
    let selectedSchoolData = schoolData.filter(
-      (o) => o["School ID"] === parseInt(schoolID)
+      (o) => o["School ID"] === schoolID
    );
    
    // Get available years for the selected school
@@ -616,14 +621,6 @@ async function setYearList(schoolData) {
    availableYears = availableYears.filter(arr => arr <= maxYear);
    availableYears.sort((a, b) => (a > b ? -1 : 1))
 
-   if (pageTab != "demoTab") {
-// TODO: temporarily removing "2020" because there is no
-// academic data for k8 - eventually need to add it back for HS
-      const index = availableYears.indexOf(2020);
-      if (index > -1) {
-         availableYears.splice(index, 1);
-      }
-   }
    availableYears.forEach((year) => 
       selectedYear.appendChild(new Option(year, year)));
 };
@@ -639,13 +636,16 @@ async function setCorpList(schoolData) {
    // the correct number of years). Only necessary on load,
    // should hit else clause every other time.
    if (yearSelection.value == "") {
+
       const pageTab = document.querySelector(".tab.main.active").id;
+      
       if (pageTab == "demoTab") {
          selectedYear = curDemographicYear;
       }
       else {
          selectedYear = curAcademicYear;
       };
+
    } else {
       selectedValues = await getSelectedValues();
       selectedYear = selectedValues.year;
@@ -820,7 +820,6 @@ corpSelection.addEventListener("change", async () => {
    schoolSelection.dispatchEvent(event);
 });
 
-
 const schoolSelection = document.getElementById("schoolSelect");
 schoolSelection.addEventListener("change", async () => {
 
@@ -836,9 +835,14 @@ schoolSelection.addEventListener("change", async () => {
    let k8Categories = document.querySelector(".k8nav");
    let hsCategories = document.querySelector(".hsnav");
    let typeCategories = document.querySelector(".typenav");
-   let analysisPages = document.querySelector(".typenav");
+   let analysisPages = document.querySelector(".analysisnav");
    let k8TypeTab = document.getElementById("k8Tab");
    let hsTypeTab = document.getElementById("hsTab");
+
+   // TODO: if schoolTYPE is K12, need to show k8/HS tab NOT WOKRING
+   if (schoolType == "K12") {
+      typeCategories.classList.add("open");
+   }
 
    if (schoolType == "K12" && selectedPage != "demoTab") {
       typeCategories.classList.add("open");
@@ -897,7 +901,7 @@ schoolSelection.addEventListener("change", async () => {
             });
          }
 
-         hsCategories.classList.remove("open");
+         // hsCategories.classList.remove("open"); // TESTING
          hsTypeTab.classList.remove("active");
 
          // no "IREAD" option for middle schools
@@ -1219,6 +1223,7 @@ async function navigateHandler(e) {
             const ilearnEnd = ilearnChartIndices.length-1;
 
             for (let i = ilearnStart; i < ilearnEnd; i++) {
+
                infoChart[i].width(windowWidth);
             }
          }
@@ -1405,8 +1410,8 @@ async function demographicsPage(data) {
    const schoolId = selectedValues.school_id;
    const year = selectedValues.year;
 
-   let schoolData = data.filter((ele) => ele["School ID"] === Number(schoolId));
-   let corpData = data.filter((ele) => ele["School ID"] != Number(schoolId));
+   let schoolData = data.filter((ele) => ele["School ID"] === schoolId);
+   let corpData = data.filter((ele) => ele["School ID"] != schoolId);
 
    // number of years to limit data - each element in the array
    // represents one year in descending order- so we  remove
@@ -1680,6 +1685,7 @@ async function academicInfoPage(data) {
       '[id^="info-"][id*="table"]:not([id*="container"])'
    )].map(item => item.id);
 
+
    var infoChartIds = [...document.querySelectorAll(
       '[id^="info-"][id*="chart"]:not([id*="container"])'
    )].map(item => item.id);
@@ -1695,7 +1701,6 @@ async function academicInfoPage(data) {
 
       // NOTE: all "chart" ids are generic. Changing the order of these
       // two arrays will change the order in which the charts are displayed.
-
       let lineCategory = [
          total, ethnicity, subgroup, gradeAll, ethnicity, subgroup,
          gradeAll, ethnicity, subgroup, gradTotal, ethnicity, subgroup,
@@ -1709,7 +1714,7 @@ async function academicInfoPage(data) {
       ];
 
       // there are 18 possible line charts (3 iread, 6 ilearn, 3 grad rate, and
-      // 6 SAT) and 6 possible stack charts (ilearn). "infoChart" is declared
+      // 6 SAT) and 6 possible stack charts (ilearn only). "infoChart" is declared
       // at the top of the script as an empty array global variable.
 
       for (let i = 0; i < infoChartIds.length; i++) {
@@ -1749,6 +1754,7 @@ async function academicInfoPage(data) {
 
 // TODO: Need to determine if ALL charts will be blank - so we dont
 // just display a bunch of empy charts - we display one
+
       /* Update */
       var infoChartStartingIndex,
          infoStackStartingIndex,
@@ -1781,7 +1787,9 @@ async function academicInfoPage(data) {
             )].map(item => item.id);
 
             infoChartStartingIndex = 3;
+
             let cnt = 0;
+            
             infoChartSubjects = [
                "ELA", "ELA", "ELA", "Math", "Math", "Math"
             ];
@@ -1790,11 +1798,17 @@ async function academicInfoPage(data) {
             ];
 
             for (let i = infoChartStartingIndex; i < ilearnChartUpdate.length; i++) {
+               console.log("III")
+               console.log(infoChartCategories[i])
+               console.log("CNT")
+               console.log(cnt)
+               console.log(infoChartCategories[cnt])
+
                const updateData = getInfoChartData(
                   data, infoChartCategories[cnt], infoChartSubjects[cnt], selectedValues
                );
                infoChart[i].data(updateData).id(infoChartIds[i]);
-               cnt=+1;
+               cnt=cnt+1;
             };
 
             infoStackStartingIndex = 0;
@@ -1828,7 +1842,7 @@ async function academicInfoPage(data) {
                   data, infoChartCategories[cnt], infoChartSubjects[cnt], selectedValues
                );
                infoChart[i].data(updateData).id(infoChartIds[i]);
-               cnt = cnt +1;
+               cnt=cnt+1;
             };
          }
          else if (hsTab == "satTab") {
@@ -1896,6 +1910,7 @@ async function academicInfoPage(data) {
 
          } else {
 
+
 // TODO: Figure out why this doesn't include tableID but createanalysisTable does
             infoTableOptions = createInfoTable(infoTableData, infoTableID);
 
@@ -1915,8 +1930,8 @@ async function academicInfoPage(data) {
    }
 };
 
-// TODO: Fundamental question re: all functions - do we want to use globals or
-// figure out a way to pass everything
+// TODO: Modify to that we are passing around one glob object with all necessary information
+
 // Chart Academic Information
 async function academicAnalysisPage(data) {
 
@@ -2120,6 +2135,7 @@ async function academicAnalysisPage(data) {
    if (!academicAnalysisPage.initialize){
 
       // On load, initialize all tables and charts as empty (using dummy data).
+
 // TODO: Do we need to use default data or just blank like info tables
       const defaultData = [
          [
@@ -2712,7 +2728,7 @@ async function academicAnalysisPage(data) {
             selectedValues, colorState
          );
 
-// TODO: Determine is we even need to create a table if no data exists
+// TODO: Determine if we even need to create a table if no data exists
 
          let analysisTableOptions;
 
@@ -2796,7 +2812,6 @@ if (document.readyState !== "loading") {
    getAcademicAnalysisData(selectedValues);
 };
 
-
 d3.select(window).on("resize", resize);
 
 async function resize() {
@@ -2832,24 +2847,6 @@ async function resize() {
       else if (selectedValues.page_tab === "infoTab") {
          for (let i = 0; i < 18; i++) {
             infoChart[i].width(windowWidth);
-         // ireadInfoTotal.width(windowWidth);
-         // ireadInfoEthnicity.width(windowWidth);
-         // ireadInfoSubgroup.width(windowWidth);
-         // elaIlearnInfoGrade.width(windowWidth);
-         // elaIlearnInfoEthnicity.width(windowWidth);
-         // elaIlearnInfoSubgroup.width(windowWidth);
-         // mathIlearnInfoGrade.width(windowWidth);
-         // mathIlearnInfoEthnicity.width(windowWidth);
-         // mathIlearnInfoSubgroup.width(windowWidth);
-         // gradRateInfoTotal.width(windowWidth);
-         // gradRateInfoEthnicity.width(windowWidth);
-         // gradRateInfoSubgroup.width(windowWidth);
-         // ebrwSatInfoTotal.width(windowWidth);
-         // ebrwSatInfoEthnicity.width(windowWidth);
-         // ebrwSatInfoSubgroup.width(windowWidth);
-         // mathSatInfoTotal.width(windowWidth);
-         // mathSatInfoEthnicity.width(windowWidth);
-         // mathSatInfoSubgroup.width(windowWidth);
          }
       }
       else {

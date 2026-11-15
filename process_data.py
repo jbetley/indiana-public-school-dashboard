@@ -8,6 +8,7 @@
 
 import numpy as np
 import pandas as pd
+
 from calculations import (
     calculate_ahs_average,
     calculate_graduation_rate,
@@ -361,7 +362,7 @@ def clean_academic_data(
     raw_data = df.copy()
 
     school_id = school_list[0]
-
+    
     # note: corp_id needs to be a str
     corp_id = raw_data[raw_data["School ID"] ==
         school_id]["GEO Corp"].unique()[0].astype(str)

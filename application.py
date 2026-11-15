@@ -16,12 +16,13 @@
 
 import numpy as np
 import pandas as pd
-from calculations import calculate_comparison_school_list
 from flask import (
     Flask,
     render_template,
     request,
 )
+
+from calculations import calculate_comparison_school_list
 
 # local imports
 from load_data import (
@@ -64,6 +65,7 @@ def load_config():
 def load_school_dropdown():
 
     school_df = get_public_dropdown()
+    
     school_df = school_df.sort_values(
         ["Corporation Name", "School Name"], ascending=[True, True])
 
@@ -140,10 +142,8 @@ def load_demographic_data():
 def get_years():
 
     data = request.get_json()
-
-    print(data)
-
-    school_id = int(data["school_id"])
+    
+    school_id = data["school_id"]
 
     # school_subtype for K12 will either be K8 or HS, school_subtype
     # for K8 will be ES, MS, or K8
@@ -159,9 +159,10 @@ def get_years():
     category = data["k8_tab"] if school_type == "K8" else data["hs_tab"]
 
     available_years = get_available_years(school_id, category)
-
+    
+    print("in get_years")
     print(available_years)
-
+    
     return available_years
 
 
@@ -171,7 +172,7 @@ def load_academic_data():
 
     data = request.get_json()
 
-    schools = [int(data["school_id"])] + data["comparison_schools"]
+    schools = [data["school_id"]] + data["comparison_schools"]
 
     # school_subtype for K12 will either be K8 or HS, school_subtype
     # for K8 will be ES, MS, or K8
@@ -224,4 +225,4 @@ def load_academic_data():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)  # noqa: S104, S201
+    app.run(host="0.0.0.0", port=4000, debug=True)  # noqa: S104, S201

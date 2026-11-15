@@ -895,7 +895,7 @@ def calculate_comparison_school_list(
     schools["High Grade"] = schools["High Grade"].astype(int)
 
     school_grade_span = (
-        schools.loc[schools["School ID"] == int(school_id)][["Low Grade", "High Grade"]]
+        schools.loc[schools["School ID"] == school_id][["Low Grade", "High Grade"]]
         .values[0]
         .tolist()
     )
@@ -950,7 +950,7 @@ def calculate_comparison_school_list(
     schools = schools.reset_index(drop=True)
 
     # now find the comparison school list
-    school_idx = schools[schools["School ID"] == int(school_id)].index
+    school_idx = schools[schools["School ID"] == school_id].index
 
     # NOTE: This should never ever happen because we've already determined
     # that the school exists in the check above. However, it did happen once,
@@ -989,7 +989,7 @@ def calculate_comparison_school_list(
     comparison_set = comparison_set.sort_values(by=["Distance"], ascending=True)
 
     comparison_set = comparison_set.head(num_schools_expanded)
-
+    
     # convert for comparison dropdown
     return comparison_set[["School ID", "School Name"]].to_dict(
         "records",

@@ -23,10 +23,11 @@ import re
 
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine, text
+
 from calculations import (
     calculate_percentage,  # TODO: Move this as well
 )
-from sqlalchemy import create_engine, text
 
 engine = create_engine("sqlite:///data/indiana_schools_public.db")
 
@@ -260,7 +261,7 @@ def get_public_dropdown():
             low_high["Low Grade"].astype(int) >= 9,
             "HS",
             np.where(
-                (low_high["Low Grade"].astype(int) <= 3)
+                (low_high["Low Grade"].astype(int) <= 8)   #K12 stands in for any school with grades 9-12+
                 & (low_high["High Grade"].astype(int) >= 9),
                 "K12",
                 "K8",
@@ -280,7 +281,7 @@ def get_public_dropdown():
                 low_high["Low Grade"].astype(int) >= 9,
                 "HS",
                 np.where(
-                    (low_high["Low Grade"].astype(int) <= 3)
+                    (low_high["Low Grade"].astype(int) <= 8)
                     & (low_high["High Grade"].astype(int) >= 9),
                     "K12",
                     "K8",
@@ -314,6 +315,7 @@ def get_public_dropdown():
     dropdown_list = dropdown_list.set_index(["School ID"])
 
     dropdown_list.update(ahs_data)
+    
     return dropdown_list.reset_index()
 
 
@@ -646,6 +648,7 @@ def get_available_years(*args):
 
     years = results.columns.tolist()
 
+    print(years)
     return [str(col) for col in years if "Category" not in str(col)]
 
 
