@@ -6,21 +6,6 @@
 # version:  0.9  # noqa: ERA001
 # date:     01/06/25
 
-# NOTE: No K8 academic data exists for 2020
-
-# Current data:
-# ILEARN & ILEARN Student - 2024
-# IREAD & IREAD Student - 2024
-# SAT - 2024
-# ADM - 2024
-# Attendance Rate - 2023
-# Chronic Absenteeism - 2024
-# Demographics - 2024 (except SPED/ELL)
-# Financial - either 2023 (Audited) or 2024(Q4)
-# Graduation Rate - 2023
-
-import re
-
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -212,6 +197,143 @@ def get_school_coordinates(*args):
         )
 
     return run_query(q, params)
+
+
+def get_corp_list():
+    params = {"id": ""}
+    q = text(
+        """
+        SELECT *
+            FROM demographic_data_corp
+        """,
+    )
+
+    results = run_query(q, params)
+    
+    max_year =  results['Year'].astype(int).max()
+
+    droplist = results[results['Year'] == max_year]
+
+    droplist.sort_values(by='Year', ascending=False)
+    
+    return droplist[['Year','Corporation Name', 'Corporation ID']]
+
+
+# need to return schools matching corp id, years and calculate
+# school type
+def get_school_list(*args):
+    keys = ["id"]
+    params = dict(zip(keys, args, strict=False))
+
+    q = text(
+        """
+        SELECT *
+            FROM demographic_data_school
+            WHERE CorporationID = :id
+        """,
+    )
+
+    results = run_query(q, params)
+
+    # get school type
+    grades = results[
+        [
+            "Grade 3",
+            "Grade 4",
+            "Grade 5",
+            "Grade 6",
+            "Grade 7",
+            "Grade 8",
+            "Grade 9",
+            "Grade 10",
+            "Grade 11",
+            "Grade 12",
+        ]
+    ]
+    grades = grades.replace(0, np.nan)
+    grades = grades.replace("0", np.nan)
+
+    low_high = pd.DataFrame()
+    low_high["Low Grade"] = (
+        grades.dropna(how="all").notna().idxmax(axis=1).astype("string")
+    )
+    low_high["High Grade"] = grades.apply(
+        pd.Series.last_valid_index, axis=1,
+    ).reset_index(drop=True)
+
+    print(low_high)
+    low_high["Low Grade"] = low_high["Low Grade"].str.replace("Grade ", "")
+    low_high["High Grade"] = low_high["High Grade"].str.replace("Grade ", "")
+
+    low_high["School Type"] = np.where(
+        (low_high["Low Grade"].astype(int) < 9)
+        & (low_high["High Grade"].astype(int) < 9),
+        "K8",
+        np.where(
+            low_high["Low Grade"].astype(int) >= 9,
+            "HS",
+            np.where(
+                (low_high["Low Grade"].astype(int) <= 8)   #K12 stands in for any school with grades 9-12+
+                & (low_high["High Grade"].astype(int) >= 9),
+                "K12",
+                "K8",
+            ),
+        ),
+    )
+
+    low_high["Sub Type"] = np.where(
+        (low_high["Low Grade"].astype(int) < 5)
+        & (low_high["High Grade"].astype(int) <= 5),
+        "ES",
+        np.where(
+            (low_high["Low Grade"].astype(int) >= 5)
+            & (low_high["High Grade"].astype(int) < 9),
+            "MS",
+            np.where(
+                low_high["Low Grade"].astype(int) >= 9,
+                "HS",
+                np.where(
+                    (low_high["Low Grade"].astype(int) <= 8)
+                    & (low_high["High Grade"].astype(int) >= 9),
+                    "K12",
+                    "K8",
+                ),
+            ),
+        ),
+    )
+
+    filtered = results[
+        ["Year", "Corporation ID", "Corporation Name", "School ID", "School Name"]
+    ]
+
+    dropdown_list = pd.merge(
+        filtered,
+        low_high[["School Type", "Sub Type"]],
+        left_index=True,
+        right_index=True,
+    )
+
+    # TODO: Add?
+    # # cannot identify AHS by gradespan because their grade levels are
+    # # not reliably stored in the demographics file (usually as 11 & 12,
+    # # rarely "Adult")
+    # ahs_data = get_ahs_averages()
+
+    # ahs_data = ahs_data[["School ID", "School Type"]]
+    # ahs_data["Sub Type"] = ahs_data["School Type"]
+
+    # ahs_data = ahs_data.drop_duplicates(subset=["School ID"])
+
+    # ahs_data = ahs_data.set_index(["School ID"])
+    # dropdown_list = dropdown_list.set_index(["School ID"])
+
+    # dropdown_list.update(ahs_data)
+    
+    # return dropdown_list.reset_index()
+
+    dropdown_list.sort_values(by='School Name', ascending=False)
+
+    return dropdown_list
 
 
 def get_public_dropdown():

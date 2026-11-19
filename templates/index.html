@@ -15,6 +15,7 @@
    <script src="{{ url_for('static', filename='ag-grid-community.min.js')}}"></script>
 
    <!-- Local Modules -->
+   <script src="{{ url_for('static', filename='api.js')}}"></script>
    <script src="{{ url_for('static', filename='d3-helpers.js')}}"></script>
    <script src="{{ url_for('static', filename='chart-helpers.js')}}"></script>
    <script src="{{ url_for('static', filename='table-helpers.js')}}"></script>
@@ -147,39 +148,39 @@
 
                      <div class="empty-box tab2-label-10" id="info-container-gradrate-label-10"><div id="info-gradrate-label-10" class="label__header"></div></div>
                      <div class="table-box tab2-table-10" id="info-container-gradrate-table-10"><div id="info-gradrate-table-10" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-10" id="info-container-gradrate-chart-10"><div id="info-ilearn-chart-10"></div></div>
+                     <div class="box tab2-lines-10" id="info-container-gradrate-chart-10"><div id="info-gradrate-chart-10"></div></div>
 
                      <div class="empty-box tab2-label-11" id="info-container-gradrate-label-11"><div id="info-gradrate-label-11" class="label__header"></div></div>
                      <div class="table-box tab2-table-11" id="info-container-gradrate-table-11"><div id="info-gradrate-table-11" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-11" id="info-container-gradrate-chart-11"><div id="info-ilearn-chart-11"></div></div>
+                     <div class="box tab2-lines-11" id="info-container-gradrate-chart-11"><div id="info-gradrate-chart-11"></div></div>
 
                      <div class="empty-box tab2-label-12" id="info-container-gradrate-label-12"><div id="info-gradrate-label-12" class="label__header"></div></div>
                      <div class="table-box tab2-table-12" id="info-container-gradrate-table-12"><div id="info-gradrate-table-12" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-12" id="info-container-gradrate-chart-12"><div id="info-ilearn-chart-12"></div></div>
+                     <div class="box tab2-lines-12" id="info-container-gradrate-chart-12"><div id="info-gradrate-chart-12"></div></div>
 
                      <div class="empty-box tab2-label-13" id="info-container-sat-label-13"><div id="info-sat-label-13" class="label__header"></div></div>
                      <div class="table-box tab2-table-13" id="info-container-sat-table-13"><div id="info-sat-table-13" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-13" id="info-container-sat-chart-13"><div id="info-ilearn-chart-13"></div></div>
+                     <div class="box tab2-lines-13" id="info-container-sat-chart-13"><div id="info-sat-chart-13"></div></div>
 
                      <div class="empty-box tab2-label-14" id="info-container-sat-label-14"><div id="info-sat-label-14" class="label__header"></div></div>
                      <div class="table-box tab2-table-14" id="info-container-sat-table-14"><div id="info-sat-table-14" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-14" id="info-container-sat-chart-14"><div id="info-ilearn-chart-14"></div></div>
+                     <div class="box tab2-lines-14" id="info-container-sat-chart-14"><div id="info-sat-chart-14"></div></div>
 
                      <div class="empty-box tab2-label-15" id="info-container-sat-label-15"><div id="info-sat-label-15" class="label__header"></div></div>
                      <div class="table-box tab2-table-15" id="info-container-sat-table-15"><div id="info-sat-table-15" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-15" id="info-container-sat-chart-15"><div id="info-ilearn-chart-15"></div></div>
+                     <div class="box tab2-lines-15" id="info-container-sat-chart-15"><div id="info-sat-chart-15"></div></div>
 
                      <div class="empty-box tab2-label-16" id="info-container-sat-label-16"><div id="info-sat-label-16" class="label__header"></div></div>
                      <div class="table-box tab2-table-16" id="info-container-sat-table-16"><div id="info-sat-table-16" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-16" id="info-container-sat-chart-16"><div id="info-ilearn-chart-16"></div></div>
+                     <div class="box tab2-lines-16" id="info-container-sat-chart-16"><div id="info-sat-chart-16"></div></div>
 
                      <div class="empty-box tab2-label-17" id="info-container-sat-label-17"><div id="info-sat-label-17" class="label__header"></div></div>
                      <div class="table-box tab2-table-17" id="info-container-sat-table-17"><div id="info-sat-table-17" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-17" id="info-container-sat-chart-17"><div id="info-ilearn-chart-17"></div></div>
+                     <div class="box tab2-lines-17" id="info-container-sat-chart-17"><div id="info-sat-chart-17"></div></div>
 
                      <div class="empty-box tab2-label-18" id="info-container-sat-label-18"><div id="info-sat-label-18" class="label__header"></div></div>
                      <div class="table-box tab2-table-18" id="info-container-sat-table-18"><div id="info-sat-table-18" style="width: 100%; height: 100%" class="ag-theme-quartz"></div></div>
-                     <div class="box tab2-lines-18" id="info-container-sat-chart-18"><div id="info-ilearn-chart-18"></div></div>
+                     <div class="box tab2-lines-18" id="info-container-sat-chart-18"><div id="info-sat-chart-18"></div></div>
                   </div>
                </section>
             </div>
@@ -201,22 +202,18 @@
                            <div id="analysis-iread-table-1" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-iread-msg-1"></div>
                         </div>
-
                         <div class="empty-box tab3-label-2" id="analysis-container-iread-label-2"><div id="analysis-iread-label-2" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-2" id="analysis-container-iread-chart-2"><div id="ireadComparisonEthnicity"></div></div>
                         <div class="table-box tab3-table-2" id="analysis-container-iread-table-2">
                            <div id="analysis-iread-table-2" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-iread-msg-2"></div>
                         </div>
-
-
                         <div class="empty-box tab3-label-3" id="analysis-container-iread-label-3"><div id="analysis-iread-label-3" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-3" id="analysis-container-iread-chart-3"><div id="ireadComparisonSubgroup"></div></div>
                         <div class="table-box tab3-table-3" id="analysis-container-iread-table-3">
                            <div id="analysis-iread-table-3" style="width: 100%" class="ag-theme-quartz"></div>
                            <div id="analysis-iread-msg-3"></div>
                         </div>
-
                         <div class="empty-box tab3-label-4" id="analysis-container-ilearn-label-4"><div id="analysis-ilearn-label-4" class="label__header"></div></div>
                         <div class="stack-box tab3-chart-4" id="analysis-container-ilearn-chart-4"><div id="elaILEARNComparisonTotal"></div></div>
                         <div class="table-box tab3-table-4" id="analysis-container-ilearn-table-4">
@@ -332,15 +329,32 @@
 // version:  0.9
 // date:     03.14.25
 
-var origSelect = {}
-
-/* Backend calls */
 const getMaxYears = `${window.origin}/config`;
 const yearResponse = await fetch(getMaxYears);
 const maxYears = await yearResponse.json();
 
 const curAcademicYear = maxYears.academic_year;
-const curDemographicYear = maxYears.demographic_year;
+// const curDemographicYear = maxYears.demographic_year;
+
+const dropdownGroup = {
+   comparisonSelection: document.getElementById("comparisonSelect"),
+   yearSelection: document.getElementById("yearSelect"),
+   corpSelection: document.getElementById("corpSelect"),
+   schoolSelection: document.getElementById("schoolSelect"),
+}
+
+const buttonGroup = {
+   pageTab: document.querySelector(".tab.main.active").id,
+   typeTab: document.querySelector(".tab.type.active").id,
+   k8Tab: document.querySelector(".tab.k8info.active").id,
+   hsTab: document.querySelector(".tab.hsinfo.active").id,
+   analysisTab: document.querySelector(".tab.analysis.active").id,
+}
+
+const comparisonSelection = document.getElementById("comparisonSelect");
+const yearSelection = document.getElementById("yearSelect");
+const corpSelection = document.getElementById("corpSelect");
+const schoolSelection = document.getElementById("schoolSelect");
 
 // List of Corporation and School Names for dropdown
 const allSchoolsUrl = `${window.origin}/load`;
@@ -355,85 +369,89 @@ allSchoolsObj.forEach(function (obj) {
    toString(obj["School ID"]) + ")";
 });
 
+// async function getDemographicData(select) {
+//    const fetchedData = await fetch(`${window.origin}/demographic`, {
+//       method: "POST",
+//          credentials: "include",
+//          cache: "no-cache",
+//          headers: {
+//             Accept: "application/json",
+//             "Content-Type": "application/json",
+//       },
+//       body:JSON.stringify(select)})
+//       .then(response=>{
+//          if (response.ok) {
+//             return response.json()
+//          } else {
+//             alert("Network Error: Could not load data.")
+//          }
+//       });
 
-async function getDemographicData(select) {
-   const fetchedData = await fetch(`${window.origin}/demographic`, {
-      method: "POST",
-         credentials: "include",
-         cache: "no-cache",
-         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-      },
-      body:JSON.stringify(select)})
-      .then(response=>{
-         if (response.ok) {
-            return response.json()
-         } else {
-            alert("Network Error: Could not load data.")
-         }
-      });
-
-   let demData = fetchedData[0];
-   demographicsPage(demData);
-};
-
-
-async function getAcademicInfoData(select) {
-   const fetchedData = await fetch(`${window.origin}/academic`, {
-      method: "POST",
-         credentials: "include",
-         cache: "no-cache",
-         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-      },
-      body:JSON.stringify(select)})
-      .then(response=>{
-         if (response.ok) {
-            return response.json()
-         } else {
-            alert("Network Error: Could not load data.")
-         }
-      })
-
-      let infoData = fetchedData[0];
-
-      academicInfoPage(infoData);
-};
+//    let demData = fetchedData[0];
+//    demographicsPage(demData);
+// };
 
 
-async function getAvailableYears(select) {
-   const yearData = await fetch(`${window.origin}/years`, {
-      method: "POST",
-         credentials: "include",
-         cache: "no-cache",
-         headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-      },
-      body:JSON.stringify(select)})
-      .then(response=>{
-         if (response.ok) {
-            return response.json()
-         } else {
-            alert("Network Error: Could not load data.")
-         }
-      })
+// async function getAcademicInfoData(select) {
+//    console.log("infoData")
+//    console.log(select)
+//    const fetchedData = await fetch(`${window.origin}/academic`, {
+//       method: "POST",
+//          credentials: "include",
+//          cache: "no-cache",
+//          headers: {
+//             Accept: "application/json",
+//             "Content-Type": "application/json",
+//       },
+//       body:JSON.stringify(select)})
+//       .then(response=>{
+//          if (response.ok) {
+//             return response.json()
+//          } else {
+//             alert("Network Error: Could not load data.")
+//          }
+//       })
 
-      return yearData
-};
+//       let infoData = fetchedData[0];
+
+//       return infoData
+//       // academicInfoPage(infoData);
+// };
+
+
+// async function getAvailableYears(select) {
+//    const yearData = await fetch(`${window.origin}/years`, {
+//       method: "POST",
+//          credentials: "include",
+//          cache: "no-cache",
+//          headers: {
+//             Accept: "application/json",
+//             "Content-Type": "application/json",
+//       },
+//       body:JSON.stringify(select)})
+//       .then(response=>{
+//          if (response.ok) {
+//             return response.json()
+//          } else {
+//             alert("Network Error: Could not load data.")
+//          }
+//       })
+
+//       return yearData
+// };
 
 async function getAcademicAnalysisData(select) {
 // TODO: Sometimes "select.comparison_schools" is empty - presumably
 // because at the time the data is passed, the checked schools have
 // not been registered - resolve passed vs. global use
 
-   let directSelect = comparisonSelect.getSelected();
+   // TODO: TESTING REMOVING THIS
+   // only populated once set by get comparison lsit
+   // let directSelect = comparisonSelect.getSelected(); 
 
-   if (Array.isArray(directSelect) || directSelect.length) {
-      select.comparison_schools = directSelect;
-   };
+   // if (Array.isArray(directSelect) || directSelect.length) {
+   //    select.comparison_schools = directSelect;
+   // };
 
    const fetchedData = await fetch(`${window.origin}/academic`, {
       method: "POST",
@@ -469,11 +487,109 @@ async function getComparisonSchools(select) {
          } else {
             alert("Network Error: Could not load data.")
          }
-      })
+      });
      await setComparisonList(comparisonSchoolList);
 };
 
-// TODO: Get rid of these GLOBALS
+
+
+// NEW //
+async function setCorpDropdown() {
+   try {
+      const response  = await fetch(`${window.origin}/init`);
+
+      if (!response.ok) {
+         alert("Network Error: Could not load dropdown.")
+      }
+
+      let droplist = await response.json();
+
+      droplist.forEach(function (obj) {
+         obj["Corporation Name"] = obj["Corporation Name"] + " (" +
+         toString(obj["Corporation ID"]) + ")";
+      });
+
+      const Year = droplist[0].Year;
+
+      droplist.forEach(
+         (corp) => corpSelection
+         .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
+      );
+
+   return droplist
+   
+   } catch (error) {
+    console.error('Failed to load dropdown data:', error);
+    selectElement.innerHTML = '<option disabled selected>Error loading data</option>';
+  }
+}
+
+// NEW //
+
+// Sets school list and year list - called whenever corpList is changed //
+async function setSchoolList(id) {
+
+   const response = await fetch(`${window.origin}/schools`, {
+      method: "POST",
+      headers: {
+            "Content-type": "application/json",
+            "Accept": "application/json"
+      },
+      body:JSON.stringify(id)})
+      .then(response=>{
+         if (response.ok) {
+            return response.json()
+         } else {
+            alert("Network Error: Could not load data.")
+         }
+      });
+
+      let availableYears = [... new Set(response.map(o => o.Year))];
+      
+      const maxYear = Math.max(...availableYears);
+
+      let currentSchools = response.filter(
+         (o) => o["Year"] === maxYear
+      );
+
+      const schoolSelection = document.getElementById("schoolSelect");
+      removeOptions(schoolSelection);
+
+      currentSchools.forEach(
+         (school) => schoolSelection
+         .appendChild(new Option(school["School Name"], school["School ID"]))
+      );
+
+      const yearSelection = document.getElementById("yearSelect");
+      removeOptions(yearSelection);
+
+      availableYears.sort((a, b) => (a > b ? -1 : 1))
+
+      availableYears.forEach((year) => yearSelection
+         .appendChild(new Option(year, year))
+      );
+};
+
+
+// TODO: State management
+// TODO: CHECK
+// Memory leaks from event listeners. Every addEventListener without a corresponding
+// removeEventListener is a potential leak. When you remove elements from the DOM, 
+// their listeners persist if other code holds a reference. Use event delegation to 
+// minimize the number of listeners, and always clean up in a destroy method.
+
+// 1. Use event delegation by default. Attach listeners to containers, not individual 
+// elements. This handles dynamic content, reduces memory usage, and simplifies cleanup.
+
+// 2. Return unsubscribe functions. Any subscribe, on, or addEventListener call should
+// return a cleanup function. This prevents memory leaks and makes component lifecycle
+// management explicit.
+
+// 3. Separate state from the DOM. Keep your data in JavaScript objects. Render the DOM
+// from that data. Never read the DOM to determine application state. This makes your
+// code predictable and testable.
+
+
 let colorState = [];
 
 // Demographic Page
@@ -577,132 +693,173 @@ async function getSelectedValues() {
 };
 
 
+/** State Management **/
+function createStore(initialState) {
+  let state = initialState;
+  const listeners = new Set();
+
+  return {
+    getState: () => state,
+    setState: (updater) => {
+      // Allow passing either an object or a function receiving previous state
+      const nextState = typeof updater === 'function' ? updater(state) : updater;
+      state = { ...state, ...nextState };
+      listeners.forEach((listener) => listener(state));
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener); // Returns an unsubscribe function
+    }
+  };
+}
+
+// initialize state
+const uiState = createStore({
+   school_id: document.getElementById("schoolSelect").value,
+   corp_id: document.getElementById("corpSelect").value,
+   year: document.getElementById("yearSelect").value,
+   comparison_schools: document.getElementById("comparisonSelect").value,
+   school_type: null,
+   school_subtype: null,
+   page_tab: document.querySelector(".tab.main.active").id,  // pageTab
+   k8_tab: document.querySelector(".tab.k8info.active").id, // k8Tab
+   hs_tab: document.querySelector(".tab.hsinfo.active").id, // hsTab
+   type_tab: document.querySelector(".tab.main.active").id,  // typeTab
+   analysis_tab: document.querySelector(".tab.analysis.active").id //analysisTab
+});
+/** State Management **/
+
+
+
+///////// FIX ALL INSTANCES OF CHANGING SCHOOL/CORP //////
+
+
 /* Dropdown functions */
-async function setYearList(schoolData) {
+// async function setYearList(schoolData) {
 
-   const schoolID = schoolSelection.value;
-   const pageTab = document.querySelector(".tab.main.active").id;
+//    const schoolID = schoolSelection.value;
+//    const pageTab = document.querySelector(".tab.main.active").id;
 
-   if (yearSelection.value != "") {
-      selectedValues = await getSelectedValues();
-      let booty = await getAvailableYears(selectedValues);
-   }
+//    if (yearSelection.value != "") {
+//       selectedValues = await getSelectedValues();
+//       let booty = await getAvailableYears(selectedValues);
+//       console.log("booty")
+//       console.log(booty)
+//    }
+// //// TODO ////
+// // Initially, the idea was to eventually substitute booty for the
+// // below JS code because it does all of the necessaryt checks - but
+// // do we really need to do this? booty itself appears to adapt the
+// // get_available_years python function
+// // TODO: Test booty to make sure it doesn't run on all tabs
 
-//// TODO ////
-// Initially, the idea was to eventually substitute booty for the
-// below JS code because it does all of the necessaryt checks - but
-// do we really need to do this? booty itself appears to adapt the
-// get_available_years python function
-// TODO: Test booty to make sure it doesn't run on all tabs
+//    let selectedYear = yearSelection;
 
+//    removeOptions(selectedYear);
 
-   let selectedYear = yearSelection;
+//    let yearValue,
+//       maxYear;
 
-   removeOptions(selectedYear);
-
-   let yearValue,
-      maxYear;
-
-   let selectedSchoolData = schoolData.filter(
-      (o) => o["School ID"] === schoolID
-   );
+//    let selectedSchoolData = schoolData.filter(
+//       (o) => o["School ID"] === schoolID
+//    );
    
-   // Get available years for the selected school
-   let availableYears = [... new Set(selectedSchoolData.map(o => o.Year))];
+//    // Get available years for the selected school
+//    let availableYears = [... new Set(selectedSchoolData.map(o => o.Year))];
 
-   if (pageTab == "demoTab") {
-      maxYear = curDemographicYear;
-   }
-   else {
-      maxYear = curAcademicYear;
-   };
+//    if (pageTab == "demoTab") {
+//       maxYear = curDemographicYear;
+//    }
+//    else {
+//       maxYear = curAcademicYear;
+//    };
 
-   // make sure selected Year is not greater than max academic year
-   availableYears = availableYears.filter(arr => arr <= maxYear);
-   availableYears.sort((a, b) => (a > b ? -1 : 1))
+//    // make sure selected Year is not greater than max academic year
+//    availableYears = availableYears.filter(arr => arr <= maxYear);
+//    availableYears.sort((a, b) => (a > b ? -1 : 1))
 
-   availableYears.forEach((year) => 
-      selectedYear.appendChild(new Option(year, year)));
-};
+//    availableYears.forEach((year) => 
+//       selectedYear.appendChild(new Option(year, year)));
+// };
 
 
-async function setCorpList(schoolData) {
+// async function setCorpList(schoolData) {
 
-   let selectedYear;
+//    let selectedYear;
 
-   // Need this because we need to run setCorpList before
-   // setYearList on app load (because we need schoolID to
-   // be set before setYearList is called to be able to set
-   // the correct number of years). Only necessary on load,
-   // should hit else clause every other time.
-   if (yearSelection.value == "") {
+//    // Need this because we need to run setCorpList before
+//    // setYearList on app load (because we need schoolID to
+//    // be set before setYearList is called to be able to set
+//    // the correct number of years). Only necessary on load,
+//    // should hit else clause every other time.
+//    if (yearSelection.value == "") {
 
-      const pageTab = document.querySelector(".tab.main.active").id;
+//       const pageTab = document.querySelector(".tab.main.active").id;
       
-      if (pageTab == "demoTab") {
-         selectedYear = curDemographicYear;
-      }
-      else {
-         selectedYear = curAcademicYear;
-      };
+//       if (pageTab == "demoTab") {
+//          selectedYear = curDemographicYear;
+//       }
+//       else {
+//          selectedYear = curAcademicYear;
+//       };
 
-   } else {
-      selectedValues = await getSelectedValues();
-      selectedYear = selectedValues.year;
-   }
+//    } else {
+//       selectedValues = await getSelectedValues();
+//       selectedYear = selectedValues.year;
+//    }
 
-   let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
+//    let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
 
-   // remove duplicates
-   let corpDropdown = yearData.filter(
-      (v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i
-   );
+//    // remove duplicates
+//    let corpDropdown = yearData.filter(
+//       (v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i
+//    );
 
-   corpDropdown.forEach(
-      (corp) => corpSelection
-      .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
-   );
+//    corpDropdown.forEach(
+//       (corp) => corpSelection
+//       .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
+//    );
 
-   // initialize school list
-   await setSchoolList(schoolData);
-};
+//    // initialize school list
+//    await setSchoolList(schoolData);
+// };
 
 
-async function setSchoolList(schoolData) {
+// async function setSchoolList(schoolData) {
 
-   let schoolDropdown = [];
-   let selectedYear;
+//    let schoolDropdown = [];
+//    let selectedYear;
    
-   if (yearSelection.value == "") {
-      const pageTab = document.querySelector(".tab.main.active").id;
-      if (pageTab == "demoTab") {
-         selectedYear = curDemographicYear;
-      }
-      else {
-         selectedYear = curAcademicYear;
-      };
-   } else {
-      selectedValues = await getSelectedValues();
-      selectedYear = selectedValues.year;
-   };
+//    if (yearSelection.value == "") {
+//       const pageTab = document.querySelector(".tab.main.active").id;
+//       if (pageTab == "demoTab") {
+//          selectedYear = curDemographicYear;
+//       }
+//       else {
+//          selectedYear = curAcademicYear;
+//       };
+//    } else {
+//       selectedValues = await getSelectedValues();
+//       selectedYear = selectedValues.year;
+//    };
 
-   const corpId = corpSelection.value;
+//    const corpId = corpSelection.value;
 
-   let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
+//    let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
 
-   schoolDropdown = yearData.filter(obj => obj["Corporation ID"] == corpId);
+//    schoolDropdown = yearData.filter(obj => obj["Corporation ID"] == corpId);
 
-   // clears school dropdown element before rebuilding
-   removeOptions(schoolSelection);
+//    // clears school dropdown element before rebuilding
+//    removeOptions(schoolSelection);
 
-   schoolDropdown.forEach(
-      (school) => schoolSelection
-      .appendChild(new Option(school["School Name"], school["School ID"]))
-   );
+//    schoolDropdown.forEach(
+//       (school) => schoolSelection
+//       .appendChild(new Option(school["School Name"], school["School ID"]))
+//    );
 
-   // reset yearList
-   await setYearList(schoolData);
-};
+//    // reset yearList
+//    await setYearList(schoolData);
+// };
 
 
 // This should be called: on init, on school change, and on
@@ -738,6 +895,9 @@ async function getComparisonList() {
 selectedValues = await getSelectedValues();
 let schoolIDs = selectedValues.comparison_schools;
 
+/// TEST ///
+// let schoolIDs = uiState.getState().school_id;
+
 if (!Array.isArray(schoolIDs) || !schoolIDs.length || schoolIDs == undefined) {
    schoolIDs = comparisonSelect.getSelected();
    };
@@ -762,10 +922,10 @@ const comparisonSelect = new SlimSelect({
 });
 
 
-const msgDiv = document.getElementById("max-message");
-const comparisonSelection = document.getElementById("comparisonSelect");
+
 comparisonSelection.addEventListener("change", function () {
 
+   const msgDiv = document.getElementById("max-message");
    // show message when maximum # of schools have been selected
    const numX = comparisonSelect.getSelected().length;
 
@@ -791,37 +951,48 @@ comparisonSelection.addEventListener("change", function () {
 
 // declare these here, but using event delegation in the
 // dropdown addEvent listener for processing
-const yearSelection = document.getElementById("yearSelect");
 yearSelection.addEventListener("change", async () => {
-
    selectedValues = await getSelectedValues();
+   let state = uiState.getState();
 
-   if (selectedValues.page_tab === "analysisTab") {
+   console.log("uiState-year")
+   console.log(state)
+
+   if (state.page_tab === "analysisTab") {
       selectedValues.comparison_schools = await getComparisonList();
-      getAcademicAnalysisData(selectedValues);
+      getAcademicAnalysisData(state);
    }
-   else if (selectedValues.page_tab === "infoTab")  {
-      getAcademicInfoData(selectedValues);
+   else if (state.page_tab === "infoTab")  {
+      const academicInfoData = await getAcademicInfoData(state);
+      academicInfoPage(academicInfoData)
    }
    else {
-      getDemographicData(selectedValues)
+      const demographicData = await getDemographicData(state);
+      demographicsPage(demographicData);
+      // getDemographicData(selectedValues)
    }
 });
 
 
 // TODO: switch to search bar? Need to tweak Corp/School Dropdowns
-const corpSelection = document.getElementById("corpSelect");
 corpSelection.addEventListener("change", async () => {
 
-   await setSchoolList(allSchoolsObj)
+   const corpID = document.getElementById("corpSelect").value;
+   await setSchoolList(corpID)
+   // await setSchoolList(allSchoolsObj)
    // new corpSelection will reset schoolSelection, so we need
+
    // to force a schoolSelection event
    var event = new Event("change");
    schoolSelection.dispatchEvent(event);
 });
 
-const schoolSelection = document.getElementById("schoolSelect");
 schoolSelection.addEventListener("change", async () => {
+
+   let state = uiState.getState();
+
+   console.log("uiState-schoolselect")
+   console.log(state)
 
    selectedValues = await getSelectedValues();
    
@@ -854,7 +1025,9 @@ schoolSelection.addEventListener("change", async () => {
       k8Categories.classList.remove("open");
       hsCategories.classList.remove("open");
       analysisPages.classList.remove("open");
-      getDemographicData(selectedValues);
+      const demographicData = await getDemographicData(selectedValues);
+      demographicsPage(demographicData);
+      // getDemographicData(selectedValues)
    }
    else if (selectedPage == "infoTab") {
 
@@ -948,7 +1121,9 @@ schoolSelection.addEventListener("change", async () => {
 
          selectedValues.type_tab = "hsTab";
       }
-      getAcademicInfoData(selectedValues);
+      const academicInfoData = await getAcademicInfoData(selectedValues);
+      academicInfoPage(academicInfoData)
+      // getAcademicInfoData(selectedValues);
    }
    else if (selectedPage == "analysisTab") {
 
@@ -1063,6 +1238,29 @@ else {
 
 async function navigateHandler(e) {
 
+   e = e || window.event;
+   const target = e.target || e.srcElement;
+
+   console.log('targetclass')
+   console.log(target.id)
+   console.log(target.className)
+
+   // refresh state after update
+   uiState.setState({
+      school_id: document.getElementById("schoolSelect").value,
+      corp_id: document.getElementById("corpSelect").value,
+      year: document.getElementById("yearSelect").value,
+      comparison_schools: document.getElementById("comparisonSelect").value,
+      school_type: null,
+      school_subtype: null,
+      page_tab: document.querySelector(".tab.main.active").id,
+      k8_tab: document.querySelector(".tab.k8info.active").id,
+      hs_tab: document.querySelector(".tab.hsinfo.active").id,
+      type_tab: document.querySelector(".tab.main.active").id,
+      analysis_tab: document.querySelector(".tab.analysis.active").id
+   })
+
+
    selectedValues = await getSelectedValues();
 
    const selectedPage = selectedValues.page_tab;
@@ -1084,8 +1282,13 @@ async function navigateHandler(e) {
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
 
-   e = e || window.event;
-   const target = e.target || e.srcElement;
+   // e = e || window.event;
+   // const target = e.target || e.srcElement;
+
+   console.log("DEFAULT SELECTVAL")
+   console.log(selectedValues)
+   console.log("Nav handler - uiState")
+   console.log(uiState.getState())
 
    // the iread/ilearn tabs should never be visible when HS is selected
    // and should always be available when K8 is selected
@@ -1107,13 +1310,15 @@ async function navigateHandler(e) {
       typeCategories.classList.remove("open");
       analysisPages.classList.remove("open");
 
-      await setYearList(allSchoolsObj);
+      // await setYearList(allSchoolsObj);
 
       // reset year value
       yearSelection.value = strYear;
       yearSelection.setAttribute("value", strYear);
 
-      getDemographicData(selectedValues);
+      const demographicData = await getDemographicData(selectedValues);
+      demographicsPage(demographicData);
+      // getDemographicData(selectedValues)
 
       // adjust chart size based on browser window size
       let windowWidth = window.innerWidth/2 - 125;
@@ -1123,18 +1328,10 @@ async function navigateHandler(e) {
       ethnicityDemoChart.width(windowWidth);
       statusDemoChart.width(windowWidth);
    }
-   else if (
-
-    // Academic Information Tab and subtabs //
-      target.id.match("infoTab") ||
-      selectedPage.match("infoTab") &&
-      (
-         target.id.match("ilearnTab") ||
-         target.id.match("ireadTab") ||
-         target.id.match("k8Tab") ||
-         target.id.match("hsTab") ||
-         target.id.match("gradTab") ||
-         target.id.match("satTab")
+   else if (target.id.match("infoTab") || selectedPage.match("infoTab") && (
+         target.id.match("ilearnTab") || target.id.match("ireadTab") ||
+         target.id.match("k8Tab") || target.id.match("hsTab") ||
+         target.id.match("gradTab") || target.id.match("satTab")
       )
    ) {
 
@@ -1148,29 +1345,30 @@ async function navigateHandler(e) {
       // loops below to call chart width
       let ireadChartEle = [...document.querySelectorAll(
          '[id^="info-container-iread-chart"]')].map(item => item.id);
-      let ireadChartIndices = scrapeNumbers(ireadChartEle);
+      var ireadChartIndices = scrapeNumbers(ireadChartEle);
 
       let infoIlearnContainers = document.querySelectorAll(
          '[id^="info-container-ilearn"]'
       );
       let ilearnChartEle = [...document.querySelectorAll(
          '[id^="info-container-ilearn-chart"]')].map(item => item.id);
-      let ilearnChartIndices = scrapeNumbers(ilearnChartEle);
+      var ilearnChartIndices = scrapeNumbers(ilearnChartEle);
 
       let infoSatContainers = document.querySelectorAll(
          '[id^="info-container-sat"]'
       );
       let satChartElem = [...document.querySelectorAll(
          '[id^="info-container-gradrate-chart"]')].map(item => item.id);
-      let satChartIndices = scrapeNumbers(ilearnChartEle);
+      var satChartIndices = scrapeNumbers(ilearnChartEle);
 
       let infoGradRateContainers = document.querySelectorAll(
          '[id^="info-container-gradrate"]'
       );
       let gradChartElem = [...document.querySelectorAll(
          '[id^="info-container-sat-chart"]')].map(item => item.id);
-      let gradChartIndices = scrapeNumbers(gradChartElem);
+      var gradChartIndices = scrapeNumbers(gradChartElem);
 
+      // defaults
       infoIreadContainers.forEach(el => {
          el.style.display = "none";
       });
@@ -1193,10 +1391,13 @@ async function navigateHandler(e) {
          typeCategories.classList.remove("open");
       };
 
-      if (
-         (schoolType == "K8" && schoolSubtype != "MS") ||
-         (schoolType == "K12" && schoolSubtype == "K8") ||
-         schoolSubtype == "K8"
+      // if (
+      //    (schoolType == "K8" && schoolSubtype != "MS") ||
+      //    (schoolType == "K12" && schoolSubtype == "K8") ||
+      //    schoolSubtype == "K8"
+      // ) {
+         if (
+         schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")
       ) {
 
          k8Categories.classList.add("open");
@@ -1207,25 +1408,27 @@ async function navigateHandler(e) {
             });
 
             // adjust width for iread charts
-            const ireadStart = ireadChartIndices[0]-1;
-            const ireadEnd = ireadChartIndices.length-1;
-
-            for (let i = ireadStart; i < ireadEnd; i++) {
-               infoChart[i].width(windowWidth);
-            }
+            // const ireadStart = ireadChartIndices[0]-1;
+            // const ireadEnd = ireadChartIndices.length-1;
+            // for (let i = ireadStart; i < ireadEnd; i++) {
+            //    infoChart[i].width(windowWidth);
+            // }
          }
          else if (k8Selection == "ilearnTab") {
             infoIlearnContainers.forEach(el => {
                el.style.display = "flex";
             });
 
-            const ilearnStart = ilearnChartIndices[0]-1;
-            const ilearnEnd = ilearnChartIndices.length-1;
 
-            for (let i = ilearnStart; i < ilearnEnd; i++) {
+/// TODO: REWORK WIDTH - CRASHING HERE BECAUSE CHARTS NOT YET CREATED ///
 
-               infoChart[i].width(windowWidth);
-            }
+
+            // for (const idx of ilearnChartIndices) {
+            //    console.log(idx)
+            //    console.log(infoChart[idx])
+            //    infoChart[idx].width(windowWidth);
+            // }
+
          }
       }
       else if (
@@ -1240,28 +1443,27 @@ async function navigateHandler(e) {
                el.style.display = "flex";
             });
 
-            const gradStart = gradChartIndices[0]-1;
-            const gradEnd = gradChartIndices.length-1;
+            // const gradStart = gradChartIndices[0]-1;
+            // const gradEnd = gradChartIndices.length-1;
+            // for (let i = gradStart; i < gradEnd; i++) {
+            //    infoChart[i].width(windowWidth);
+            // }
 
-            for (let i = gradStart; i < gradEnd; i++) {
-               infoChart[i].width(windowWidth);
-            }
          }
          else if (hsSelection == "satTab") {
             infoSatContainers.forEach(el => {
                el.style.display = "flex";
             });
 
-            const satStart = satChartIndices[0]-1;
-            const satEnd = satChartIndices.length-1;
-
-            for (let i = satStart; i < satEnd; i++) {
-               infoChart[i].width(windowWidth);
-            }
+            // const satStart = satChartIndices[0]-1;
+            // const satEnd = satChartIndices.length-1;
+            // for (let i = satStart; i < satEnd; i++) {
+            //    infoChart[i].width(windowWidth);
+            // }
          }
       };
 
-      await setYearList(allSchoolsObj);
+      // await setYearList(allSchoolsObj);
 
       if (strYear == "2020") {
          yearValue = "2019";
@@ -1278,7 +1480,9 @@ async function navigateHandler(e) {
 
       selectedValues.year = yearValue;
 
-      getAcademicInfoData(selectedValues);
+      const academicInfoData = await getAcademicInfoData(selectedValues);
+      academicInfoPage(academicInfoData)
+      // getAcademicInfoData(selectedValues);
     }
     else if (
 
@@ -1366,7 +1570,7 @@ async function navigateHandler(e) {
          }
       };
 
-      await setYearList(allSchoolsObj);
+      // await setYearList(allSchoolsObj);
 
       if (strYear == 2020) {
          yearValue = 2019;
@@ -1602,6 +1806,8 @@ async function demographicsPage(data) {
 // Academic Information
 async function academicInfoPage(data) {
 
+   // TODO: selectedValues is reset each time it is called, so values do not necessarily
+   // persist - switch to Store
    selectedValues = await getSelectedValues();
 
    const year = selectedValues.year;
@@ -1620,281 +1826,361 @@ async function academicInfoPage(data) {
    const k8Tab = selectedValues.k8_tab
    const hsTab = selectedValues.hs_tab
 
-// TODO: Handle a completely empty array
    if (!Array.isArray(data) || !data.length) {
       console.log("NO DATA")
       console.log(data)
    }
 
-   let subject;
+   let subjects,
+       categories,
+       tableIds = [],
+       chartIds = [];
+
    let ireadlabels = document.querySelectorAll('[id^="info-container-iread-label"]');
    let ilearnLabels = document.querySelectorAll('[id^="info-container-ilearn-label"]');
    let gradLabels = document.querySelectorAll('[id^="info-container-gradrate-label"]');
    let satLabels = document.querySelectorAll('[id^="info-container-sat-label"]');
 
+   // this never changes, but only displayed if on infotab+ilearntab
+   const stackIds = [...document.querySelectorAll(
+      '[id^="info-ilearn"][id*="stack"]:not([id*="container"])'
+   )].map(item => item.id);
+
    // set subject, type, and chart labels
+   console.log("INFO TABLES BASIC DATA")
+   console.log(schoolType)
+   console.log(schoolSubtype)
+   console.log(k8Tab)
    if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
       if (k8Tab == "ireadTab") {
 
-         subject =  ["IREAD", "IREAD", "IREAD"];
+         subjects =  ["IREAD", "IREAD", "IREAD"];
+         categories = [total, ethnicity, subgroup];
 
          ireadlabels.forEach((el, i) => {
-            let ireadLabel = subject[0] + " " + IREADLabelSuffixes[i];
+            let ireadLabel = subjects[0] + " " + IREADLabelSuffixes[i]; // TODO SUffixes?
             el.firstChild.textContent = ireadLabel;
-
          });
+
+         tableIds =  [...document.querySelectorAll(
+               '[id^="info-iread"][id*="table"]:not([id*="container"])'
+            )].map(item => item.id);
+
+         chartIds =[...document.querySelectorAll(
+            '[id^="info-iread"][id*="chart"]:not([id*="container"])'
+         )].map(item => item.id);
       }
       else {
 
-         subject = ["ELA", "ELA", "ELA", "Math", "Math", "Math"]
+         subjects = ["ELA", "ELA", "ELA", "Math", "Math", "Math"]
+         categories = [gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup];
 
          ilearnLabels.forEach((el, i) => {
-            let ilearnLabel = subject[i] + " " + ilearnLabelSuffixes[i];
+            let ilearnLabel = subjects[i] + " " + ilearnLabelSuffixes[i];
             el.firstChild.textContent = ilearnLabel;
          });
+
+         tableIds =  [...document.querySelectorAll(
+            '[id^="info-ilearn"][id*="table"]:not([id*="container"])'
+         )].map(item => item.id);
+
+         chartIds = [...document.querySelectorAll(
+            '[id^="info-ilearn"][id*="chart"]:not([id*="container"])'
+         )].map(item => item.id);
       }
    }
    else if (
-      schoolType == "HS" || schoolType == "AHS" ||
-      (schoolType == "K12" && schoolSubtype == "HS")
+      schoolType == "HS" || schoolType == "AHS" || (schoolType == "K12" && schoolSubtype == "HS")
    ) {
 
       if (hsTab == "gradTab") {
-
-         subject = ["Graduation", "Graduation", "Graduation"];
+         subjects = ["Graduation", "Graduation", "Graduation"];
+         categories = [gradTotal, ethnicity, subgroup];
 
          gradLabels.forEach((el, i) => {
-            let gradLabel = subject[i] + " " + gradLabelSuffixes[i];
+            let gradLabel = subjects[i] + " " + gradLabelSuffixes[i];
             el.firstChild.textContent = gradLabel;
          });
+         
+         tableIds =  [...document.querySelectorAll(
+            '[id^="info-gradrate"][id*="table"]:not([id*="container"])'
+         )].map(item => item.id);
+
+         chartIds =[...document.querySelectorAll(
+            '[id^="info-gradrate"][id*="chart"]:not([id*="container"])'
+         )].map(item => item.id);
       }
       else {
 
-         subject = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
+         subjects = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
+         categories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
          satLabels.forEach((el, i) => {
-            let satLabel = "SAT" + " " + subject[i] + " " + satLabelSuffixes[i];
+            let satLabel = "SAT" + " " + subjects[i] + " " + satLabelSuffixes[i];
             el.firstChild.textContent = satLabel;
          });
+         tableIds =  [...document.querySelectorAll(
+            '[id^="info-sat"][id*="table"]:not([id*="container"])'
+         )].map(item => item.id);
+
+         chartIds =[...document.querySelectorAll(
+            '[id^="info-sat"][id*="chart"]:not([id*="container"])'
+         )].map(item => item.id);         
       }
    };
 
-   // get id from document (querySelector returns a collection,
-   // so we use spread syntax and map to get ids as a list)
-   var infoTableIds = [...document.querySelectorAll(
-      '[id^="info-"][id*="table"]:not([id*="container"])'
-   )].map(item => item.id);
+   // if (!academicInfoPage.initialize) {       // TODO: Change this to check individual charts!! and remove redundancy
 
+      // const allChartIds =[...document.querySelectorAll(
+      //       '[id^="info-"][id*="chart"]:not([id*="container"])'
+      //    )].map(item => item.id);
 
-   var infoChartIds = [...document.querySelectorAll(
-      '[id^="info-"][id*="chart"]:not([id*="container"])'
-   )].map(item => item.id);
+      // console.log("initializing")
+      // console.log(allChartIds)
+      // // NOTE: all "chart" ids are generic. Changing the order of these
+      // // two arrays will change the order in which the charts are displayed.
+      // const allCategories = [
+      //    total, ethnicity, subgroup, gradeAll, ethnicity, subgroup,
+      //    gradeAll, ethnicity, subgroup, gradTotal, ethnicity, subgroup,
+      //    total, ethnicity, subgroup, total, ethnicity, subgroup
+      // ];
 
-// TODO: This is returning duplicates.. Why?
-   let infoStackEle = [...document.querySelectorAll(
-         '[id^="info-ilearn-stack"]:not([id*="container"])'
-      )].map(item => item.id);
+      // const allSubjects = [
+      //    "IREAD", "IREAD", "IREAD", "ELA", "ELA", "ELA", "Math", "Math", "Math",
+      //    "Graduation", "Graduation", "Graduation", "EBRW", "EBRW", "EBRW",
+      //    "Math", "Math", "Math",
+      // ];
 
-   var infoStackIds = Array.from(new Set(infoStackEle));
+      // // there are 18 possible line charts- 3 iread (1-3), 6 ilearn (4-9), 3 grad
+      // // rate (10-12), and 6 SAT (13-18) and 6 possible stack charts (ilearn only).
+      // // infoChart" is declared at the top of the script as an empty array global variable. (FIXX)
 
-   if (!academicInfoPage.initialize) {
+      // for (let i = 0; i < allChartIds.length; i++) {
+      //    console.log("DOES NOT EXIST??")
+      //    console.log(d3.select("#" + allChartIds[i]).select("svg").empty())
 
-      // NOTE: all "chart" ids are generic. Changing the order of these
-      // two arrays will change the order in which the charts are displayed.
-      let lineCategory = [
-         total, ethnicity, subgroup, gradeAll, ethnicity, subgroup,
-         gradeAll, ethnicity, subgroup, gradTotal, ethnicity, subgroup,
-         total, ethnicity, subgroup, total, ethnicity, subgroup
-      ];
+      //    infoChart[i] = multiLine().data(
+      //       getInfoChartData(data, allCategories[i], allSubjects[i], selectedValues)
+      //    ).id(allChartIds[i])
+      //    d3.select("#" + allChartIds[i]).call(infoChart[i]);
+      // };
 
-      let lineSubject = [
-         "IREAD", "IREAD", "IREAD", "ELA", "ELA", "ELA", "Math", "Math", "Math",
-         "Graduation", "Graduation", "Graduation", "EBRW", "EBRW", "EBRW",
-         "Math", "Math", "Math",
-      ];
+      // let stackCategory = [
+      //    gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup
+      // ];
+      // let stackSubject = [
+      //    "ELA", "ELA", "ELA", "Math", "Math", "Math",
+      // ];
 
-      // there are 18 possible line charts (3 iread, 6 ilearn, 3 grad rate, and
-      // 6 SAT) and 6 possible stack charts (ilearn only). "infoChart" is declared
-      // at the top of the script as an empty array global variable.
-
-      for (let i = 0; i < infoChartIds.length; i++) {
-         infoChart[i] = multiLine().data(
-            getInfoChartData(data, lineCategory[i], lineSubject[i], selectedValues)
-         ).id(infoChartIds[i])
-         d3.select("#" + infoChartIds[i]).call(infoChart[i]);
-      };
-
-      let stackCategory = [
-         gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup
-      ];
-      let stackSubject = [
-         "ELA", "ELA", "ELA", "Math", "Math", "Math",
-      ];
-
-      for (let i = 0; i < infoStackIds.length; i++) {
-         infoStack[i] = horizontalStackedBar().data(
-            getProficiencyBreakdown(data, stackCategory[i], stackSubject[i], selectedValues)
-         ).id(infoStackIds[i])
-         d3.select("#" + infoStackIds[i]).call(infoStack[i]);
-      };
+      // for (let i = 0; i < stackIds.length; i++) {
+      //    infoStack[i] = horizontalStackedBar().data(
+      //       getProficiencyBreakdown(data, categories[i], subjects[i], selectedValues)
+      //    ).id(stackIds[i])
+      //    d3.select("#" + stackIds[i]).call(infoStack[i]);
+      // };
 
 // Tables
 
       // Initialize (empty) tables on-load
-      for (let k = 0; k < infoTableIds.length; k++) {
-         let infoTableID = "#" + infoTableIds[k];
-         let infoTableOptions = initializeTable(infoTableID);
-         var infoGridDiv = document.querySelector(infoTableID);
-         infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
-      }
+   //    for (let k = 0; k < tableIds.length; k++) {
+   //       let infoTableID = "#" + tableIds[k];
+   //       let infoTableOptions = initializeTable(infoTableID);
+   //       var infoGridDiv = document.querySelector(infoTableID);
+   //       infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
+   //    }
 
-      academicInfoPage.initialize = true;
+   //    academicInfoPage.initialize = true;
+   // }
+   // else {
+
+console.log("ChartIds for this particular Exercise:")
+console.log(chartIds)
+
+// either create or update tables if they already exist
+for (let i = 0; i < chartIds.length; i++) {
+   if (d3.select("#" + chartIds[i]).select("svg").empty()) {
+      // console.log("Uh oh, CHART is empty:")
+      // console.log(chartIds[i])
+
+      infoChart[i] = multiLine().data(
+         getInfoChartData(data, categories[i], subjects[i], selectedValues)
+      ).id(chartIds[i]);
+      d3.select("#" + chartIds[i]).call(infoChart[i]);
+   } else {
+      // console.log("Yay! Updating:")
+      // console.log(chartIds[i])
+
+      const updateData = getInfoChartData(
+         data, categories[i], subjects[i], selectedValues
+      );
+      infoChart[i].data(updateData).id(chartIds[i]);
    }
-   else {
+};  
 
+// either create or update stack tables if we are on ilearnTab
+if (typeTab == "k8Tab" && k8Tab == "ilearnTab") {
+   for (let i = 0; i < stackIds.length; i++) {
+      if (d3.select("#" + stackIds[i]).select("svg").empty()) {
+         // console.log("Uh oh, STACK is empty:")
+         // console.log(stackIds[i])
+
+         infoStack[i] = horizontalStackedBar().data(
+            getProficiencyBreakdown(data, categories[i], subjects[i], selectedValues)
+         ).id(stackIds[i])
+         d3.select("#" + stackIds[i]).call(infoStack[i]);
+      } else {
+
+         // console.log("Yay! Updating:")
+         // console.log(stackIds[i])
+
+         const updateData = getProficiencyBreakdown(
+            data, categories[i], subjects[i], selectedValues
+         );
+         infoStack[i].data(updateData).id(stackIds[i]);
+      }
+   };
+}
 // TODO: Need to determine if ALL charts will be blank - so we dont
 // just display a bunch of empy charts - we display one
 
       /* Update */
-      var infoChartStartingIndex,
-         infoStackStartingIndex,
-         infoChartCategories,
-         infoChartSubjects,
-         infoStackCategories,
-         infoStackSubjects;
+      // var infoChartStartingIndex,
+      //    infoStackStartingIndex,
+      //    infoChartCategories,
+      //    infoChartSubjects,
+      //    infoStackCategories,
+      //    infoStackSubjects;
 
-      if (typeTab == "k8Tab") {
-         if (k8Tab == "ireadTab") {
+      // if (typeTab == "k8Tab") {
+      //    if (k8Tab == "ireadTab") {
 
-            let ireadChartUpdate = [...document.querySelectorAll(
-               '[id^="info-iread-chart"]:not([id*="container"])'
-            )].map(item => item.id);
+      //       for (let i = 0; i < chartIds.length; i++) {
+      //         if (d3.select("#" + chartIds[i]).select("svg").empty()) {
+      //             infoChart[i] = multiLine().data(
+      //                getInfoChartData(data, categories[i], subjects[i], selectedValues)
+      //             ).id(chartIds[i]);
+      //             d3.select("#" + chartIds[i]).call(infoChart[i]);
+      //          } else {
+      //             const updateData = getInfoChartData(
+      //                data, categories[i], subjects[i], selectedValues
+      //             );
+      //             infoChart[i].data(updateData).id(chartIds[i]);
+      //          }
+      //       };            
 
-            infoChartStartingIndex = 0;
-            infoChartSubjects = ["IREAD", "IREAD", "IREAD"];
-            infoChartCategories = [total, ethnicity, subgroup];
+      //    } else {
 
-            for (let i = infoChartStartingIndex; i < ireadChartUpdate.length; i++) {
-               const updateData = getInfoChartData(
-                  data, infoChartCategories[i], infoChartSubjects[i], selectedValues
-               );
-               infoChart[i].data(updateData).id(infoChartIds[i]);
-            };
-         }
-         else {
-            let ilearnChartUpdate = [...document.querySelectorAll(
-               '[id^="info-ilearn-chart"]:not([id*="container"])'
-            )].map(item => item.id);
+      //       for (let i = 0; i < chartIds.length; i++) {
+      //         if (d3.select("#" + chartIds[i]).select("svg").empty()) {
+      //             infoChart[i] = multiLine().data(
+      //                getInfoChartData(data, categories[i], subjects[i], selectedValues)
+      //             ).id(chartIds[i])
+      //             d3.select("#" + chartIds[i]).call(infoChart[i]);
+      //          } else {
+      //             const updateData = getInfoChartData(
+      //                data, categories[i], subjects[i], selectedValues
+      //             );
+      //             infoChart[i].data(updateData).id(chartIds[i]);
+      //          }
+      //       };  
+           
+      //       for (let i = 0; i < stackIds.length; i++) {
+      //          if (d3.select("#" + stackIds[i]).select("svg").empty()) {
+      //             infoStack[i] = horizontalStackedBar().data(
+      //                getProficiencyBreakdown(data, categories[i], subjects[i], selectedValues)
+      //             ).id(stackIds[i])
+      //             d3.select("#" + stackIds[i]).call(infoStack[i]);
+      //          } else {
+      //             const updateData = getProficiencyBreakdown(
+      //               data, categories[i], subjects[i], selectedValues
+      //             );
+      //             infoStack[i].data(updateData).id(stackIds[i]);
+      //          }
+      //       };
+      //    }
 
-            infoChartStartingIndex = 3;
+      // } else if (typeTab == "hsTab") {
+      //    if (hsTab == "gradTab") {
 
-            let cnt = 0;
-            
-            infoChartSubjects = [
-               "ELA", "ELA", "ELA", "Math", "Math", "Math"
-            ];
-            infoChartCategories = [
-               gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup
-            ];
-
-            for (let i = infoChartStartingIndex; i < ilearnChartUpdate.length; i++) {
-               console.log("III")
-               console.log(infoChartCategories[i])
-               console.log("CNT")
-               console.log(cnt)
-               console.log(infoChartCategories[cnt])
-
-               const updateData = getInfoChartData(
-                  data, infoChartCategories[cnt], infoChartSubjects[cnt], selectedValues
-               );
-               infoChart[i].data(updateData).id(infoChartIds[i]);
-               cnt=cnt+1;
-            };
-
-            infoStackStartingIndex = 0;
-
-            for (let i = infoStackStartingIndex; i < infoStackIds.length; i++) {
-               const updateData = getProficiencyBreakdown(
-                  data, infoChartCategories[i], infoChartSubjects[i], selectedValues
-               );
-               infoStack[i].data(updateData).id(infoStackIds[i]);
-            };
-         }
-      }
-      else if (typeTab == "hsTab") {
-         if (hsTab == "gradTab") {
-
-            infoChartStartingIndex = 9;
-            let cnt = 0;
-            infoChartSubjects = ["Graduation", "Graduation", "Graduation"];
-            infoChartCategories = [gradTotal, ethnicity, subgroup];
+            // infoChartStartingIndex = 9;
+            // let cnt = 0;
+            // infoChartSubjects = ["Graduation", "Graduation", "Graduation"];
+            // infoChartCategories = [gradTotal, ethnicity, subgroup];
 
             // the charts themselves are not distinguishable by id, so
             // we count the containers (1:1 relationship)
-            let gradChartUpdate = [...document.querySelectorAll(
-               '[id^="info-container-gradrate-chart"]'
-            )].map(item => item.id);
+            // let gradChartUpdate = [...document.querySelectorAll(
+            //    '[id^="info-container-gradrate-chart"]'
+            // )].map(item => item.id);
 
-            const gradChartEndIndex = infoChartStartingIndex + gradChartUpdate.length;
+            // const gradChartEndIndex = infoChartStartingIndex + gradChartUpdate.length;
 
-            for (let i = infoChartStartingIndex; i < gradChartEndIndex; i++) {
-               const updateData = getInfoChartData(
-                  data, infoChartCategories[cnt], infoChartSubjects[cnt], selectedValues
-               );
-               infoChart[i].data(updateData).id(infoChartIds[i]);
-               cnt=cnt+1;
-            };
-         }
-         else if (hsTab == "satTab") {
-            infoChartStartingIndex = 12;
-            let cnt = 0;
+         //    for (let i = 0; i < chartIds.length; i++) {
+         //       const updateData = getInfoChartData(
+         //          data, categories[i], subjects[i], selectedValues
+         //       );
+         //       infoChart[i].data(updateData).id(chartIds[i]);
+         //       // cnt=cnt+1;
+         //    };
+         // }
+         // else if (hsTab == "satTab") {
+            // infoChartStartingIndex = 12;
+            // let cnt = 0;
 
-            infoChartSubjects = [
-               "EBRW", "EBRW", "EBRW", "Math", "Math", "Math"
-            ];
+            // infoChartSubjects = [
+            //    "EBRW", "EBRW", "EBRW", "Math", "Math", "Math"
+            // ];
+            // infoChartCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
-            infoChartCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
+            // const satChartUpdate = [...document.querySelectorAll(
+            //    '[id^="info-container-sat-chart"]'
+            // )].map(item => item.id);
 
-            const satChartUpdate = [...document.querySelectorAll(
-               '[id^="info-container-sat-chart"]'
-            )].map(item => item.id);
+            // const satChartEndIndex = infoChartStartingIndex + satChartUpdate.length;
 
-            const satChartEndIndex = infoChartStartingIndex + satChartUpdate.length;
+      //       for (let i = 0; i < chartIds.length; i++) {
+      //          const updateData = getInfoChartData(
+      //             data, categories[i], subjects[i], selectedValues
+      //          );
+      //          infoChart[i].data(updateData).id(chartIds[i]);
+      //          // cnt = cnt + 1;
+      //       };
+      //    }
+      // };
 
-            for (let i = infoChartStartingIndex; i < satChartEndIndex; i++) {
-               const updateData = getInfoChartData(
-                  data, infoChartCategories[cnt], infoChartSubjects[cnt], selectedValues
-               );
-               infoChart[i].data(updateData).id(infoChartIds[i]);
-               cnt = cnt + 1;
-            };
-         }
-      };
+      
+      // TODO : HEREERERE //
 
-      /* Update Tables */
-      //https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
-      // NOTE: This seems like a hack. Loops through array of grids (using a
-      // global variable gridAPI and the gridDivID to determine which data to use.
-      let infoTableData, infoTableID;
+/* Tables */
+//https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
+// NOTE: This seems like a hack. Loops through array of grids (using a
+// global variable gridAPI and the gridDivID to determine which data to use.
+// const doesTableExist = Boolean(gridApi && !gridApi.isDestroyed());
 
-      // Remove objects with years > the selected year
-      const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
+// Remove objects with years > the selected year
+const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
+let infoTableData,
+    infoTableID,
+    infoTableOptions;
 
-      for (let i=0; i < infoChartSubjects.length; i++) {
 
-         let infoTableNum = infoChartStartingIndex + i;
+// TODO: FIX THIS BY INITIALIZING TABLES WITH DATA //
+for (let k = 0; k < tableIds.length; k++) {
 
-         infoTableID = infoGridApi[infoTableNum].getGridId();
+   if (Boolean(infoGridApi[k] && !infoGridApi[k].isDestroyed())) {
+      // update table if already exists
+      for (let i=0; i < subjects.length; i++) {
+
+         infoTableID = infoGridApi[i].getGridId();
+
          infoTableData = getTableData(
-            tabledata, infoChartCategories[i], subject[i], selectedValues
+            tabledata, categories[i], subjects[i], selectedValues
          );
 
-// TODO: Determine is we even need to create a table if no data exists
+         const tableContainer = infoTableID.replace("#info", "info-container");
+         const emptyTable = document.getElementById(tableContainer);
 
-         // if infoTableData is an empty list- the school has insufficient data for
-         // all categories - so we hide it
-         let infoTableOptions;
-
+         // hide table if list is empty
          if (!infoTableData || !infoTableData.length) {
             infoTableOptions = {
                columnDefs: [],
@@ -1902,33 +2188,88 @@ async function academicInfoPage(data) {
                suppressNoRowsOverlay: false,
                overlayNoRowsTemplate: '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">No data to display.</span>',
             };
-
-            // hide table without data
-            const tableContainer = infoTableID.replace("#info", "info-container");
-            const emptyTable = document.getElementById(tableContainer);
             emptyTable.style.display = "none";
 
          } else {
 
-
-// TODO: Figure out why this doesn't include tableID but createanalysisTable does
+         // TODO: Figure out why this doesn't include tableID but createanalysisTable does
             infoTableOptions = createInfoTable(infoTableData, infoTableID);
-
-            // ensure all tables with data are displayed
-            const tableContainer = infoTableID.replace("#info", "info-container");
-            const emptyTable = document.getElementById(tableContainer);
             emptyTable.style.display = "flex";
-
          }
 
          // reset columndefs and rowdata or else table will have empty cols.
-         infoGridApi[infoTableNum].setGridOption(
+         infoGridApi[i].setGridOption(
             "columnDefs", infoTableOptions.columnDefs
          );
-         infoGridApi[infoTableNum].setGridOption("rowData", infoTableData);
-      };
+         infoGridApi[i].setGridOption("rowData", infoTableData);
+         };
+
+   } else {
+      // create table
+      console.log("CREATING TABLE:")
+      console.log(tableIds[k])
+      infoTableID = "#" + tableIds[k];
+      let infoTableOptions = initializeTable(infoTableID);
+      var infoGridDiv = document.querySelector(infoTableID);
+      infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
    }
-};
+}
+
+
+
+//       // Remove objects with years > the selected year
+//       // const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
+
+//       for (let i=0; i < subjects.length; i++) {
+
+//          // let infoTableNum = infoChartStartingIndex + i;
+         
+//          let infoTableNum = 0 + i;
+
+//          infoTableID = infoGridApi[infoTableNum].getGridId();
+
+//          infoTableData = getTableData(
+//             tabledata, categories[i], subjects[i], selectedValues
+//          );
+
+//          // if infoTableData is an empty list- the school has insufficient data for
+//          // all categories - so we hide it
+//          let infoTableOptions;
+
+//          if (!infoTableData || !infoTableData.length) {
+//             infoTableOptions = {
+//                columnDefs: [],
+//                rowData: [],
+//                suppressNoRowsOverlay: false,
+//                overlayNoRowsTemplate: '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">No data to display.</span>',
+//             };
+
+//             // hide table without data
+//             const tableContainer = infoTableID.replace("#info", "info-container");
+//             const emptyTable = document.getElementById(tableContainer);
+//             emptyTable.style.display = "none";
+
+//          } else {
+
+
+// // TODO: Figure out why this doesn't include tableID but createanalysisTable does
+//             infoTableOptions = createInfoTable(infoTableData, infoTableID);
+
+//             // ensure all tables with data are displayed
+//             const tableContainer = infoTableID.replace("#info", "info-container");
+//             const emptyTable = document.getElementById(tableContainer);
+//             emptyTable.style.display = "flex";
+
+//          }
+
+//          // reset columndefs and rowdata or else table will have empty cols.
+//          infoGridApi[infoTableNum].setGridOption(
+//             "columnDefs", infoTableOptions.columnDefs
+//          );
+//          infoGridApi[infoTableNum].setGridOption("rowData", infoTableData);
+//       };
+   }
+// };
 
 // TODO: Modify to that we are passing around one glob object with all necessary information
 
@@ -2788,9 +3129,16 @@ async function academicAnalysisPage(data) {
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
 
-   await setCorpList(allSchoolsObj)
-   await setYearList(allSchoolsObj);
+   await setCorpDropdown()
 
+   const corpID = document.getElementById("corpSelect").value;
+   await setSchoolList(corpID)
+
+   // await setCorpList(allSchoolsObj);
+   // await setYearList(allSchoolsObj);
+
+   uiState.setState({school_id: document.getElementById("schoolSelect").value.toString()})
+   
    selectedValues = await getSelectedValues();
 
    await getComparisonSchools(selectedValues);
@@ -2807,9 +3155,15 @@ if (document.readyState !== "loading") {
    typeCategories.classList.remove("open");
    analysisPages.classList.remove("open");
 
-   getDemographicData(selectedValues);
-   getAcademicInfoData(selectedValues);
-   getAcademicAnalysisData(selectedValues);
+   const demographicData = await getDemographicData(selectedValues);
+   demographicsPage(demographicData);
+   // getDemographicData(selectedValues)
+   
+   // const academicInfoData = await getAcademicInfoData(selectedValues);
+   // academicInfoPage(academicInfoData);
+   // // getAcademicInfoData(selectedValues);
+
+   // getAcademicAnalysisData(selectedValues);
 };
 
 d3.select(window).on("resize", resize);

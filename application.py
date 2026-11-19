@@ -30,9 +30,11 @@ from load_data import (
     current_demographic_year,
     get_academic_data,
     get_available_years,
+    get_corp_list,
     get_demographic_data,
     get_public_dropdown,
     get_school_coordinates,
+    get_school_list,
 )
 from process_data import clean_academic_data
 
@@ -72,6 +74,29 @@ def load_school_dropdown():
     return [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in school_df.to_dict(orient="records")
+    ]
+
+@app.route("/init", methods=["GET"])
+def initialize_corp_list():
+
+    droplist = get_corp_list()
+    
+    return [
+        {k: v for k, v in m.items() if v == v and v is not None}
+        for m in droplist.to_dict(orient="records")
+    ]
+
+
+@app.route("/schools", methods=["POST"])
+def load_school_list():
+
+    corp_id = request.get_json()
+
+    droplist = get_school_list(corp_id)
+    
+    return [
+        {k: v for k, v in m.items() if v == v and v is not None}
+        for m in droplist.to_dict(orient="records")
     ]
 
 
@@ -159,9 +184,6 @@ def get_years():
     category = data["k8_tab"] if school_type == "K8" else data["hs_tab"]
 
     available_years = get_available_years(school_id, category)
-    
-    print("in get_years")
-    print(available_years)
     
     return available_years
 

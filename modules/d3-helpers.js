@@ -530,6 +530,7 @@ function multiLine() {
             });
 
             // shift legendcontainer to center
+            
             let divElement = document.getElementById(id);
             let padding = parseInt(getComputedStyle(divElement.parentElement).padding); // take padding into acount
             const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
@@ -2011,7 +2012,7 @@ function horizontalStackedBar() {
 
       var dom = d3.select(this);
       let id = dom._groups[0][0].id;
-
+      
       var svg = dom.append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -2060,7 +2061,7 @@ function horizontalStackedBar() {
       // make room for title
       var barstack = svg.append("g")
         .attr('class', 'barstack')
-        .attr('id', id)
+        // .attr('id', id)            // TODO: TESTING
         .attr("transform", `translate(0, 20)`);
 
       var endtext = svg.append("g")
@@ -2087,7 +2088,11 @@ function horizontalStackedBar() {
 
       // TODO: This is incorrect somehow - making div the parent causes
       // TODO: location to be measured from browser rather than element
+      // TODO: ALSO causing duplicate stack elements
       var tooltipContainer = d3.select("#" + id);
+
+      // console.log("tooltipContainer")
+      // console.log(tooltipContainer)
 
       var tooltip = tooltipContainer.append("div")
         .style("position", "absolute")

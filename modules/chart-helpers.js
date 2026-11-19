@@ -430,7 +430,7 @@ function getHSLineData(data, category, subject, type) {
 
 
 // process data for stackedBarCharts
-function getProficiencyBreakdown(data, categoryList, subject, selection) {
+function getProficiencyBreakdown(data, categories, subject, selection) {
   const year = selection.year;
   let yearData = data.filter((ele) => ele.Year === Number(year))[0];
   // const Year = yearData.Year
@@ -442,35 +442,36 @@ function getProficiencyBreakdown(data, categoryList, subject, selection) {
   // in rating array. "indexOf" returns the index of the first occurrence
   // of the specified substring (-1 if not present). "some" tests whether
   // at least one element in the array passes the given test
+
   let filteredData = Object.fromEntries(Object.entries(yearData).filter(
      ([key, value]) =>
      rating.some(v => key.indexOf(v) > -1) &&
-        categoryList.some(v => key.indexOf (v + "|" + subject) > -1)
+        categories.some(v => key.indexOf (v + "|" + subject) > -1)
      )
   )
 
   let proficiencyData = []
   let insufficientN = []
 
-  for (let j = 0; j < categoryList.length; j++) {
+  for (let j = 0; j < categories.length; j++) {
 
      // only add objects for categories where there is data in profData
-     if ((Object.keys(filteredData).some(k => k.indexOf(categoryList[j]) > -1))) {
+     if ((Object.keys(filteredData).some(k => k.indexOf(categories[j]) > -1))) {
 
       let proficiencyCount = {}
 
-        proficiencyCount["Below Proficiency"] = filteredData[categoryList[j] + 
+        proficiencyCount["Below Proficiency"] = filteredData[categories[j] + 
           "|" + subject + " Below Proficiency"]
-        proficiencyCount["Approaching Proficiency"]  = filteredData[categoryList[j] +
+        proficiencyCount["Approaching Proficiency"]  = filteredData[categories[j] +
           "|" + subject + " Approaching Proficiency"]
-        proficiencyCount["At Proficiency"]  = filteredData[categoryList[j] +
+        proficiencyCount["At Proficiency"]  = filteredData[categories[j] +
           "|" + subject + " At Proficiency"]
-        proficiencyCount["Above Proficiency"]  = filteredData[categoryList[j] +
+        proficiencyCount["Above Proficiency"]  = filteredData[categories[j] +
           "|" + subject + " Above Proficiency"]
 
         // only add non-null non-zero values to array
         if (isValid(proficiencyCount) == true) {
-          proficiencyCount['Category'] = categoryList[j]
+          proficiencyCount['Category'] = categories[j]
 
           // convert int values to percentages based on sum of all values
           let sumValues = Object.values(proficiencyCount).reduce((acc,val) =>{
@@ -500,7 +501,7 @@ function getProficiencyBreakdown(data, categoryList, subject, selection) {
         }
         else {
           // create an array of strings for data with insufficient n-size
-          let catName = categoryList[j]
+          let catName = categories[j]
           let catTested = yearData[catName + "|" + subject + " Total Tested"]
           let nsizeString = catName + " (Tested: " + catTested + ")"
           insufficientN.push(nsizeString)

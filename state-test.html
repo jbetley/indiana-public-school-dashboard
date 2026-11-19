@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanilla JS State Machine Timer</title>
+  <style>
+    :root {
+      --bg: #f4f4f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --idle: #6b7280;
+      --running: #10b981;
+      --paused: #f59e0b;
+      --completed: #3b82f6;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .app {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      width: 320px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: white;
+      background-color: var(--idle);
+      transition: background-color 0.2s;
+    }
+
+    /* Dynamic state styling via data-state attribute */
+    .app[data-state="idle"] .badge { background-color: var(--idle); }
+    .app[data-state="running"] .badge { background-color: var(--running); }
+    .app[data-state="paused"] .badge { background-color: var(--paused); }
+    .app[data-state="completed"] .badge { background-color: var(--completed); }
+
+    .timer-display {
+      font-size: 4rem;
+      font-weight: 700;
+      margin: 1.5rem 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #e5e7eb;
+      color: var(--text);
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      background: #111827;
+      color: white;
+    }
+
+    .log {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-align: left;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app" id="app" data-state="idle">
+    <div class="badge" id="state-badge">IDLE</div>
+    <div class="timer-display" id="timer-display">00:10</div>
+    
+    <div class="controls">
+      <button id="btn-start" class="primary">Start</button>
+      <button id="btn-pause">Pause</button>
+      <button id="btn-reset">Reset</button>
+    </div>
+
+    <div class="log" id="log">State initialized: idle</div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. GENERIC STATE MACHINE FACTORY
+    // ==========================================
+    function createMachine(definition) {
+      const listeners = new Set();
+
+      const machine = {
+        value: definition.initial,
+        context: { ...definition.context },
+
+        // Dispatch an event to trigger a state transition
+        send(event, payload) {
+          const currentStateConfig = definition.states[machine.value];
+          const transition = currentStateConfig?.on?.[event];
+
+          // Ignore events that aren't valid in the current state
+          if (!transition) {
+            console.warn(`Event "${event}" ignored in state "${machine.value}"`);
+            return;
+          }
+
+          const nextState = typeof transition === 'string' ? transition : transition.target;
+          const action = typeof transition === 'object' ? transition.action : null;
+
+          // 1. Run exit hook of current state
+          currentStateConfig.onExit?.(machine.context);
+
+          // 2. Run transition action (if any)
+          action?.(machine.context, payload);
+
+          // 3. Update state
+          const prevState = machine.value;
+          machine.value = nextState;
+
+          // 4. Run entry hook of new state
+          definition.states[nextState]?.onEnter?.(machine.context, machine.send);
+
+          // 5. Notify UI subscribers
+          listeners.forEach(listener => listener(machine.value, machine.context, prevState, event));
+        },
+
+        subscribe(listener) {
+          listeners.add(listener);
+          // Immediately invoke with initial state
+          listener(machine.value, machine.context, null, 'INIT');
+          return () => listeners.delete(listener);
+        }
+      };
+
+      return machine;
+    }
+
+    // ==========================================
+    // 2. APP STATE MACHINE DEFINITION
+    // ==========================================
+    const INITIAL_SECONDS = 10;
+    let intervalId = null;
+
+    const timerMachine = createMachine({
+      initial: 'idle',
+      context: {
+        secondsLeft: INITIAL_SECONDS
+      },
+      states: {
+        idle: {
+          onEnter(ctx) {
+            ctx.secondsLeft = INITIAL_SECONDS;
+          },
+          on: {
+            START: 'running'
+          }
+        },
+        running: {
+          onEnter(ctx, send) {
+            intervalId = setInterval(() => {
+              send('TICK');
+            }, 1000);
+          },
+          onExit() {
+            clearInterval(intervalId);
+            intervalId = null;
+          },
+          on: {
+            PAUSE: 'paused',
+            RESET: 'idle',
+            TICK: {
+              target: 'running', // Self-transition by default
+              action(ctx, _,) {
+                ctx.secondsLeft -= 1;
+              }
+            },
+            FINISH: 'completed'
+          }
+        },
+        paused: {
+          on: {
+            START: 'running',
+            RESET: 'idle'
+          }
+        },
+        completed: {
+          on: {
+            RESET: 'idle'
+          }
+        }
+      }
+    });
+
+    // Guard check: Automatically transition to 'completed' when timer hits 0
+    timerMachine.subscribe((state, ctx, prevState, event) => {
+      if (state === 'running' && event === 'TICK' && ctx.secondsLeft <= 0) {
+        timerMachine.send('FINISH');
+      }
+    });
+
+    // ==========================================
+    // 3. UI BINDING & RENDERER
+    // ==========================================
+    const dom = {
+      app: document.getElementById('app'),
+      badge: document.getElementById('state-badge'),
+      display: document.getElementById('timer-display'),
+      btnStart: document.getElementById('btn-start'),
+      btnPause: document.getElementById('btn-pause'),
+      btnReset: document.getElementById('btn-reset'),
+      log: document.getElementById('log')
+    };
+
+    function formatTime(totalSeconds) {
+      const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+      const secs = String(totalSeconds % 60).padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    // Subscribe UI updates purely to state changes
+    timerMachine.subscribe((state, ctx, prevState, event) => {
+      // Update data attribute for CSS styling
+      dom.app.dataset.state = state;
+      dom.badge.textContent = state;
+      dom.display.textContent = formatTime(ctx.secondsLeft);
+
+      // Declaratively enable/disable buttons based on valid transitions
+      dom.btnStart.disabled = !['idle', 'paused'].includes(state);
+      dom.btnStart.textContent = state === 'paused' ? 'Resume' : 'Start';
+      dom.btnPause.disabled = state !== 'running';
+      dom.btnReset.disabled = state === 'idle';
+
+      // Append to transition log (skip noisy TICK events)
+      if (prevState && event !== 'TICK') {
+        const entry = document.createElement('div');
+        entry.textContent = `${prevState} ──(${event})──▶ ${state}`;
+        dom.log.prepend(entry);
+      }
+    });
+
+    // Wire DOM events directly to state machine events
+    dom.btnStart.addEventListener('click', () => timerMachine.send('START'));
+    dom.btnPause.addEventListener('click', () => timerMachine.send('PAUSE'));
+    dom.btnReset.addEventListener('click', () => timerMachine.send('RESET'));
+  </script>
+</body>
+</html>
