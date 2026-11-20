@@ -973,6 +973,7 @@ def calculate_comparison_school_list(
     # Merge the index and distances lists into a dataframe
     distances = pd.DataFrame({"index": index_list, "y": distance_list})
     # distances = distances.set_index(list(distances)[0])  # noqa: ERA001
+    
     distances = distances.set_index(next(iter(distances)))
 
     # Merge School ID with Distances by index
@@ -985,11 +986,11 @@ def calculate_comparison_school_list(
 
     # limit maximum dropdown to the [n] closest schools
     num_schools_expanded = grade_max
-
+    
     comparison_set = comparison_set.sort_values(by=["Distance"], ascending=True)
 
     comparison_set = comparison_set.head(num_schools_expanded)
-    
+
     # convert for comparison dropdown
     return comparison_set[["School ID", "School Name"]].to_dict(
         "records",

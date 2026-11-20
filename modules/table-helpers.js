@@ -339,6 +339,7 @@ function createAnalysisTable(data, tableID) {
 
 
 function createInfoTable(data, tableID) {
+  
   let keys = Object.keys(data.reduce(function(result, obj) {
      return Object.assign(result, obj);
   }, {}));
@@ -388,52 +389,52 @@ function createInfoTable(data, tableID) {
 
 
 // initializes an "empty" table - run on page load
-function initializeTable(tableID) {
+// function initializeTable(tableID) {
 
-  keys = ["Category", "2020", "2021", "2022", "2023", "2024"];
-  data = [
-    {
-      "Category": "",
-      "2020": "",
-      "2021": "",
-      "2022": "",
-      "2023": "",
-      "2024": ""                      
-    }
-  ];
+//   keys = ["Category", "2020", "2021", "2022", "2023", "2024"];
+//   data = [
+//     {
+//       "Category": "",
+//       "2020": "",
+//       "2021": "",
+//       "2022": "",
+//       "2023": "",
+//       "2024": ""                      
+//     }
+//   ];
 
-  let columns = keys.map(field => ({field}));
+//   let columns = keys.map(field => ({field}));
   
-  columns.forEach(function(e) {
-     if (e.field == "Category") {
-        e.valueFormatter = "";
-        e.resizable = false;
-        e.autoHeight = true;
-        e.wrapText = true;
-        e.minWidth = 80;
-        e.maxWidth = 90;
-        e.cellClass = "ag-left-aligned-cell";
-        e.headerClass = "text-center";
-     }
-     else {
-        e.valueFormatter = basicPercentageFormatter;
-        e.flex = 1;
-        e.resizable = false;
-        e.cellClass = "ag-center-aligned-cell";
-        e.headerClass = "text-center";
-     }
-  });
+//   columns.forEach(function(e) {
+//      if (e.field == "Category") {
+//         e.valueFormatter = "";
+//         e.resizable = false;
+//         e.autoHeight = true;
+//         e.wrapText = true;
+//         e.minWidth = 80;
+//         e.maxWidth = 90;
+//         e.cellClass = "ag-left-aligned-cell";
+//         e.headerClass = "text-center";
+//      }
+//      else {
+//         e.valueFormatter = basicPercentageFormatter;
+//         e.flex = 1;
+//         e.resizable = false;
+//         e.cellClass = "ag-center-aligned-cell";
+//         e.headerClass = "text-center";
+//      }
+//   });
 
-  let options = {
-    columnDefs: columns,
-    rowData: data,
-    gridId: tableID,
-    domLayout : "autoHeight",
-    tooltipShowDelay: 0,
-    enableBrowserTooltips: false
-  };
-  return options
-};
+//   let options = {
+//     columnDefs: columns,
+//     rowData: data,
+//     gridId: tableID,
+//     domLayout : "autoHeight",
+//     tooltipShowDelay: 0,
+//     enableBrowserTooltips: false
+//   };
+//   return options
+// };
 
 
 // Demographic Page

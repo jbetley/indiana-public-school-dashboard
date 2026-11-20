@@ -70,6 +70,38 @@ function infoPercentageFormatter(params) {
  };
 
 
+function getSchoolType(data) {
+
+  let type,
+      subtype;
+
+  const lowGrade = data['Low Grade'];
+  const highGrade = data['High Grade'];
+
+  if (lowGrade < 9 && highGrade < 9) {
+    type = "K8";
+  } else if (lowGrade >= 9) {
+    type = "HS";
+  } else if (lowGrade <= 8 && highGrade >=9) {
+    type = "K12";
+  } else {
+    type = "K8";
+  };
+
+  if (lowGrade < 5 && highGrade <= 5) {
+    subtype = "ES";
+  } else if (lowGrade >= 5 && highGrade < 9) {
+    subtype = "MS";
+  } else {
+    subtype = type;
+  }
+
+  return {
+    schooltype: type,
+    schoolsubtype: subtype
+  }
+};
+
 // create a string of missing categories if they exist in school data;
 // delete the same categories from corp data; and then remove the
 // "Missing" key from both objects
@@ -270,10 +302,10 @@ function calcProficiency (data, proficient, tested) {
 
 
 // For Academic info charts - need to add empty chart test logic
-function getInfoChartData(data, category, subject, selection) {
+function getInfoChartData(data, category, subject, state) {
 
-  const type = selection.school_type;
-  const subtype = selection.school_subtype;
+  const type = state.school_type;
+  const subtype = state.school_subtype;
 
   if (
       type == "K8" ||

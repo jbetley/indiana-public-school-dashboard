@@ -261,7 +261,6 @@ def get_school_list(*args):
         pd.Series.last_valid_index, axis=1,
     ).reset_index(drop=True)
 
-    print(low_high)
     low_high["Low Grade"] = low_high["Low Grade"].str.replace("Grade ", "")
     low_high["High Grade"] = low_high["High Grade"].str.replace("Grade ", "")
 

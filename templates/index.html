@@ -488,9 +488,9 @@ async function getComparisonSchools(select) {
             alert("Network Error: Could not load data.")
          }
       });
-     await setComparisonList(comparisonSchoolList);
-};
 
+   await setComparisonList(comparisonSchoolList);
+};
 
 
 // NEW //
@@ -524,10 +524,8 @@ async function setCorpDropdown() {
   }
 }
 
-// NEW //
-
 // Sets school list and year list - called whenever corpList is changed //
-async function setSchoolList(id) {
+async function setSchoolList(corp_id) {
 
    const response = await fetch(`${window.origin}/schools`, {
       method: "POST",
@@ -535,7 +533,7 @@ async function setSchoolList(id) {
             "Content-type": "application/json",
             "Accept": "application/json"
       },
-      body:JSON.stringify(id)})
+      body:JSON.stringify(corp_id)})
       .then(response=>{
          if (response.ok) {
             return response.json()
@@ -568,6 +566,12 @@ async function setSchoolList(id) {
       availableYears.forEach((year) => yearSelection
          .appendChild(new Option(year, year))
       );
+
+      // set initial type state for the first school in the list
+      uiState.setState({
+         school_type: currentSchools[0]["School Type"],
+         school_subtype: currentSchools[0]["Sub Type"],
+      })
 };
 
 
@@ -600,12 +604,6 @@ var enrollmentChart,
    enrollmentTableGridApi,
    attendanceTableGridApi;
 
-// Academic Info Page
-var infoChart = [];
-var infoStack = [];
-
-var infoGridApi = [];
-
 // Analysis Page
 var elaILEARNComparisonTotal,
    elaILEARNComparisonGrade,
@@ -625,7 +623,12 @@ var elaILEARNComparisonTotal,
    satComparisonEthnicity,
    satComparisonSubgroup;
 
-var analysisGridApi = [];
+// TODO: NOT SURE HOW TO NOT MAKE THESE GLOBAL
+var infoCharts = [],
+    infoStacks = [];
+
+var infoGridApi = [],
+    analysisGridApi = [];
 
 // global function to gather all current/default selections
 // in a dict.
@@ -665,6 +668,7 @@ async function getSelectedValues() {
    );
 
    let school_type = schoolInfo[0]["School Type"];
+
    let school_subtype = schoolInfo[0]["Sub Type"];
 
    if (pageTab != "demoTab" && school_type == "K12") {
@@ -715,151 +719,21 @@ function createStore(initialState) {
 
 // initialize state
 const uiState = createStore({
-   school_id: document.getElementById("schoolSelect").value,
-   corp_id: document.getElementById("corpSelect").value,
-   year: document.getElementById("yearSelect").value,
-   comparison_schools: document.getElementById("comparisonSelect").value,
+   school_id: null,
+   corp_id: null,
    school_type: null,
+   year: null,
+   comparison_schools: [],
    school_subtype: null,
-   page_tab: document.querySelector(".tab.main.active").id,  // pageTab
-   k8_tab: document.querySelector(".tab.k8info.active").id, // k8Tab
-   hs_tab: document.querySelector(".tab.hsinfo.active").id, // hsTab
-   type_tab: document.querySelector(".tab.main.active").id,  // typeTab
-   analysis_tab: document.querySelector(".tab.analysis.active").id //analysisTab
+   page_tab: null,
+   k8_tab: null,
+   hs_tab: null,
+   type_tab: null,
+   analysis_tab: null
 });
-/** State Management **/
-
 
 
 ///////// FIX ALL INSTANCES OF CHANGING SCHOOL/CORP //////
-
-
-/* Dropdown functions */
-// async function setYearList(schoolData) {
-
-//    const schoolID = schoolSelection.value;
-//    const pageTab = document.querySelector(".tab.main.active").id;
-
-//    if (yearSelection.value != "") {
-//       selectedValues = await getSelectedValues();
-//       let booty = await getAvailableYears(selectedValues);
-//       console.log("booty")
-//       console.log(booty)
-//    }
-// //// TODO ////
-// // Initially, the idea was to eventually substitute booty for the
-// // below JS code because it does all of the necessaryt checks - but
-// // do we really need to do this? booty itself appears to adapt the
-// // get_available_years python function
-// // TODO: Test booty to make sure it doesn't run on all tabs
-
-//    let selectedYear = yearSelection;
-
-//    removeOptions(selectedYear);
-
-//    let yearValue,
-//       maxYear;
-
-//    let selectedSchoolData = schoolData.filter(
-//       (o) => o["School ID"] === schoolID
-//    );
-   
-//    // Get available years for the selected school
-//    let availableYears = [... new Set(selectedSchoolData.map(o => o.Year))];
-
-//    if (pageTab == "demoTab") {
-//       maxYear = curDemographicYear;
-//    }
-//    else {
-//       maxYear = curAcademicYear;
-//    };
-
-//    // make sure selected Year is not greater than max academic year
-//    availableYears = availableYears.filter(arr => arr <= maxYear);
-//    availableYears.sort((a, b) => (a > b ? -1 : 1))
-
-//    availableYears.forEach((year) => 
-//       selectedYear.appendChild(new Option(year, year)));
-// };
-
-
-// async function setCorpList(schoolData) {
-
-//    let selectedYear;
-
-//    // Need this because we need to run setCorpList before
-//    // setYearList on app load (because we need schoolID to
-//    // be set before setYearList is called to be able to set
-//    // the correct number of years). Only necessary on load,
-//    // should hit else clause every other time.
-//    if (yearSelection.value == "") {
-
-//       const pageTab = document.querySelector(".tab.main.active").id;
-      
-//       if (pageTab == "demoTab") {
-//          selectedYear = curDemographicYear;
-//       }
-//       else {
-//          selectedYear = curAcademicYear;
-//       };
-
-//    } else {
-//       selectedValues = await getSelectedValues();
-//       selectedYear = selectedValues.year;
-//    }
-
-//    let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
-
-//    // remove duplicates
-//    let corpDropdown = yearData.filter(
-//       (v,i,a)=>a.findIndex(v2=>(v2["Corporation ID"]===v["Corporation ID"]))===i
-//    );
-
-//    corpDropdown.forEach(
-//       (corp) => corpSelection
-//       .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
-//    );
-
-//    // initialize school list
-//    await setSchoolList(schoolData);
-// };
-
-
-// async function setSchoolList(schoolData) {
-
-//    let schoolDropdown = [];
-//    let selectedYear;
-   
-//    if (yearSelection.value == "") {
-//       const pageTab = document.querySelector(".tab.main.active").id;
-//       if (pageTab == "demoTab") {
-//          selectedYear = curDemographicYear;
-//       }
-//       else {
-//          selectedYear = curAcademicYear;
-//       };
-//    } else {
-//       selectedValues = await getSelectedValues();
-//       selectedYear = selectedValues.year;
-//    };
-
-//    const corpId = corpSelection.value;
-
-//    let yearData = schoolData.filter(o => o.Year == Number(selectedYear));
-
-//    schoolDropdown = yearData.filter(obj => obj["Corporation ID"] == corpId);
-
-//    // clears school dropdown element before rebuilding
-//    removeOptions(schoolSelection);
-
-//    schoolDropdown.forEach(
-//       (school) => schoolSelection
-//       .appendChild(new Option(school["School Name"], school["School ID"]))
-//    );
-
-//    // reset yearList
-//    await setYearList(schoolData);
-// };
 
 
 // This should be called: on init, on school change, and on
@@ -921,8 +795,6 @@ const comparisonSelect = new SlimSelect({
   }
 });
 
-
-
 comparisonSelection.addEventListener("change", function () {
 
    const msgDiv = document.getElementById("max-message");
@@ -952,22 +824,37 @@ comparisonSelection.addEventListener("change", function () {
 // declare these here, but using event delegation in the
 // dropdown addEvent listener for processing
 yearSelection.addEventListener("change", async () => {
+
+   // change year state
+   uiState.setState({ year: yearSelection.value });
+   
    selectedValues = await getSelectedValues();
-   let state = uiState.getState();
 
-   console.log("uiState-year")
-   console.log(state)
+   console.log("Year - STATE")
+   console.log(uiState.getState())
 
-   if (state.page_tab === "analysisTab") {
+   if (selectedValues.page_tab === "analysisTab") {
       selectedValues.comparison_schools = await getComparisonList();
-      getAcademicAnalysisData(state);
+      getAcademicAnalysisData(selectedValues);
    }
-   else if (state.page_tab === "infoTab")  {
-      const academicInfoData = await getAcademicInfoData(state);
-      academicInfoPage(academicInfoData)
+   else if (selectedValues.page_tab === "infoTab")  {
+      
+      const academicInfoData = await getAcademicInfoData(uiState.getState());
+      console.log(academicInfoData)
+      // const academicInfoData = await getAcademicInfoData(selectedValues);
+      // NOTE: Probably not necessary
+      // // Get school type and subtype from selected year
+      // const typeData = academicInfoData.find(obj => obj.Year === parseInt(state.year));
+      // const types = getSchoolType(typeData);
+      // uiState.setState({ 
+      //    school_type: types.schooltype,
+      //    school_subtype: types.schoolsubtype
+      // });
+
+      academicInfoPage(academicInfoData, uiState.getState())
    }
    else {
-      const demographicData = await getDemographicData(state);
+      const demographicData = await getDemographicData(selectedValues);
       demographicsPage(demographicData);
       // getDemographicData(selectedValues)
    }
@@ -979,15 +866,16 @@ corpSelection.addEventListener("change", async () => {
 
    const corpID = document.getElementById("corpSelect").value;
    await setSchoolList(corpID)
-   // await setSchoolList(allSchoolsObj)
-   // new corpSelection will reset schoolSelection, so we need
 
+   // new corpSelection will reset schoolSelection, so we need
    // to force a schoolSelection event
    var event = new Event("change");
    schoolSelection.dispatchEvent(event);
 });
 
 schoolSelection.addEventListener("change", async () => {
+
+/// TODO: HEREREREERERER ///
 
    let state = uiState.getState();
 
@@ -1122,7 +1010,7 @@ schoolSelection.addEventListener("change", async () => {
          selectedValues.type_tab = "hsTab";
       }
       const academicInfoData = await getAcademicInfoData(selectedValues);
-      academicInfoPage(academicInfoData)
+      academicInfoPage(academicInfoData, uiState.getState())
       // getAcademicInfoData(selectedValues);
    }
    else if (selectedPage == "analysisTab") {
@@ -1241,18 +1129,12 @@ async function navigateHandler(e) {
    e = e || window.event;
    const target = e.target || e.srcElement;
 
-   console.log('targetclass')
-   console.log(target.id)
-   console.log(target.className)
-
    // refresh state after update
    uiState.setState({
       school_id: document.getElementById("schoolSelect").value,
       corp_id: document.getElementById("corpSelect").value,
       year: document.getElementById("yearSelect").value,
       comparison_schools: document.getElementById("comparisonSelect").value,
-      school_type: null,
-      school_subtype: null,
       page_tab: document.querySelector(".tab.main.active").id,
       k8_tab: document.querySelector(".tab.k8info.active").id,
       hs_tab: document.querySelector(".tab.hsinfo.active").id,
@@ -1273,25 +1155,19 @@ async function navigateHandler(e) {
    const intYear = parseInt(strYear);
    let yearValue;
 
-   // ireadTab or ilearnTab
    const k8Categories = document.querySelector(".k8nav");
-
-   // satTab or gradTab
    const hsCategories = document.querySelector(".hsnav");
-
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
-
-   // e = e || window.event;
-   // const target = e.target || e.srcElement;
 
    console.log("DEFAULT SELECTVAL")
    console.log(selectedValues)
    console.log("Nav handler - uiState")
    console.log(uiState.getState())
 
-   // the iread/ilearn tabs should never be visible when HS is selected
-   // and should always be available when K8 is selected
+   // iread/ilearn tabs should never be visible when school is hs or
+   // hstab is selected and should always be available when school is
+   // k8 or k8 is selected
    if (target.id.match("hsTab")) {
       k8Categories.classList.remove("open");
       hsCategories.classList.add("open");
@@ -1302,15 +1178,11 @@ async function navigateHandler(e) {
       hsCategories.classList.remove("open");
    };
 
-   // Demographic Tab //
    if (target.id.match("demoTab")) {
-
       k8Categories.classList.remove("open");
       hsCategories.classList.remove("open");
       typeCategories.classList.remove("open");
       analysisPages.classList.remove("open");
-
-      // await setYearList(allSchoolsObj);
 
       // reset year value
       yearSelection.value = strYear;
@@ -1411,7 +1283,7 @@ async function navigateHandler(e) {
             // const ireadStart = ireadChartIndices[0]-1;
             // const ireadEnd = ireadChartIndices.length-1;
             // for (let i = ireadStart; i < ireadEnd; i++) {
-            //    infoChart[i].width(windowWidth);
+            //    infoCharts[i].width(windowWidth);
             // }
          }
          else if (k8Selection == "ilearnTab") {
@@ -1425,8 +1297,8 @@ async function navigateHandler(e) {
 
             // for (const idx of ilearnChartIndices) {
             //    console.log(idx)
-            //    console.log(infoChart[idx])
-            //    infoChart[idx].width(windowWidth);
+            //    console.log(infoCharts[idx])
+            //    infoCharts[idx].width(windowWidth);
             // }
 
          }
@@ -1446,7 +1318,7 @@ async function navigateHandler(e) {
             // const gradStart = gradChartIndices[0]-1;
             // const gradEnd = gradChartIndices.length-1;
             // for (let i = gradStart; i < gradEnd; i++) {
-            //    infoChart[i].width(windowWidth);
+            //    infoCharts[i].width(windowWidth);
             // }
 
          }
@@ -1458,17 +1330,12 @@ async function navigateHandler(e) {
             // const satStart = satChartIndices[0]-1;
             // const satEnd = satChartIndices.length-1;
             // for (let i = satStart; i < satEnd; i++) {
-            //    infoChart[i].width(windowWidth);
+            //    infoCharts[i].width(windowWidth);
             // }
          }
       };
 
-      // await setYearList(allSchoolsObj);
-
-      if (strYear == "2020") {
-         yearValue = "2019";
-      }
-      else if (intYear > curAcademicYear) {
+      if (intYear > curAcademicYear) {
          yearValue = curAcademicYear.toString();
       }
       else {
@@ -1481,7 +1348,7 @@ async function navigateHandler(e) {
       selectedValues.year = yearValue;
 
       const academicInfoData = await getAcademicInfoData(selectedValues);
-      academicInfoPage(academicInfoData)
+      academicInfoPage(academicInfoData, uiState.getState())
       // getAcademicInfoData(selectedValues);
     }
     else if (
@@ -1570,12 +1437,7 @@ async function navigateHandler(e) {
          }
       };
 
-      // await setYearList(allSchoolsObj);
-
-      if (strYear == 2020) {
-         yearValue = 2019;
-      }
-      else if (intYear > curAcademicYear) {
+      if (intYear > curAcademicYear) {
          yearValue = curAcademicYear.toString();
       }
       else {
@@ -1589,11 +1451,11 @@ async function navigateHandler(e) {
       // getComparisonSchools automatically repopulates the dropdown -
       // NOTE: We ONLY want to call getComparison schools with the
       // following targets: 1) analysisTab; 2) k8Tab; 3) hsTab.
-      if (typeTab == "k8Tab") {
-         selectedValues.school_subtype = "K8"
-      } else {
-         selectedValues.school_subtype = "HS"
-      };
+      // if (typeTab == "k8Tab") {
+      //    selectedValues.school_subtype = "K8"
+      // } else {
+      //    selectedValues.school_subtype = "HS"
+      // };
 
       if (target.id.match("analysisTab") || target.id.match("hsTab") ||
          target.id.match("k8Tab")) {
@@ -1803,28 +1665,28 @@ async function demographicsPage(data) {
 };
 
 
-// Academic Information
-async function academicInfoPage(data) {
+/// Academic Information ///
+async function academicInfoPage(data, state) {
 
    // TODO: selectedValues is reset each time it is called, so values do not necessarily
    // persist - switch to Store
    selectedValues = await getSelectedValues();
 
-   const year = selectedValues.year;
-   const schoolType = selectedValues.school_type
+   const year = state.year;
+   const schoolType = state.school_type
    let schoolSubtype;
 
    // if first school in list is K12, we need to manually set sub_type on initial load
    if (schoolType == "K12" && selectedValues.school_subtype == "K12") {
       schoolSubtype = "K8";
    } else {
-      schoolSubtype = selectedValues.school_subtype;
+      schoolSubtype = state.school_subtype;
    };
 
-   const pageTab = selectedValues.page_tab
-   const typeTab = selectedValues.type_tab
-   const k8Tab = selectedValues.k8_tab
-   const hsTab = selectedValues.hs_tab
+   const pageTab = state.page_tab
+   const typeTab = state.type_tab
+   const k8Tab = state.k8_tab
+   const hsTab = state.hs_tab
 
    if (!Array.isArray(data) || !data.length) {
       console.log("NO DATA")
@@ -1832,9 +1694,9 @@ async function academicInfoPage(data) {
    }
 
    let subjects,
-       categories,
-       tableIds = [],
-       chartIds = [];
+      categories,
+      tableIds = [],
+      chartIds = [];
 
    let ireadlabels = document.querySelectorAll('[id^="info-container-iread-label"]');
    let ilearnLabels = document.querySelectorAll('[id^="info-container-ilearn-label"]');
@@ -1847,10 +1709,6 @@ async function academicInfoPage(data) {
    )].map(item => item.id);
 
    // set subject, type, and chart labels
-   console.log("INFO TABLES BASIC DATA")
-   console.log(schoolType)
-   console.log(schoolSubtype)
-   console.log(k8Tab)
    if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
       if (k8Tab == "ireadTab") {
 
@@ -1858,7 +1716,7 @@ async function academicInfoPage(data) {
          categories = [total, ethnicity, subgroup];
 
          ireadlabels.forEach((el, i) => {
-            let ireadLabel = subjects[0] + " " + IREADLabelSuffixes[i]; // TODO SUffixes?
+            let ireadLabel = subjects[0] + " " + IREADLabelSuffixes[i];
             el.firstChild.textContent = ireadLabel;
          });
 
@@ -1929,349 +1787,93 @@ async function academicInfoPage(data) {
       }
    };
 
-   // if (!academicInfoPage.initialize) {       // TODO: Change this to check individual charts!! and remove redundancy
+   console.log('academicInfo Make Charts')
+   console.log(data)
 
-      // const allChartIds =[...document.querySelectorAll(
-      //       '[id^="info-"][id*="chart"]:not([id*="container"])'
-      //    )].map(item => item.id);
-
-      // console.log("initializing")
-      // console.log(allChartIds)
-      // // NOTE: all "chart" ids are generic. Changing the order of these
-      // // two arrays will change the order in which the charts are displayed.
-      // const allCategories = [
-      //    total, ethnicity, subgroup, gradeAll, ethnicity, subgroup,
-      //    gradeAll, ethnicity, subgroup, gradTotal, ethnicity, subgroup,
-      //    total, ethnicity, subgroup, total, ethnicity, subgroup
-      // ];
-
-      // const allSubjects = [
-      //    "IREAD", "IREAD", "IREAD", "ELA", "ELA", "ELA", "Math", "Math", "Math",
-      //    "Graduation", "Graduation", "Graduation", "EBRW", "EBRW", "EBRW",
-      //    "Math", "Math", "Math",
-      // ];
-
-      // // there are 18 possible line charts- 3 iread (1-3), 6 ilearn (4-9), 3 grad
-      // // rate (10-12), and 6 SAT (13-18) and 6 possible stack charts (ilearn only).
-      // // infoChart" is declared at the top of the script as an empty array global variable. (FIXX)
-
-      // for (let i = 0; i < allChartIds.length; i++) {
-      //    console.log("DOES NOT EXIST??")
-      //    console.log(d3.select("#" + allChartIds[i]).select("svg").empty())
-
-      //    infoChart[i] = multiLine().data(
-      //       getInfoChartData(data, allCategories[i], allSubjects[i], selectedValues)
-      //    ).id(allChartIds[i])
-      //    d3.select("#" + allChartIds[i]).call(infoChart[i]);
-      // };
-
-      // let stackCategory = [
-      //    gradeAll, ethnicity, subgroup, gradeAll, ethnicity, subgroup
-      // ];
-      // let stackSubject = [
-      //    "ELA", "ELA", "ELA", "Math", "Math", "Math",
-      // ];
-
-      // for (let i = 0; i < stackIds.length; i++) {
-      //    infoStack[i] = horizontalStackedBar().data(
-      //       getProficiencyBreakdown(data, categories[i], subjects[i], selectedValues)
-      //    ).id(stackIds[i])
-      //    d3.select("#" + stackIds[i]).call(infoStack[i]);
-      // };
-
-// Tables
-
-      // Initialize (empty) tables on-load
-   //    for (let k = 0; k < tableIds.length; k++) {
-   //       let infoTableID = "#" + tableIds[k];
-   //       let infoTableOptions = initializeTable(infoTableID);
-   //       var infoGridDiv = document.querySelector(infoTableID);
-   //       infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
-   //    }
-
-   //    academicInfoPage.initialize = true;
-   // }
-   // else {
-
-console.log("ChartIds for this particular Exercise:")
-console.log(chartIds)
-
-// either create or update tables if they already exist
-for (let i = 0; i < chartIds.length; i++) {
-   if (d3.select("#" + chartIds[i]).select("svg").empty()) {
-      // console.log("Uh oh, CHART is empty:")
-      // console.log(chartIds[i])
-
-      infoChart[i] = multiLine().data(
-         getInfoChartData(data, categories[i], subjects[i], selectedValues)
-      ).id(chartIds[i]);
-      d3.select("#" + chartIds[i]).call(infoChart[i]);
-   } else {
-      // console.log("Yay! Updating:")
-      // console.log(chartIds[i])
-
-      const updateData = getInfoChartData(
-         data, categories[i], subjects[i], selectedValues
-      );
-      infoChart[i].data(updateData).id(chartIds[i]);
-   }
-};  
-
-// either create or update stack tables if we are on ilearnTab
-if (typeTab == "k8Tab" && k8Tab == "ilearnTab") {
-   for (let i = 0; i < stackIds.length; i++) {
-      if (d3.select("#" + stackIds[i]).select("svg").empty()) {
-         // console.log("Uh oh, STACK is empty:")
-         // console.log(stackIds[i])
-
-         infoStack[i] = horizontalStackedBar().data(
-            getProficiencyBreakdown(data, categories[i], subjects[i], selectedValues)
-         ).id(stackIds[i])
-         d3.select("#" + stackIds[i]).call(infoStack[i]);
+   // create or update multi-lines charts
+   for (let i = 0; i < chartIds.length; i++) {
+      if (d3.select("#" + chartIds[i]).select("svg").empty()) {
+         infoCharts[i] = multiLine().data(
+            getInfoChartData(data, categories[i], subjects[i], state)
+         ).id(chartIds[i]);
+         d3.select("#" + chartIds[i]).call(infoCharts[i]);
       } else {
-
-         // console.log("Yay! Updating:")
-         // console.log(stackIds[i])
-
-         const updateData = getProficiencyBreakdown(
-            data, categories[i], subjects[i], selectedValues
+         const updateData = getInfoChartData(
+            data, categories[i], subjects[i], state
          );
-         infoStack[i].data(updateData).id(stackIds[i]);
+         console.log(updateData)
+         console.log(updateData)
+         console.log(infoCharts[i])
+         infoCharts[i].data(updateData).id(chartIds[i]);
       }
-   };
-}
-// TODO: Need to determine if ALL charts will be blank - so we dont
-// just display a bunch of empy charts - we display one
+   };  
 
-      /* Update */
-      // var infoChartStartingIndex,
-      //    infoStackStartingIndex,
-      //    infoChartCategories,
-      //    infoChartSubjects,
-      //    infoStackCategories,
-      //    infoStackSubjects;
-
-      // if (typeTab == "k8Tab") {
-      //    if (k8Tab == "ireadTab") {
-
-      //       for (let i = 0; i < chartIds.length; i++) {
-      //         if (d3.select("#" + chartIds[i]).select("svg").empty()) {
-      //             infoChart[i] = multiLine().data(
-      //                getInfoChartData(data, categories[i], subjects[i], selectedValues)
-      //             ).id(chartIds[i]);
-      //             d3.select("#" + chartIds[i]).call(infoChart[i]);
-      //          } else {
-      //             const updateData = getInfoChartData(
-      //                data, categories[i], subjects[i], selectedValues
-      //             );
-      //             infoChart[i].data(updateData).id(chartIds[i]);
-      //          }
-      //       };            
-
-      //    } else {
-
-      //       for (let i = 0; i < chartIds.length; i++) {
-      //         if (d3.select("#" + chartIds[i]).select("svg").empty()) {
-      //             infoChart[i] = multiLine().data(
-      //                getInfoChartData(data, categories[i], subjects[i], selectedValues)
-      //             ).id(chartIds[i])
-      //             d3.select("#" + chartIds[i]).call(infoChart[i]);
-      //          } else {
-      //             const updateData = getInfoChartData(
-      //                data, categories[i], subjects[i], selectedValues
-      //             );
-      //             infoChart[i].data(updateData).id(chartIds[i]);
-      //          }
-      //       };  
-           
-      //       for (let i = 0; i < stackIds.length; i++) {
-      //          if (d3.select("#" + stackIds[i]).select("svg").empty()) {
-      //             infoStack[i] = horizontalStackedBar().data(
-      //                getProficiencyBreakdown(data, categories[i], subjects[i], selectedValues)
-      //             ).id(stackIds[i])
-      //             d3.select("#" + stackIds[i]).call(infoStack[i]);
-      //          } else {
-      //             const updateData = getProficiencyBreakdown(
-      //               data, categories[i], subjects[i], selectedValues
-      //             );
-      //             infoStack[i].data(updateData).id(stackIds[i]);
-      //          }
-      //       };
-      //    }
-
-      // } else if (typeTab == "hsTab") {
-      //    if (hsTab == "gradTab") {
-
-            // infoChartStartingIndex = 9;
-            // let cnt = 0;
-            // infoChartSubjects = ["Graduation", "Graduation", "Graduation"];
-            // infoChartCategories = [gradTotal, ethnicity, subgroup];
-
-            // the charts themselves are not distinguishable by id, so
-            // we count the containers (1:1 relationship)
-            // let gradChartUpdate = [...document.querySelectorAll(
-            //    '[id^="info-container-gradrate-chart"]'
-            // )].map(item => item.id);
-
-            // const gradChartEndIndex = infoChartStartingIndex + gradChartUpdate.length;
-
-         //    for (let i = 0; i < chartIds.length; i++) {
-         //       const updateData = getInfoChartData(
-         //          data, categories[i], subjects[i], selectedValues
-         //       );
-         //       infoChart[i].data(updateData).id(chartIds[i]);
-         //       // cnt=cnt+1;
-         //    };
-         // }
-         // else if (hsTab == "satTab") {
-            // infoChartStartingIndex = 12;
-            // let cnt = 0;
-
-            // infoChartSubjects = [
-            //    "EBRW", "EBRW", "EBRW", "Math", "Math", "Math"
-            // ];
-            // infoChartCategories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
-
-            // const satChartUpdate = [...document.querySelectorAll(
-            //    '[id^="info-container-sat-chart"]'
-            // )].map(item => item.id);
-
-            // const satChartEndIndex = infoChartStartingIndex + satChartUpdate.length;
-
-      //       for (let i = 0; i < chartIds.length; i++) {
-      //          const updateData = getInfoChartData(
-      //             data, categories[i], subjects[i], selectedValues
-      //          );
-      //          infoChart[i].data(updateData).id(chartIds[i]);
-      //          // cnt = cnt + 1;
-      //       };
-      //    }
-      // };
-
-      
-      // TODO : HEREERERE //
-
-/* Tables */
-//https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
-// NOTE: This seems like a hack. Loops through array of grids (using a
-// global variable gridAPI and the gridDivID to determine which data to use.
-// const doesTableExist = Boolean(gridApi && !gridApi.isDestroyed());
-
-// Remove objects with years > the selected year
-const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
-let infoTableData,
-    infoTableID,
-    infoTableOptions;
-
-
-// TODO: FIX THIS BY INITIALIZING TABLES WITH DATA //
-for (let k = 0; k < tableIds.length; k++) {
-
-   if (Boolean(infoGridApi[k] && !infoGridApi[k].isDestroyed())) {
-      // update table if already exists
-      for (let i=0; i < subjects.length; i++) {
-
-         infoTableID = infoGridApi[i].getGridId();
-
-         infoTableData = getTableData(
-            tabledata, categories[i], subjects[i], selectedValues
-         );
-
-         const tableContainer = infoTableID.replace("#info", "info-container");
-         const emptyTable = document.getElementById(tableContainer);
-
-         // hide table if list is empty
-         if (!infoTableData || !infoTableData.length) {
-            infoTableOptions = {
-               columnDefs: [],
-               rowData: [],
-               suppressNoRowsOverlay: false,
-               overlayNoRowsTemplate: '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">No data to display.</span>',
-            };
-            emptyTable.style.display = "none";
-
+   // create or update stack charts (if ilearnTab is active)
+   if (typeTab == "k8Tab" && k8Tab == "ilearnTab") {
+      for (let i = 0; i < stackIds.length; i++) {
+         if (d3.select("#" + stackIds[i]).select("svg").empty()) {
+            infoStacks[i] = horizontalStackedBar().data(
+               getProficiencyBreakdown(data, categories[i], subjects[i], state)
+            ).id(stackIds[i])
+            d3.select("#" + stackIds[i]).call(infoStacks[i]);
          } else {
-
-         // TODO: Figure out why this doesn't include tableID but createanalysisTable does
-            infoTableOptions = createInfoTable(infoTableData, infoTableID);
-            emptyTable.style.display = "flex";
+            const updateData = getProficiencyBreakdown(
+               data, categories[i], subjects[i], state
+            );
+            infoStacks[i].data(updateData).id(stackIds[i]);
          }
+      };
+   }
 
-         // reset columndefs and rowdata or else table will have empty cols.
-         infoGridApi[i].setGridOption(
+   /* Tables */
+   //https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
+   let infoTableOptions;
+
+   const emptyTable = {
+      columnDefs: [],
+      rowData: [],
+      suppressNoRowsOverlay: false,
+      overlayNoRowsTemplate: '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">No data to display.</span>',
+   };
+
+   // Remove objects with years > the selected year
+   const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
+
+   for (let k = 0; k < tableIds.length; k++) {
+
+      let infoTableID = "#" + tableIds[k];
+
+      const tableContainer = infoTableID.replace("#info", "info-container");
+      const emptyTableContainer = document.getElementById(tableContainer);
+
+      let infoTableData = getTableData(
+         tabledata, categories[k], subjects[k], selectedValues
+      );
+
+      if (!infoTableData || !infoTableData.length) {
+         infoTableOptions = emptyTable;
+      } else {
+         infoTableOptions = createInfoTable(infoTableData, tableIds[k]);
+      }
+
+      if (Boolean(infoGridApi[k] && !infoGridApi[k].isDestroyed())) {
+
+         // update table- reset columndefs and rowdata or else table will
+         // have empty cols.
+         infoGridApi[k].setGridOption(
             "columnDefs", infoTableOptions.columnDefs
          );
-         infoGridApi[i].setGridOption("rowData", infoTableData);
-         };
+         infoGridApi[k].setGridOption("rowData", infoTableData);
 
-   } else {
-      // create table
-      console.log("CREATING TABLE:")
-      console.log(tableIds[k])
-      infoTableID = "#" + tableIds[k];
-      let infoTableOptions = initializeTable(infoTableID);
-      var infoGridDiv = document.querySelector(infoTableID);
-      infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
+      } else {
+         // create table
+         const infoGridDiv = document.querySelector(infoTableID);
+         infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
+      }
    }
-}
 
+};
 
-
-//       // Remove objects with years > the selected year
-//       // const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
-
-//       for (let i=0; i < subjects.length; i++) {
-
-//          // let infoTableNum = infoChartStartingIndex + i;
-         
-//          let infoTableNum = 0 + i;
-
-//          infoTableID = infoGridApi[infoTableNum].getGridId();
-
-//          infoTableData = getTableData(
-//             tabledata, categories[i], subjects[i], selectedValues
-//          );
-
-//          // if infoTableData is an empty list- the school has insufficient data for
-//          // all categories - so we hide it
-//          let infoTableOptions;
-
-//          if (!infoTableData || !infoTableData.length) {
-//             infoTableOptions = {
-//                columnDefs: [],
-//                rowData: [],
-//                suppressNoRowsOverlay: false,
-//                overlayNoRowsTemplate: '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">No data to display.</span>',
-//             };
-
-//             // hide table without data
-//             const tableContainer = infoTableID.replace("#info", "info-container");
-//             const emptyTable = document.getElementById(tableContainer);
-//             emptyTable.style.display = "none";
-
-//          } else {
-
-
-// // TODO: Figure out why this doesn't include tableID but createanalysisTable does
-//             infoTableOptions = createInfoTable(infoTableData, infoTableID);
-
-//             // ensure all tables with data are displayed
-//             const tableContainer = infoTableID.replace("#info", "info-container");
-//             const emptyTable = document.getElementById(tableContainer);
-//             emptyTable.style.display = "flex";
-
-//          }
-
-//          // reset columndefs and rowdata or else table will have empty cols.
-//          infoGridApi[infoTableNum].setGridOption(
-//             "columnDefs", infoTableOptions.columnDefs
-//          );
-//          infoGridApi[infoTableNum].setGridOption("rowData", infoTableData);
-//       };
-   }
-// };
-
-// TODO: Modify to that we are passing around one glob object with all necessary information
 
 // Chart Academic Information
 async function academicAnalysisPage(data) {
@@ -3134,36 +2736,35 @@ if (document.readyState !== "loading") {
    const corpID = document.getElementById("corpSelect").value;
    await setSchoolList(corpID)
 
-   // await setCorpList(allSchoolsObj);
-   // await setYearList(allSchoolsObj);
+   // type and sub_type are set in setSchoolList() - initialize
+   // the rest of the values here
+   uiState.setState({
+      school_id: document.getElementById("schoolSelect").value.toString(),
+      corp_id: corpID,
+      year: document.getElementById("yearSelect").value,
+      comparison_schools: document.getElementById("comparisonSelect").value,
+      page_tab: document.querySelector(".tab.main.active").id,
+      k8_tab: document.querySelector(".tab.k8info.active").id,
+      hs_tab: document.querySelector(".tab.hsinfo.active").id,
+      type_tab: document.querySelector(".tab.main.active").id,
+      analysis_tab: document.querySelector(".tab.analysis.active").id
+   });
 
-   uiState.setState({school_id: document.getElementById("schoolSelect").value.toString()})
-   
-   selectedValues = await getSelectedValues();
+   console.log("INITIALIZE - STATE")
+   console.log(uiState.getState())
 
-   await getComparisonSchools(selectedValues);
+   // selectedValues = await getSelectedValues();
 
-   selectedValues.comparison_schools = await getComparisonList();
+   // await getComparisonSchools(selectedValues);
+   // selectedValues.comparison_schools = await getComparisonList();
+   document.querySelector(".k8nav").classList.remove("open");
+   document.querySelector(".hsnav").classList.remove("open");
+   document.querySelector(".typenav").classList.remove("open");
+   document.querySelector(".analysisnav").classList.remove("open");
 
-   const k8Categories = document.querySelector(".k8nav");
-   const hsCategories = document.querySelector(".hsnav");
-   const typeCategories = document.querySelector(".typenav");
-   const analysisPages = document.querySelector(".analysisnav");
-
-   k8Categories.classList.remove("open");
-   hsCategories.classList.remove("open");
-   typeCategories.classList.remove("open");
-   analysisPages.classList.remove("open");
-
-   const demographicData = await getDemographicData(selectedValues);
+   const demographicData = await getDemographicData(uiState.getState());
+   // const demographicData = await getDemographicData(selectedValues);
    demographicsPage(demographicData);
-   // getDemographicData(selectedValues)
-   
-   // const academicInfoData = await getAcademicInfoData(selectedValues);
-   // academicInfoPage(academicInfoData);
-   // // getAcademicInfoData(selectedValues);
-
-   // getAcademicAnalysisData(selectedValues);
 };
 
 d3.select(window).on("resize", resize);
@@ -3200,7 +2801,7 @@ async function resize() {
       }
       else if (selectedValues.page_tab === "infoTab") {
          for (let i = 0; i < 18; i++) {
-            infoChart[i].width(windowWidth);
+            infoCharts[i].width(windowWidth);
          }
       }
       else {

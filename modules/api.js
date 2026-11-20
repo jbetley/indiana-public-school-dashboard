@@ -6,9 +6,6 @@
 
 async function getAcademicInfoData(select) {
 
-    console.log('uistate passed in')
-    console.log(select)
-    
     const fetchedData = await fetch(`${window.origin}/academic`, {
         method: "POST",
         credentials: "include",
@@ -26,10 +23,7 @@ async function getAcademicInfoData(select) {
           }
        });
  
-    //    let infoData = fetchedData[0];
- 
        return fetchedData[0]
-       // academicInfoPage(infoData);
  };
 
  async function getDemographicData(select) {

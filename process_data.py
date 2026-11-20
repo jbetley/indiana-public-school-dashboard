@@ -363,6 +363,9 @@ def clean_academic_data(
 
     school_id = school_list[0]
     
+    print("CLEANING")
+    print(raw_data)
+    
     # note: corp_id needs to be a str
     corp_id = raw_data[raw_data["School ID"] ==
         school_id]["GEO Corp"].unique()[0].astype(str)

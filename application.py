@@ -76,6 +76,7 @@ def load_school_dropdown():
         for m in school_df.to_dict(orient="records")
     ]
 
+
 @app.route("/init", methods=["GET"])
 def initialize_corp_list():
 
@@ -193,9 +194,13 @@ def get_years():
 def load_academic_data():
 
     data = request.get_json()
-
-    schools = [data["school_id"]] + data["comparison_schools"]
-
+    
+    # TODO: Testing this - only need comparison schools for analysis table
+    if isinstance(data["comparison_schools"], list):
+        schools = [data["school_id"]] + data["comparison_schools"]
+    else:
+        schools = [data["school_id"]]
+        
     # school_subtype for K12 will either be K8 or HS, school_subtype
     # for K8 will be ES, MS, or K8
 
