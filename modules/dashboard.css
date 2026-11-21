@@ -315,7 +315,7 @@ div[data-tab].active {
 
 /* Dropdown Menu */
 #dropdown {
- width: 80%;
+ width: 60%;
  background: none;
  font-size: .75rem;
  border: 1px solid rgba(192,193,199, .5);
@@ -324,8 +324,16 @@ div[data-tab].active {
  padding: .2em;
 }
 
-#corpSelect {
+/* #corpSelect {
   width: 45%
+} */
+
+/* override slimselect defaults for corp dropdown */
+.slim-corp .ss-main {
+  width: 70%;
+  background: #f2f2f2;
+  color: steelblue;
+  border-color: #f2f2f2;
 }
 
 select {
@@ -619,10 +627,6 @@ section#tab-two .grid  {
 .tab2-chart-18 { 
   grid-column: 2 / span 1;
 }
-
-
-
-
 
 
 /* Academic Analysis Tables and Charts */

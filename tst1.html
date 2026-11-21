@@ -1,0 +1,112 @@
+<div class="dropdown" id="myDropdown">
+  <button type="button" class="dropdown-btn" id="dropdownBtn">Select an option</button>
+  <div class="dropdown-menu" id="dropdownMenu">
+    <input type="text" class="dropdown-search" id="dropdownSearch" placeholder="Search...">
+    <ul class="dropdown-list" id="dropdownList">
+      <li data-value="us">United States</li>
+      <li data-value="ca">Canada</li>
+      <li data-value="uk">United Kingdom</li>
+      <li data-value="au">Australia</li>
+      <li data-value="de">Germany</li>
+    </ul>
+  </div>
+</div>
+
+<style>
+  .dropdown {
+    position: relative;
+    width: 240px;
+    font-family: sans-serif;
+  }
+  .dropdown-btn {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    width: 100%;
+    margin-top: 4px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 100;
+  }
+  .dropdown-menu.open {
+    display: block;
+  }
+  .dropdown-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    outline: none;
+  }
+  .dropdown-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .dropdown-list li {
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+  .dropdown-list li:hover {
+    background-color: #f0f4f8;
+  }
+</style>
+
+<script>
+  const dropdown = document.getElementById('myDropdown');
+  const btn = document.getElementById('dropdownBtn');
+  const menu = document.getElementById('dropdownMenu');
+  const searchInput = document.getElementById('dropdownSearch');
+  const items = document.querySelectorAll('#dropdownList li');
+
+  // Toggle dropdown visibility
+  btn.addEventListener('click', () => {
+    menu.classList.toggle('open');
+    if (menu.classList.contains('open')) {
+      searchInput.value = '';
+      filterItems('');
+      searchInput.focus();
+    }
+  });
+
+  // Filter items as user types
+  searchInput.addEventListener('input', (e) => {
+    filterItems(e.target.value.toLowerCase());
+  });
+
+  function filterItems(query) {
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  }
+
+  // Handle item selection
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      btn.textContent = item.textContent;
+      btn.dataset.selectedValue = item.dataset.value;
+      menu.classList.remove('open');
+    });
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      menu.classList.remove('open');
+    }
+  });
+</script>

@@ -534,7 +534,15 @@ function multiLine() {
             let divElement = document.getElementById(id);
             let padding = parseInt(getComputedStyle(divElement.parentElement).padding); // take padding into acount
             const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
-            const shiftToCenter = ((svgWidth - legendContainerWidth) / 2) - padding;
+            // TODO: Test all of the different calculations used to determine width ->
+            // d3.select("g")._groups[0][0].parentNode.attributes.getNamedItem("width").value;
+            // dom.select("svg").attr("width");
+            // AND
+            // d3.select("svg")._groups[0][0].attributes[0].value
+            // which somehow broke recently.
+            
+            const tstSvgWidth = dom.select("svg").attr("width");
+            const shiftToCenter = ((tstSvgWidth - legendContainerWidth) / 2) - padding;
 
             svg.selectAll(".legendcontainer")
               .attr('transform', "translate(" + shiftToCenter + "," + (height + (margin.bottom / 5)) +")");

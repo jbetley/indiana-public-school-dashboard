@@ -24,17 +24,18 @@
    <script src="{{ url_for('static', filename='globals.js')}}"></script>
 
    <!-- Local Stylesheets -->
-   <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='slim-select.css')}}">
+   <link rel="stylesheet" media="all" href="{{ url_for('static', filename='dashboard.css')}}">
 </head>
 <body>
    <h3>Indiana Public School Academic Dashboard</h3>
    <form name="dashboardselect" id="dropdown">
-      <label>Select School Corporation:</label>
-      <select name="corporation" id="corpSelect"></select>
-      <br>
+      <div class = "row slim-corp">
+         <label>Select Corporation:</label>
+         <select name="corporation" id="corpSelect"></select>
+      </div>
       <label>Select School:</label>
-      <select name="school" id="schoolSelect"></select>
+      <select name = "school" id="schoolSelect"></select>
       <br>
       <label>Select Year:</label>
       <select name="year" id="yearSelect"></select>
@@ -329,12 +330,18 @@
 // version:  0.9
 // date:     03.14.25
 
+
+
+// TODO: WORK ON ANALYSIS PAGE NOW AND ABUGHUNT ///
+
+
+// TODO: REMOVE ENTIRELY
 const getMaxYears = `${window.origin}/config`;
 const yearResponse = await fetch(getMaxYears);
 const maxYears = await yearResponse.json();
-
 const curAcademicYear = maxYears.academic_year;
 // const curDemographicYear = maxYears.demographic_year;
+// TODO: REMOVE ENTIRELY //
 
 const dropdownGroup = {
    comparisonSelection: document.getElementById("comparisonSelect"),
@@ -356,6 +363,7 @@ const yearSelection = document.getElementById("yearSelect");
 const corpSelection = document.getElementById("corpSelect");
 const schoolSelection = document.getElementById("schoolSelect");
 
+// TODO: REMOVE ENTIRELY //
 // List of Corporation and School Names for dropdown
 const allSchoolsUrl = `${window.origin}/load`;
 const allSchoolsResponse = await fetch(allSchoolsUrl);
@@ -368,78 +376,27 @@ allSchoolsObj.forEach(function (obj) {
    obj["School Name"] = obj["School Name"] + " (" +
    toString(obj["School ID"]) + ")";
 });
-
-// async function getDemographicData(select) {
-//    const fetchedData = await fetch(`${window.origin}/demographic`, {
-//       method: "POST",
-//          credentials: "include",
-//          cache: "no-cache",
-//          headers: {
-//             Accept: "application/json",
-//             "Content-Type": "application/json",
-//       },
-//       body:JSON.stringify(select)})
-//       .then(response=>{
-//          if (response.ok) {
-//             return response.json()
-//          } else {
-//             alert("Network Error: Could not load data.")
-//          }
-//       });
-
-//    let demData = fetchedData[0];
-//    demographicsPage(demData);
-// };
+// TODO: REMOVE ENTIRELY //
 
 
-// async function getAcademicInfoData(select) {
-//    console.log("infoData")
-//    console.log(select)
-//    const fetchedData = await fetch(`${window.origin}/academic`, {
-//       method: "POST",
-//          credentials: "include",
-//          cache: "no-cache",
-//          headers: {
-//             Accept: "application/json",
-//             "Content-Type": "application/json",
-//       },
-//       body:JSON.stringify(select)})
-//       .then(response=>{
-//          if (response.ok) {
-//             return response.json()
-//          } else {
-//             alert("Network Error: Could not load data.")
-//          }
-//       })
+const corpSelect = new SlimSelect({
+  select: "#corpSelect",
+  settings: {
+    alwaysOpen: false,
+    contentPosition: "absolute",
+    searchText: 'No Results',
+    contentWidth: "auto",
+    placeholderText: "",
+    showSearch: true,
+    closeOnSelect: true,
+    hideSelected: true
+  }
+});
 
-//       let infoData = fetchedData[0];
-
-//       return infoData
-//       // academicInfoPage(infoData);
-// };
+// corpSelect.setSelected('15');
 
 
-// async function getAvailableYears(select) {
-//    const yearData = await fetch(`${window.origin}/years`, {
-//       method: "POST",
-//          credentials: "include",
-//          cache: "no-cache",
-//          headers: {
-//             Accept: "application/json",
-//             "Content-Type": "application/json",
-//       },
-//       body:JSON.stringify(select)})
-//       .then(response=>{
-//          if (response.ok) {
-//             return response.json()
-//          } else {
-//             alert("Network Error: Could not load data.")
-//          }
-//       })
-
-//       return yearData
-// };
-
+// TODO: MOVE TO API
 async function getAcademicAnalysisData(select) {
 // TODO: Sometimes "select.comparison_schools" is empty - presumably
 // because at the time the data is passed, the checked schools have
@@ -473,6 +430,7 @@ async function getAcademicAnalysisData(select) {
 };
 
 
+// TODO: MOVE TO API
 async function getComparisonSchools(select) {
    const comparisonSchoolList = await fetch(`${window.origin}/where`, {
       method: "POST",
@@ -491,10 +449,10 @@ async function getComparisonSchools(select) {
 
    await setComparisonList(comparisonSchoolList);
 };
-
+// TODO: MOVE TO API
 
 // NEW //
-async function setCorpDropdown() {
+async function setCorpList() {
    try {
       const response  = await fetch(`${window.origin}/init`);
 
@@ -509,20 +467,28 @@ async function setCorpDropdown() {
          toString(obj["Corporation ID"]) + ")";
       });
 
-      const Year = droplist[0].Year;
+      // put in proper SlimSelect format
+      let subset = droplist.map((
+         { ["Corporation ID"]: value, ["Corporation Name"]: text }) => ({ text, value }
+      ));
 
-      droplist.forEach(
-         (corp) => corpSelection
-         .appendChild(new Option(corp["Corporation Name"], corp["Corporation ID"]))
-      );
+      corpSelect.setData(subset);
 
-   return droplist
-   
+      // set first school as default
+      let defaultSelection = subset.map(function (obj) {
+         return obj.value;
+      });
+
+      corpSelect.setSelected(defaultSelection[0]);
+      
+      return defaultSelection[0]
+      
    } catch (error) {
     console.error('Failed to load dropdown data:', error);
     selectElement.innerHTML = '<option disabled selected>Error loading data</option>';
   }
 }
+
 
 // Sets school list and year list - called whenever corpList is changed //
 async function setSchoolList(corp_id) {
@@ -551,6 +517,7 @@ async function setSchoolList(corp_id) {
       );
 
       const schoolSelection = document.getElementById("schoolSelect");
+      
       removeOptions(schoolSelection);
 
       currentSchools.forEach(
@@ -559,6 +526,7 @@ async function setSchoolList(corp_id) {
       );
 
       const yearSelection = document.getElementById("yearSelect");
+      
       removeOptions(yearSelection);
 
       availableYears.sort((a, b) => (a > b ? -1 : 1))
@@ -831,7 +799,8 @@ yearSelection.addEventListener("change", async () => {
    selectedValues = await getSelectedValues();
 
    console.log("Year - STATE")
-   console.log(uiState.getState())
+   console.log(uiState.getState().page_tab)
+   console.log(selectedValues.page_tab)
 
    if (selectedValues.page_tab === "analysisTab") {
       selectedValues.comparison_schools = await getComparisonList();
@@ -840,7 +809,7 @@ yearSelection.addEventListener("change", async () => {
    else if (selectedValues.page_tab === "infoTab")  {
       
       const academicInfoData = await getAcademicInfoData(uiState.getState());
-      console.log(academicInfoData)
+
       // const academicInfoData = await getAcademicInfoData(selectedValues);
       // NOTE: Probably not necessary
       // // Get school type and subtype from selected year
@@ -854,17 +823,21 @@ yearSelection.addEventListener("change", async () => {
       academicInfoPage(academicInfoData, uiState.getState())
    }
    else {
-      const demographicData = await getDemographicData(selectedValues);
+      const demographicData = await getDemographicData(uiState.getState());
       demographicsPage(demographicData);
-      // getDemographicData(selectedValues)
    }
 });
+
 
 
 // TODO: switch to search bar? Need to tweak Corp/School Dropdowns
 corpSelection.addEventListener("change", async () => {
 
-   const corpID = document.getElementById("corpSelect").value;
+   const corpID = corpSelect.getSelected()[0];
+
+   // console.log(corpSelection.value)
+   // console.log(corpID)
+
    await setSchoolList(corpID)
 
    // new corpSelection will reset schoolSelection, so we need
@@ -875,15 +848,20 @@ corpSelection.addEventListener("change", async () => {
 
 schoolSelection.addEventListener("change", async () => {
 
-/// TODO: HEREREREERERER ///
+   uiState.setState({
+      school_id: schoolSelection.value
+   })
 
    let state = uiState.getState();
 
    console.log("uiState-schoolselect")
    console.log(state)
 
+
    selectedValues = await getSelectedValues();
    
+   console.log("SelectedValues")
+   console.log(selectedValues)
    const selectedPage = selectedValues.page_tab;
    const k8Selection = selectedValues.k8_tab;
    const hsSelection = selectedValues.hs_tab;
@@ -1160,7 +1138,7 @@ async function navigateHandler(e) {
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
 
-   console.log("DEFAULT SELECTVAL")
+   console.log("Navigate Handler - original selectedVal")
    console.log(selectedValues)
    console.log("Nav handler - uiState")
    console.log(uiState.getState())
@@ -1539,6 +1517,12 @@ async function demographicsPage(data) {
    keep = ["Year","Attendance Rate", "Chronic Absenteeism %"];
    var attendanceChartData = filterObj(schoolData, keep);
 
+   // TODO: HERE - ACCOUNT FOR EMPTY CHART //
+   
+   console.log("Demographics")
+   console.log(attendanceChartData)
+   console.log(enrollmentChartData)
+
    // remove "%" from "Chronic Absenteeism %""
    attendanceChartData = renameKey(
       attendanceChartData, "Chronic Absenteeism %", "Chronic Absenteeism"
@@ -1622,6 +1606,7 @@ async function demographicsPage(data) {
          attendanceTableGridDiv, attendanceTableOptions
       );
 
+      console.log("I AM INITIALIZING ASTTENDNACCE DCHART")
       // Chronic Absenteeism and Attendance Rate Chart
       attendanceChart = multiLine().data(attendanceChartData).id("attendanceChart");
       d3.select("#attendanceChart").call(attendanceChart);
@@ -2727,33 +2712,62 @@ async function academicAnalysisPage(data) {
 };
 
 
+// Waits until an element has a non-empty .value
+function waitForElementValue(id) {
+  return new Promise((resolve) => {
+    // Return immediately if it already exists
+    const existingEl = document.getElementById(id);
+
+    if (existingEl.value) return resolve(existingEl);
+
+    const observer = new MutationObserver(() => {
+      const el = document.getElementById(id);
+      if (el.value) {
+        observer.disconnect(); // Stop watching once found
+        resolve(el);
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  });
+}
+
 /* Initialize App */
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
 
-   await setCorpDropdown()
+   console.log("Initializing . . . ")
 
-   const corpID = document.getElementById("corpSelect").value;
-   await setSchoolList(corpID)
-
-   // type and sub_type are set in setSchoolList() - initialize
-   // the rest of the values here
+   // set state for all tabs
    uiState.setState({
-      school_id: document.getElementById("schoolSelect").value.toString(),
-      corp_id: corpID,
-      year: document.getElementById("yearSelect").value,
-      comparison_schools: document.getElementById("comparisonSelect").value,
       page_tab: document.querySelector(".tab.main.active").id,
       k8_tab: document.querySelector(".tab.k8info.active").id,
       hs_tab: document.querySelector(".tab.hsinfo.active").id,
-      type_tab: document.querySelector(".tab.main.active").id,
+      type_tab: document.querySelector(".tab.type.active").id,
       analysis_tab: document.querySelector(".tab.analysis.active").id
    });
 
-   console.log("INITIALIZE - STATE")
-   console.log(uiState.getState())
+   await setCorpList()
 
-   // selectedValues = await getSelectedValues();
+   // due to the way code is executed, we want to wait
+   // a few milliseconds until schoolSelect is fully
+   // populated until moving on
+   await(waitForElementValue("schoolSelect"))
+
+   // type and sub_type are set in setSchoolList() - initialize
+   // remaining values here
+   uiState.setState({
+      school_id: document.getElementById("schoolSelect").value.toString(),
+      corp_id: corpSelect.getSelected()[0],
+      year: document.getElementById("yearSelect").value,
+      comparison_schools: document.getElementById("comparisonSelect").value,
+   });
+
+   console.log("Initial - State")
+   console.log(uiState.getState())
 
    // await getComparisonSchools(selectedValues);
    // selectedValues.comparison_schools = await getComparisonList();
@@ -2763,7 +2777,7 @@ if (document.readyState !== "loading") {
    document.querySelector(".analysisnav").classList.remove("open");
 
    const demographicData = await getDemographicData(uiState.getState());
-   // const demographicData = await getDemographicData(selectedValues);
+
    demographicsPage(demographicData);
 };
 
