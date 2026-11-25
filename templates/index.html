@@ -77,7 +77,7 @@
       <div class="row">
          <div class="nav-container twelve columns">
             <div id="hsnav-tabs" class="hsnav">
-               <button data-hstab="tab-h-1" id="gradTab" class="tab hsinfo active">Graduation Rate</button>
+               <button data-hstab="tab-h-1" id="gradTab" class="tab hsinfo active">Grad Rate</button>
                <button data-hstab="tab-h-2" id="satTab" class="tab hsinfo">SAT</button>
             </div>
          </div>
@@ -379,6 +379,21 @@ allSchoolsObj.forEach(function (obj) {
 // TODO: REMOVE ENTIRELY //
 
 
+const emptyTableOptions = {
+   // theme: 'legacy',
+   columnDefs: [],
+   rowData: [],
+   suppressNoRowsOverlay: false,
+//    headerRowBorder: false,
+//    rowStyle: { borderBottom: 'none' },
+//    defaultColDef: {
+//     cellStyle: { borderBottom: 'none'},
+//   },
+   overlayNoRowsTemplate: `
+   <span class="empty-grid">Insufficient data.</span>
+   `
+};
+
 const corpSelect = new SlimSelect({
   select: "#corpSelect",
   settings: {
@@ -520,10 +535,23 @@ async function setSchoolList(corp_id) {
       
       removeOptions(schoolSelection);
 
-      currentSchools.forEach(
-         (school) => schoolSelection
-         .appendChild(new Option(school["School Name"], school["School ID"]))
-      );
+      const schoolOptions = currentSchools.map( obj => {
+         const opt = new Option(obj["School Name"], obj["School ID"]);
+         Object.assign(opt.dataset, {
+            type: obj["School Type"],
+            subtype: obj["Sub Type"],
+         });
+         return opt;
+      })
+
+      schoolSelection.append(...schoolOptions);
+
+      // currentSchools.forEach(
+      //    (school) => schoolSelection
+      //    .appendChild(new Option(school["School Name"], school["School ID"]))
+      //    .setAttribute("data-type", school["School Type"])
+      //    .setAttribute("data-subtype", school["Sub Type"])
+      // );
 
       const yearSelection = document.getElementById("yearSelect");
       
@@ -534,12 +562,6 @@ async function setSchoolList(corp_id) {
       availableYears.forEach((year) => yearSelection
          .appendChild(new Option(year, year))
       );
-
-      // set initial type state for the first school in the list
-      uiState.setState({
-         school_type: currentSchools[0]["School Type"],
-         school_subtype: currentSchools[0]["Sub Type"],
-      })
 };
 
 
@@ -701,9 +723,6 @@ const uiState = createStore({
 });
 
 
-///////// FIX ALL INSTANCES OF CHANGING SCHOOL/CORP //////
-
-
 // This should be called: on init, on school change, and on
 // school type change
 async function setComparisonList(data) {
@@ -800,7 +819,6 @@ yearSelection.addEventListener("change", async () => {
 
    console.log("Year - STATE")
    console.log(uiState.getState().page_tab)
-   console.log(selectedValues.page_tab)
 
    if (selectedValues.page_tab === "analysisTab") {
       selectedValues.comparison_schools = await getComparisonList();
@@ -829,14 +847,9 @@ yearSelection.addEventListener("change", async () => {
 });
 
 
-
-// TODO: switch to search bar? Need to tweak Corp/School Dropdowns
 corpSelection.addEventListener("change", async () => {
 
    const corpID = corpSelect.getSelected()[0];
-
-   // console.log(corpSelection.value)
-   // console.log(corpID)
 
    await setSchoolList(corpID)
 
@@ -846,10 +859,16 @@ corpSelection.addEventListener("change", async () => {
    schoolSelection.dispatchEvent(event);
 });
 
+
 schoolSelection.addEventListener("change", async () => {
 
+   const selectedSchool = event.target.selectedOptions[0];
+
    uiState.setState({
-      school_id: schoolSelection.value
+      year: yearSelection.value,
+      school_id: selectedSchool.value,
+      school_type: selectedSchool.getAttribute('data-type'),
+      school_subtype: selectedSchool.getAttribute('data-subtype')
    })
 
    let state = uiState.getState();
@@ -857,43 +876,37 @@ schoolSelection.addEventListener("change", async () => {
    console.log("uiState-schoolselect")
    console.log(state)
 
+   const selectedPage = state.page_tab;
+   const k8Selection = state.k8_tab;
+   const hsSelection = state.hs_tab;
+   const typeTab = state.type_tab;
+   const schoolType = state.school_type;
+   const schoolSubtype = state.school_subtype;
 
-   selectedValues = await getSelectedValues();
-   
-   console.log("SelectedValues")
-   console.log(selectedValues)
-   const selectedPage = selectedValues.page_tab;
-   const k8Selection = selectedValues.k8_tab;
-   const hsSelection = selectedValues.hs_tab;
-   const typeTab = selectedValues.type_tab;
-   const schoolType = selectedValues.school_type;
-   const schoolSubtype = selectedValues.school_subtype;
+   // hide/show buttons
+   const k8Categories = document.querySelector(".k8nav");
+   const hsCategories = document.querySelector(".hsnav");
+   const typeCategories = document.querySelector(".typenav");
+   const analysisPages = document.querySelector(".analysisnav");
 
-   let k8Categories = document.querySelector(".k8nav");
-   let hsCategories = document.querySelector(".hsnav");
-   let typeCategories = document.querySelector(".typenav");
-   let analysisPages = document.querySelector(".analysisnav");
-   let k8TypeTab = document.getElementById("k8Tab");
-   let hsTypeTab = document.getElementById("hsTab");
+   // highlight active button
+   const k8TypeTab = document.getElementById("k8Tab");
+   const hsTypeTab = document.getElementById("hsTab");
 
-   // TODO: if schoolTYPE is K12, need to show k8/HS tab NOT WOKRING
    if (schoolType == "K12") {
-      typeCategories.classList.add("open");
-   }
-
-   if (schoolType == "K12" && selectedPage != "demoTab") {
-      typeCategories.classList.add("open");
+      typeCategories.classList.add("open");  // K8/HS toggle
    } else {
       typeCategories.classList.remove("open");
-   };
+   }
 
    if (selectedPage == "demoTab") {
+      typeCategories.classList.remove("open");
       k8Categories.classList.remove("open");
       hsCategories.classList.remove("open");
       analysisPages.classList.remove("open");
-      const demographicData = await getDemographicData(selectedValues);
+
+      const demographicData = await getDemographicData(state);
       demographicsPage(demographicData);
-      // getDemographicData(selectedValues)
    }
    else if (selectedPage == "infoTab") {
 
@@ -915,6 +928,16 @@ schoolSelection.addEventListener("change", async () => {
       if (schoolType == "K8" || 
          (schoolType == "K12" && schoolSubtype == "K8")
       ) {
+
+         hsCategories.classList.remove("open");
+
+         // no category selection for MS (only ilearn)
+         if (schoolSubtype == "MS") {
+            k8Categories.classList.remove("open");
+         } else {
+            k8Categories.classList.add("open");
+         }
+         k8TypeTab.classList.add("active");
 
          infoGradRateContainers.forEach(el => {
             el.style.display = "none";
@@ -940,22 +963,20 @@ schoolSelection.addEventListener("change", async () => {
             });
          }
 
-         // hsCategories.classList.remove("open"); // TESTING
-         hsTypeTab.classList.remove("active");
-
-         // no "IREAD" option for middle schools
-         if (schoolSubtype == "MS") {
-            k8Categories.classList.remove("open");
-         } else {
-            k8Categories.classList.add("open");
-         }
-         k8TypeTab.classList.add("active");
-
-         selectedValues.type_tab = "k8Tab";
+         // selectedValues.type_tab = "k8Tab";
       }
       else if (schoolType == "HS" || 
          (schoolType == "K12" && schoolSubtype == "HS")
       ) {
+
+         k8Categories.classList.remove("open");
+         hsCategories.classList.add("open");
+
+         if (schoolType == "K12") {
+            k8TypeTab.classList.remove("active");
+            hsTypeTab.classList.add("active");
+         }
+
          infoIreadContainers.forEach(el => {
             el.style.display = "none";
          });
@@ -980,12 +1001,7 @@ schoolSelection.addEventListener("change", async () => {
             });
          }
 
-         k8Categories.classList.remove("open");
-         hsCategories.classList.add("open");
-         k8TypeTab.classList.remove("active");
-         hsTypeTab.classList.add("active");
-
-         selectedValues.type_tab = "hsTab";
+         // selectedValues.type_tab = "hsTab";
       }
       const academicInfoData = await getAcademicInfoData(selectedValues);
       academicInfoPage(academicInfoData, uiState.getState())
@@ -1108,6 +1124,7 @@ async function navigateHandler(e) {
    const target = e.target || e.srcElement;
 
    // refresh state after update
+   // TODO: can we limit to affected values only?
    uiState.setState({
       school_id: document.getElementById("schoolSelect").value,
       corp_id: document.getElementById("corpSelect").value,
@@ -1116,20 +1133,19 @@ async function navigateHandler(e) {
       page_tab: document.querySelector(".tab.main.active").id,
       k8_tab: document.querySelector(".tab.k8info.active").id,
       hs_tab: document.querySelector(".tab.hsinfo.active").id,
-      type_tab: document.querySelector(".tab.main.active").id,
+      type_tab: document.querySelector(".tab.type.active").id,
       analysis_tab: document.querySelector(".tab.analysis.active").id
-   })
+   });
 
+   let state = uiState.getState()
 
-   selectedValues = await getSelectedValues();
-
-   const selectedPage = selectedValues.page_tab;
-   const k8Selection = selectedValues.k8_tab;
-   const hsSelection = selectedValues.hs_tab;
-   const typeTab = selectedValues.type_tab;
-   const schoolType = selectedValues.school_type;
-   const schoolSubtype = selectedValues.school_subtype;
-   const strYear = selectedValues.year;
+   const selectedPage = state.page_tab;
+   const k8Selection = state.k8_tab;
+   const hsSelection = state.hs_tab;
+   const typeTab = state.type_tab;
+   const schoolType = state.school_type;
+   const schoolSubtype = state.school_subtype;
+   const strYear = state.year;
    const intYear = parseInt(strYear);
    let yearValue;
 
@@ -1138,10 +1154,10 @@ async function navigateHandler(e) {
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
 
-   console.log("Navigate Handler - original selectedVal")
-   console.log(selectedValues)
    console.log("Nav handler - uiState")
    console.log(uiState.getState())
+   console.log("Target")
+   console.log(target.id)
 
    // iread/ilearn tabs should never be visible when school is hs or
    // hstab is selected and should always be available when school is
@@ -1168,7 +1184,6 @@ async function navigateHandler(e) {
 
       const demographicData = await getDemographicData(selectedValues);
       demographicsPage(demographicData);
-      // getDemographicData(selectedValues)
 
       // adjust chart size based on browser window size
       let windowWidth = window.innerWidth/2 - 125;
@@ -1185,6 +1200,7 @@ async function navigateHandler(e) {
       )
    ) {
 
+      // TODO: Width code - FIX not working properly
       let windowWidth = window.innerWidth/2 - 125;
 
       let infoIreadContainers = document.querySelectorAll(
@@ -1250,36 +1266,42 @@ async function navigateHandler(e) {
          schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")
       ) {
 
-         k8Categories.classList.add("open");
-
-         if (k8Selection == "ireadTab") {
-            infoIreadContainers.forEach(el => {
-               el.style.display = "flex";
-            });
-
-            // adjust width for iread charts
-            // const ireadStart = ireadChartIndices[0]-1;
-            // const ireadEnd = ireadChartIndices.length-1;
-            // for (let i = ireadStart; i < ireadEnd; i++) {
-            //    infoCharts[i].width(windowWidth);
-            // }
-         }
-         else if (k8Selection == "ilearnTab") {
+         if (schoolSubtype == "MS") {  // MS only has Ilearn
+            k8Categories.classList.remove("open");
             infoIlearnContainers.forEach(el => {
                el.style.display = "flex";
             });
-
-
-/// TODO: REWORK WIDTH - CRASHING HERE BECAUSE CHARTS NOT YET CREATED ///
-
-
-            // for (const idx of ilearnChartIndices) {
-            //    console.log(idx)
-            //    console.log(infoCharts[idx])
-            //    infoCharts[idx].width(windowWidth);
-            // }
-
          }
+         else {
+            k8Categories.classList.add("open");
+         
+            if (k8Selection == "ireadTab") {
+               infoIreadContainers.forEach(el => {
+                  el.style.display = "flex";
+               });
+
+               // adjust width for iread charts
+               // const ireadStart = ireadChartIndices[0]-1;
+               // const ireadEnd = ireadChartIndices.length-1;
+               // for (let i = ireadStart; i < ireadEnd; i++) {
+               //    infoCharts[i].width(windowWidth);
+               // }
+            }
+            else if (k8Selection == "ilearnTab") {
+               infoIlearnContainers.forEach(el => {
+                  el.style.display = "flex";
+               });
+
+               /// TODO: REWORK WIDTH - CRASHING HERE BECAUSE CHARTS NOT YET CREATED ///
+               // for (const idx of ilearnChartIndices) {
+               //    console.log(idx)
+               //    console.log(infoCharts[idx])
+               //    infoCharts[idx].width(windowWidth);
+               // }
+            }
+         };
+
+
       }
       else if (
          (schoolType == "K12" && schoolSubtype == "HS") ||
@@ -1327,7 +1349,6 @@ async function navigateHandler(e) {
 
       const academicInfoData = await getAcademicInfoData(selectedValues);
       academicInfoPage(academicInfoData, uiState.getState())
-      // getAcademicInfoData(selectedValues);
     }
     else if (
 
@@ -1517,12 +1538,6 @@ async function demographicsPage(data) {
    keep = ["Year","Attendance Rate", "Chronic Absenteeism %"];
    var attendanceChartData = filterObj(schoolData, keep);
 
-   // TODO: HERE - ACCOUNT FOR EMPTY CHART //
-   
-   console.log("Demographics")
-   console.log(attendanceChartData)
-   console.log(enrollmentChartData)
-
    // remove "%" from "Chronic Absenteeism %""
    attendanceChartData = renameKey(
       attendanceChartData, "Chronic Absenteeism %", "Chronic Absenteeism"
@@ -1585,12 +1600,14 @@ async function demographicsPage(data) {
    let statusTransposed = transposeData(statusArray, "School Name");
    var statusDemoChartData = processBarData(statusTransposed);
 
+   const attendanceTableGridDiv = document.querySelector("#attendanceTable");
+   const enrollmentTableGridDiv = document.querySelector("#enrollmentTable");
+
    // initialize page
    if (!demographicsPage.initialize) {
 
       // Enrollment Table
       let enrollmentTableOptions = createEnrollmentTable(enrollmentTableData);
-      const enrollmentTableGridDiv = document.querySelector("#enrollmentTable");
       enrollmentTableGridApi = agGrid.createGrid(
          enrollmentTableGridDiv, enrollmentTableOptions
       );
@@ -1601,12 +1618,10 @@ async function demographicsPage(data) {
 
       // Chronic Absenteeism and Attendance Rate Table
       let attendanceTableOptions = createBasicTable(attendanceTableData);
-      const attendanceTableGridDiv = document.querySelector("#attendanceTable");
       attendanceTableGridApi = agGrid.createGrid(
          attendanceTableGridDiv, attendanceTableOptions
       );
 
-      console.log("I AM INITIALIZING ASTTENDNACCE DCHART")
       // Chronic Absenteeism and Attendance Rate Chart
       attendanceChart = multiLine().data(attendanceChartData).id("attendanceChart");
       d3.select("#attendanceChart").call(attendanceChart);
@@ -1626,18 +1641,28 @@ async function demographicsPage(data) {
       demographicsPage.initialize = true;
    }
    else {   // update page
+
       let enrollmentTableOptions = createEnrollmentTable(enrollmentTableData);
-      enrollmentTableGridApi.setGridOption(
-         "columnDefs", enrollmentTableOptions.columnDefs
-      );
+      
+      enrollmentTableGridApi.setGridOption("columnDefs", enrollmentTableOptions.columnDefs);
       enrollmentTableGridApi.setGridOption("rowData", enrollmentTableData);
+      
       enrollmentChart.data(enrollmentChartData).id("enrollmentChart");
 
-      let attendanceTableOptions = createBasicTable(attendanceTableData);
-      attendanceTableGridApi.setGridOption(
-         "columnDefs", attendanceTableOptions.columnDefs
-      );
+      let attendanceTableOptions;
+
+      if (attendanceTableData.every((obj) => Object.keys(obj).length === 0)) {
+         attendanceTableData = []
+         attendanceTableOptions = emptyTableOptions;
+         attendanceTableGridDiv.style.setProperty('--ag-borders-critical', 'none');
+      } else {
+         attendanceTableOptions = createBasicTable(attendanceTableData);
+         attendanceTableGridDiv.style.setProperty('--ag-borders-critical', 'solid 1px');
+      }
+
+      attendanceTableGridApi.setGridOption("columnDefs", attendanceTableOptions.columnDefs);
       attendanceTableGridApi.setGridOption("rowData", attendanceTableData);
+
       attendanceChart.data(attendanceChartData).id("attendanceChart");
 
       ethnicityDemoChart.data(
@@ -1772,8 +1797,12 @@ async function academicInfoPage(data, state) {
       }
    };
 
-   console.log('academicInfo Make Charts')
+   console.log("Academic Info - State")
+   console.log(state)
+
    console.log(data)
+   console.log(categories)
+   console.log(subjects)
 
    // create or update multi-lines charts
    for (let i = 0; i < chartIds.length; i++) {
@@ -1786,15 +1815,14 @@ async function academicInfoPage(data, state) {
          const updateData = getInfoChartData(
             data, categories[i], subjects[i], state
          );
-         console.log(updateData)
-         console.log(updateData)
-         console.log(infoCharts[i])
          infoCharts[i].data(updateData).id(chartIds[i]);
       }
    };  
 
-   // create or update stack charts (if ilearnTab is active)
-   if (typeTab == "k8Tab" && k8Tab == "ilearnTab") {
+   // create or update stack charts
+   if ((schoolType == "K8" || schoolType == "K12") &&
+   (typeTab == "k8Tab" && k8Tab == "ilearnTab"))
+    {
       for (let i = 0; i < stackIds.length; i++) {
          if (d3.select("#" + stackIds[i]).select("svg").empty()) {
             infoStacks[i] = horizontalStackedBar().data(
@@ -1814,49 +1842,48 @@ async function academicInfoPage(data, state) {
    //https://www.ag-grid.com/javascript-data-grid/data-update-row-data/
    let infoTableOptions;
 
-   const emptyTable = {
-      columnDefs: [],
-      rowData: [],
-      suppressNoRowsOverlay: false,
-      overlayNoRowsTemplate: '<span style="padding: 10px; border: 2px solid #444; background: lightgoldenrodyellow;">No data to display.</span>',
-   };
-
    // Remove objects with years > the selected year
    const tabledata = data.filter((obj, index) => !(obj.Year > Number(year)));
 
    for (let k = 0; k < tableIds.length; k++) {
 
       let infoTableID = "#" + tableIds[k];
-
-      const tableContainer = infoTableID.replace("#info", "info-container");
-      const emptyTableContainer = document.getElementById(tableContainer);
+      const infoTableGridDiv = document.querySelector(infoTableID);
 
       let infoTableData = getTableData(
-         tabledata, categories[k], subjects[k], selectedValues
+         tabledata, categories[k], subjects[k], state
       );
 
+      console.log("infoTableData")
+      console.log(infoTableData)
       if (!infoTableData || !infoTableData.length) {
-         infoTableOptions = emptyTable;
+         infoTableOptions = emptyTableOptions;
+         infoTableGridDiv.style.setProperty('--ag-borders-critical', 'none');
       } else {
+         console.log(tableIds[k])
          infoTableOptions = createInfoTable(infoTableData, tableIds[k]);
+         infoTableGridDiv.style.setProperty('--ag-borders-critical', 'solid 1px');
       }
 
-      if (Boolean(infoGridApi[k] && !infoGridApi[k].isDestroyed())) {
-
-         // update table- reset columndefs and rowdata or else table will
-         // have empty cols.
-         infoGridApi[k].setGridOption(
-            "columnDefs", infoTableOptions.columnDefs
-         );
-         infoGridApi[k].setGridOption("rowData", infoTableData);
-
+      // need to create a new table if either: 1) infoGridApi[k] is
+      // undefined, or 2) infoGridApi[k] exists but its ID does not
+      // match the tableId we are creating
+      if (
+         Boolean(infoGridApi[k] && !infoGridApi[k].isDestroyed())
+      ) {
+         if (tableIds[k] == infoGridApi[k].getGridId()) {
+            infoGridApi[k].setGridOption(
+               "columnDefs", infoTableOptions.columnDefs
+            );
+            infoGridApi[k].setGridOption("rowData", infoTableData);
+         } else {
+            infoGridApi[k].destroy();
+            infoGridApi[k] = agGrid.createGrid(infoTableGridDiv, infoTableOptions);
+         }
       } else {
-         // create table
-         const infoGridDiv = document.querySelector(infoTableID);
-         infoGridApi[k] = agGrid.createGrid(infoGridDiv, infoTableOptions);
+         infoGridApi[k] = agGrid.createGrid(infoTableGridDiv, infoTableOptions);
       }
    }
-
 };
 
 

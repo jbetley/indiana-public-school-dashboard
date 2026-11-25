@@ -110,9 +110,21 @@ function multiLine() {
 
       updateData = function() {
         
-        // NOTE: empty data includes both an empty array and an array where
-        // all objects in the array includes only 2 keys (School Name & Year)
-        if (data.length == 0 || areAllObjectKeysLessThan(data, 3)) {
+        // NOTE: empty data includes: an empty array, an array where
+        // all objects in the array include only 2 keys (School Name & Year),
+        // or an Absenteeism/Attendance Rate array with a single year with
+        // no data.
+        if (
+          data.length == 0 || 
+          areAllObjectKeysLessThan(data, 3) ||
+          (
+            data.some(obj => Object.hasOwn(obj, "Chronic Absenteeism")) && 
+            (
+              data[0]["Chronic Absenteeism"] == undefined &&
+              data[0]["Attendance Rate"] == undefined
+            )
+          )
+        ) {
 
           svg.selectAll("path.lines").remove();
           svg.selectAll("circle.circles").remove();
@@ -127,22 +139,27 @@ function multiLine() {
           svg.selectAll(".x.axis").remove();
           svg.selectAll(".y.axis").remove();
           
-          svg.attr("transform", "translate(0,0)");
-          dom.select("svg").attr("height", 200);
-          dom.select("svg").attr("viewBox", "0 0 1000 200");
-          dom.select("svg").attr("preserveAspectRatio", "none");
+          // svg.attr("transform", "translate(0,0)");
+          // dom.select("svg").attr("height", 200);
+          // dom.select("svg").attr("viewBox", "0 0 1000 200");
+          // dom.select("svg").attr("preserveAspectRatio", "none");
 
+          // svg.attr("viewBox", `0 0 ${width} ${height}`)
+          //   .style("width", "100%")
+          //   .style("height", "auto");
+
+          const adjustWidth = (width + margin.left + margin.right)
+          const adjustHeight =height + margin.top + margin.bottom;
           svg.append("text")
             .attr('class', 'nodatatext')
-            .attr("font-size","18px")
-            .attr("y", height/2)
-            .attr("x", width/2)
-            .attr("dy", -50)
-            .attr("dx", +30)
+            .attr("font-size","16px")
+            .attr("y", adjustHeight/2)
+            .attr("dx", -40)
+            .attr("x", adjustWidth/2)
             .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
+            .attr("dominant-baseline", "center")
             .style("fill", "steelblue")
-            .text("Selected school has insufficient data to display.");         
+            .text("Insufficient data.");
         }
         else {
 
@@ -540,7 +557,7 @@ function multiLine() {
             // AND
             // d3.select("svg")._groups[0][0].attributes[0].value
             // which somehow broke recently.
-            
+
             const tstSvgWidth = dom.select("svg").attr("width");
             const shiftToCenter = ((tstSvgWidth - legendContainerWidth) / 2) - padding;
 

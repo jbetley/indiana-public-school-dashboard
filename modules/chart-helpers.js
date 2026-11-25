@@ -465,7 +465,6 @@ function getHSLineData(data, category, subject, type) {
 function getProficiencyBreakdown(data, categories, subject, selection) {
   const year = selection.year;
   let yearData = data.filter((ele) => ele.Year === Number(year))[0];
-  // const Year = yearData.Year
   
   let rating = ["Below Proficiency", "Approaching Proficiency", "At Proficiency", "Above Proficiency"]
 

@@ -94,10 +94,7 @@ def load_school_list():
     corp_id = request.get_json()
 
     droplist = get_school_list(int(corp_id))
-    
-    print("FINADROLPIS")
-    print(droplist)
-    print("^^^^ DATA")
+
     return [
         {k: v for k, v in m.items() if v == v and v is not None}
         for m in droplist.to_dict(orient="records")
@@ -151,6 +148,8 @@ def load_demographic_data():
 
     data = request.get_json()
 
+    print(data)
+    
     all_demographic_data = get_demographic_data(data)
 
     all_demographic_data = all_demographic_data.sort_values(by="Year")

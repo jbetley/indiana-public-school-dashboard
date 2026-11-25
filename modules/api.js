@@ -27,6 +27,7 @@ async function getAcademicInfoData(select) {
  };
 
  async function getDemographicData(select) {
+
     const fetchedData = await fetch(`${window.origin}/demographic`, {
        method: "POST",
           credentials: "include",

@@ -1,11 +1,5 @@
 /* Indiana School Dashboard - Public */
 
-/* * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  } */
-
 html, html a {
   -webkit-font-smoothing: antialiased;
   text-shadow: 1px 1px 1px rgba(0,0,0,0.004);
@@ -17,7 +11,6 @@ body {
   color: steelblue;
   font-family: 'Inter', sans-serif;
   min-width: fit-content;
-  /* width: 100%; */
 /*  overflow-y: scroll; /* always show scrollbar to prevent pixel shift when changing tabs */
   margin: 5px;
   background-color: #F2F2F2;
@@ -36,7 +29,8 @@ h3 {
   width: 100%;
   margin-top: 10px;
 }
-/* TODO */
+
+/* TODO - CHECK THE FOLLOWING. USED? IF NOT REMOVE*/
 svg {
   overflow: visible;
 }
@@ -47,10 +41,12 @@ svg {
   margin-right: 8px;
   border-radius: 2px;
 }
+
 .key-key {
   margin-right: 6px;
   font-weight: 600;
 }
+
 .points text {
   font-size: .75rem;
   position: absolute;
@@ -86,6 +82,7 @@ svg {
 }
 /* TODO */
 
+
 .stack-title {
   height: auto;
   background-color: #6783a9;
@@ -103,8 +100,6 @@ svg {
 }
 
 .label__header {
-  /* height: auto; */
-  /* margin: auto; */
   background-color: #6783a9;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
@@ -115,7 +110,6 @@ svg {
   padding-top: 5px;
   width: 80%;
   border-radius: 5px;
-  /* margin-bottom: 10px; */
 }
 
 label {
@@ -130,13 +124,6 @@ label {
   font-weight: 400;
   color:  steelblue;
 }
-
-.ss-max-selection-message {
-  color: red;
-  font-size: 0.9em;
-  margin-top: 5px;
-}
-
 
 /* turns off pointer events to prevent tooltip flicker (as mouse
   moves from rect to text and back - not ideal */
@@ -266,7 +253,6 @@ div[data-tab].active {
   float:left;
   display:inline;
   width: 165px;
-  /* width: 30%; */
 }
 
 .tab.active {
@@ -301,8 +287,9 @@ div[data-tab].active {
 }
 
 .tab.hsinfo, .tab.hsinfo:active, .tab.hsinfo:hover {
-  width: 105px;
-  height: 40px;
+  width: 85px;
+  /* width: 105px; */
+  /* height: 40px; */
 }
 
 .panel-container  {
@@ -334,6 +321,18 @@ div[data-tab].active {
   background: #f2f2f2;
   color: steelblue;
   border-color: #f2f2f2;
+}
+
+.ss-max-selection-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.ss-content .ss-search input {
+  font-family: inherit;
+  color: steelblue;
+  /* font-size: 14px; */
 }
 
 select {
@@ -396,11 +395,11 @@ div[id*="ilearn-msg"], div[id*="iread-msg"], div[id*="gradrate-msg"], div[id*="s
   font-size: 10px;
 }
 
-/* TODO: Test Grid */
-/* Grid Layout - Built with: https://cssgrid-generator.netlify.app/ Note: moved to not explicitly
-   declaring rows in order to avoid difficulties in hiding grid elements when rows are declared. See:
-   https://stackoverflow.com/questions/50217730/dynamically-changing-the-number-of-rows-in-a-css-grid
-   "grid-column: a / b" -> where "a" is starting column" and "b" is columns spanned
+/* Grid Layout - Built with: https://cssgrid-generator.netlify.app/ Note: moved
+  to not explicitly declaring rows in order to avoid difficulties in hiding grid
+  elements when rows are declared.  "grid-column: a / b" -> where "a" is starting
+  column" and "b" is columns spanned See: https://stackoverflow.com/questions/50217730/
+  dynamically-changing-the-number-of-rows-in-a-css-grid
 */
 
 section {
@@ -701,16 +700,12 @@ section#tab-three .grid  {
   justify-content: center;
   box-shadow: 2px 2px 2px lightgrey;
   padding: 15px;
-  /* margin: 15px; */
   align-items: center;
   border-radius: .5em;
   background-color: #fff;
 }
 
 .stack-box {
-  /* display: -webkit-box;
-  display: -ms-flexbox; */
-  /* display: flex; */
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
@@ -718,7 +713,6 @@ section#tab-three .grid  {
   align-items: center;
   border-radius: .5em;
   background-color: #fff;
-  /* width: 60%; */
   max-width: fit-content;
   padding: 10px;
   margin-left: auto;
@@ -726,9 +720,6 @@ section#tab-three .grid  {
 }
 
 .group-box {
-  /* display: -webkit-box;
-  display: -ms-flexbox; */
-  /* display: flex; */
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
@@ -736,7 +727,6 @@ section#tab-three .grid  {
   align-items: center;
   border-radius: .5em;
   background-color: #fff;
-  /* width: 60%; */
   max-width: fit-content;
   padding: 35px;
   margin-left: auto;
@@ -762,12 +752,25 @@ section#tab-three .grid  {
 /* https://www.ag-grid.com/javascript-data-grid/global-style-customisation-variables/ */
 /* https://www.ag-grid.com/javascript-data-grid/global-style-customisation-css/ */
 
+/* .ag-overlay-no-rows-center {
+  font-size: 18px;
+  color: steelblue;
+  padding: 10px;
+  background: white;
+} */
+
+.empty-grid {
+  font-size: 16px;
+  color: steelblue;
+  padding: 10px;
+  background: white;
+}
+
 .ag-theme-quartz {
   --ag-font-family: 'Inter', sans-serif;
   --ag-font-size: 12px;
-  /* --ag-font-weight: bold; */
   --ag-borders: none;
-  --ag-borders-critical: solid 1px;
+  /* --ag-borders-critical: solid 1px; */
   --ag-border-color: steelblue;
   --ag-header-foreground-color:steelblue;
   --ag-data-color:steelblue;
@@ -806,7 +809,6 @@ section#tab-three .grid  {
 
 .ag-left-aligned-cell {
   display: flex;
-  /* justify-content: center; */
   align-items: center;
   text-align: left;
 }

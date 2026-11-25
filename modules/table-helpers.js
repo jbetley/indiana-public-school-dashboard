@@ -12,6 +12,11 @@ function getTableData(data, category, subject, selection) {
     // Final table format is category names on the left with years years as
     // column names.
   
+    // console.log("GETTABLEDATA FUNC")
+    // console.log(category)
+    // console.log(subject)
+    // console.log(selection)
+
     const pageTab = selection.page_tab
     const k8Tab = selection.k8_tab
     const hsTab = selection.hs_tab
@@ -388,55 +393,6 @@ function createInfoTable(data, tableID) {
 };
 
 
-// initializes an "empty" table - run on page load
-// function initializeTable(tableID) {
-
-//   keys = ["Category", "2020", "2021", "2022", "2023", "2024"];
-//   data = [
-//     {
-//       "Category": "",
-//       "2020": "",
-//       "2021": "",
-//       "2022": "",
-//       "2023": "",
-//       "2024": ""                      
-//     }
-//   ];
-
-//   let columns = keys.map(field => ({field}));
-  
-//   columns.forEach(function(e) {
-//      if (e.field == "Category") {
-//         e.valueFormatter = "";
-//         e.resizable = false;
-//         e.autoHeight = true;
-//         e.wrapText = true;
-//         e.minWidth = 80;
-//         e.maxWidth = 90;
-//         e.cellClass = "ag-left-aligned-cell";
-//         e.headerClass = "text-center";
-//      }
-//      else {
-//         e.valueFormatter = basicPercentageFormatter;
-//         e.flex = 1;
-//         e.resizable = false;
-//         e.cellClass = "ag-center-aligned-cell";
-//         e.headerClass = "text-center";
-//      }
-//   });
-
-//   let options = {
-//     columnDefs: columns,
-//     rowData: data,
-//     gridId: tableID,
-//     domLayout : "autoHeight",
-//     tooltipShowDelay: 0,
-//     enableBrowserTooltips: false
-//   };
-//   return options
-// };
-
-
 // Demographic Page
 function createBasicTable(data, tableID) {
     let keys = Object.keys(data.reduce(function(result, obj) {
@@ -450,30 +406,31 @@ function createBasicTable(data, tableID) {
     let columns = keys.map(field => ({field}));
 
     columns.forEach(function(e) {
-      if (e.field == "Category") {
-          e.valueFormatter = "";
-          e.resizable = false;
-          e.autoHeight = true;
-          e.wrapText = true;
-          e.minWidth = 140;
-          e.maxWidth = 140;
-          e.cellClass = "ag-left-aligned-cell";
-          e.headerClass = "text-center";
+        if (e.field == "Category") {
+            e.valueFormatter = "";
+            e.resizable = false;
+            e.autoHeight = true;
+            e.wrapText = true;
+            e.minWidth = 140;
+            e.maxWidth = 140;
+            e.cellClass = "ag-left-aligned-cell";
+            e.headerClass = "text-center";
+        }
+        else {
+            e.valueFormatter = basicPercentageFormatter;
+            e.flex = 1;
+            e.resizable = false;
+            e.cellClass = "ag-center-aligned-cell";
+            e.headerClass = "text-center";
+        }
+      })
+      let options = {
+        columnDefs: columns,
+        rowData: data,
+        gridId: tableID,
+        tooltipShowDelay: 0,
+        enableBrowserTooltips: false
       }
-      else {
-          e.valueFormatter = basicPercentageFormatter;
-          e.flex = 1;
-          e.resizable = false;
-          e.cellClass = "ag-center-aligned-cell";
-          e.headerClass = "text-center";
-      }
-    });
-
-    let options = {
-      columnDefs: columns,
-      rowData: data,
-      gridId: tableID
-    };
     return options
 };
 

@@ -486,6 +486,8 @@ def get_demographic_data(params):
     school_type = params["school_type"]
     year = params["year"]
 
+    print(params)
+    
     geo_corp = get_geo_corp(school_id, school_type)
 
     # NOTE: For K12 schools, attendance data is the same in both
