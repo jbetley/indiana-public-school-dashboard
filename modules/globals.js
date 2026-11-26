@@ -75,10 +75,10 @@ const ethnicity = [
 const subgroup = [
    "General Education",
    "Special Education",
-   "Paid Meals",
-   "Free or Reduced Price Meals",
    "English Learners",
-   "Non English Learners"
+   "Non English Learners",
+   "Paid Meals",
+   "Free or Reduced Price Meals"
 ];
 
 const categoryList = [

@@ -271,6 +271,7 @@ function multiLine() {
           };
 
           let filteredSort = sortedOrder.filter(item => categories.includes(item))
+
           let sortedData = orderByProperty(dataByCategory, 'id', filteredSort);
 
           // TODO: This is the d3v5 way to update- but it places all legends under
@@ -392,7 +393,7 @@ function multiLine() {
               return d.id;
             });
 
-// TODO: This is still inconsistent - Revisit at some point.
+// TODO: This is still inconsistent and seems overly complicated - Revisit at some point.
           // This is an attempt to make a decent looking responsive legend (see updateWidth()),
           // it uses various calculations based on the length of the strings and legend items
           // to determine whether an item should be added to the same row or placed on a new
@@ -437,8 +438,8 @@ function multiLine() {
               const maxLength = actualIntArray.reduce((sum, num) => sum + num) + (numItems * 10);
 
               // legend should exist in SVG with padding of 37.5 on either side
-              boundingArea = svgWidth - 100;
-
+              boundingArea = svgWidth - 50;
+// TODO: HERE - TWEAKING LEGENDS
               // we are arbitrarily declaring that 4 is the most # of items that
               // we want on a single line. 
               if ((numItems <= 4) && (maxLength < boundingArea)) {
@@ -473,7 +474,7 @@ function multiLine() {
                 }
                 
                 // these are legends that cannot fit on a single line by
-                // virtue of their overally length - we want them to
+                // virtue of their overall length - we want them to
                 // be able to use as many rows as needed
                 else if ((numItems > 4) && (maxLength > svgWidth)) {
 
@@ -826,9 +827,7 @@ function multiLine() {
 
                   d3.select(this).select("rect").attr("x", 0);
                   d3.select(this).select("text").attr("x", rectOffset);
-
                 }
-
                 else {
 
                   const firstRow = Math.ceil(numItems/2);
@@ -1647,7 +1646,7 @@ function horizontalGroupBar() {
 
         console.log("Horiz Data")
         console.log(data)
-        if (data.length == 0) {
+        if (data[0].length == 0) {
 
           svg.selectAll(".titletext").remove();
           svg.selectAll(".titlerect").remove();
@@ -1669,7 +1668,7 @@ function horizontalGroupBar() {
           //   .style("height", "auto");
 
           const adjustWidth = (width + margin.left + margin.right)
-          const adjustHeight =height + margin.top + margin.bottom;
+          const adjustHeight = height // + margin.top + margin.bottom;
           svg.append("text")
             .attr('class', 'nodatatext')
             .attr("font-size","16px")

@@ -759,6 +759,9 @@ section#tab-three .grid  {
   background: white;
 } */
 
+/* NOTE: Could not figure out why empty attendTable was not picking up .empty-grid
+   like info-tables were. So replaced .ag-overlay-no-rows-center directly in min.js with
+   empty-grid for all empty tables */
 .empty-grid {
   font-size: 16px;
   color: steelblue;
