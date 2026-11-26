@@ -2,52 +2,50 @@
 // table processing functions
 // author:   jbetley (https://github.com/jbetley)
 // version:  0.9
-// date:     03.11.25  
+// date:     11.25.26  
 
 
 // Academic Info Tables
-function getTableData(data, category, subject, selection) {
+function getTableData(data, category, subject, state) {
     // academic info data comes in as an array of objects for a single 
     // selected school, with each object representing a single year of data.
     // Final table format is category names on the left with years years as
     // column names.
   
-    // console.log("GETTABLEDATA FUNC")
-    // console.log(category)
-    // console.log(subject)
-    // console.log(selection)
-
-    const pageTab = selection.page_tab
-    const k8Tab = selection.k8_tab
-    const hsTab = selection.hs_tab
-    const typeTab = selection.type_tab
+    const k8Tab = state.k8_tab;       // ilearn/iread
+    const hsTab = state.hs_tab;       // grad/sat
+    const typeTab = state.type_tab;   // ONLY RELEVANT FOR K12
+    const schoolType = state.school_type;
+    const schoolSubtype = state.school_subtype;
   
     let proficienctSuffix;
     let testedSuffix;
   
-    if (pageTab == "infoTab") { 
-      if (typeTab == "k8Tab") {
-        if (k8Tab == "ireadTab") {
-  
-          proficienctSuffix = "Pass N";
-          testedSuffix = "Test N";
-        }
-        else {
-          proficienctSuffix = "Total Proficient";
-          testedSuffix = "Total Tested";
-        }
-  
+    if (
+      schoolType == "K8" ||
+      (schoolType == "K12" && typeTab == "K8")
+    ) {
+
+      if (k8Tab == "ireadTab" && schoolSubtype != "MS") {
+        proficienctSuffix = "Pass N";
+        testedSuffix = "Test N";
+      } else {
+        proficienctSuffix = "Total Proficient";
+        testedSuffix = "Total Tested";
       }
-      else if (typeTab == "hsTab") {
-        
-        if (hsTab == "gradTab") {
-          proficienctSuffix = "Graduates";
-          testedSuffix = "Cohort Count"; 
-        }
-        else {
-          proficienctSuffix = "At Benchmark";
-          testedSuffix = "Total Tested"; 
-        }
+    }
+    else if (
+      schoolType == "HS" ||
+      (schoolType == "K12" && typeTab == "HS")
+    )
+    {
+      if (hsTab == "gradTab") {
+        proficienctSuffix = "Graduates";
+        testedSuffix = "Cohort Count"; 
+      }
+      else {
+        proficienctSuffix = "At Benchmark";
+        testedSuffix = "Total Tested"; 
       }
     }
   

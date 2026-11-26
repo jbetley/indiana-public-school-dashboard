@@ -485,8 +485,6 @@ def get_demographic_data(params):
     school_id = params["school_id"]
     school_type = params["school_type"]
     year = params["year"]
-
-    print(params)
     
     geo_corp = get_geo_corp(school_id, school_type)
 
@@ -771,7 +769,6 @@ def get_available_years(*args):
 
     years = results.columns.tolist()
 
-    print(years)
     return [str(col) for col in years if "Category" not in str(col)]
 
 

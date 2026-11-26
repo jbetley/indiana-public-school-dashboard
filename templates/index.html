@@ -815,18 +815,17 @@ yearSelection.addEventListener("change", async () => {
    // change year state
    uiState.setState({ year: yearSelection.value });
    
-   selectedValues = await getSelectedValues();
+   // selectedValues = await getSelectedValues();
 
-   console.log("Year - STATE")
-   console.log(uiState.getState().page_tab)
+   let state = uiState.getState();
 
-   if (selectedValues.page_tab === "analysisTab") {
-      selectedValues.comparison_schools = await getComparisonList();
-      getAcademicAnalysisData(selectedValues);
+   if (state.page_tab === "analysisTab") {
+      state.comparison_schools = await getComparisonList();
+      getAcademicAnalysisData(state);
    }
-   else if (selectedValues.page_tab === "infoTab")  {
+   else if (state.page_tab === "infoTab")  {
       
-      const academicInfoData = await getAcademicInfoData(uiState.getState());
+      const academicInfoData = await getAcademicInfoData(state);
 
       // const academicInfoData = await getAcademicInfoData(selectedValues);
       // NOTE: Probably not necessary
@@ -838,10 +837,10 @@ yearSelection.addEventListener("change", async () => {
       //    school_subtype: types.schoolsubtype
       // });
 
-      academicInfoPage(academicInfoData, uiState.getState())
+      academicInfoPage(academicInfoData, state)
    }
    else {
-      const demographicData = await getDemographicData(uiState.getState());
+      const demographicData = await getDemographicData(state);
       demographicsPage(demographicData);
    }
 });
@@ -851,10 +850,12 @@ corpSelection.addEventListener("change", async () => {
 
    const corpID = corpSelect.getSelected()[0];
 
+   uiState.setState({ corp_id: corpID });
+
    await setSchoolList(corpID)
 
-   // new corpSelection will reset schoolSelection, so we need
-   // to force a schoolSelection event
+   // a new corpSelection will result in new default school, so we need
+   // to manually force a schoolSelection event
    var event = new Event("change");
    schoolSelection.dispatchEvent(event);
 });
@@ -873,7 +874,7 @@ schoolSelection.addEventListener("change", async () => {
 
    let state = uiState.getState();
 
-   console.log("uiState-schoolselect")
+   console.log("STATE-schoolSelection")
    console.log(state)
 
    const selectedPage = state.page_tab;
@@ -962,8 +963,6 @@ schoolSelection.addEventListener("change", async () => {
                el.style.display = "none";
             });
          }
-
-         // selectedValues.type_tab = "k8Tab";
       }
       else if (schoolType == "HS" || 
          (schoolType == "K12" && schoolSubtype == "HS")
@@ -1000,12 +999,10 @@ schoolSelection.addEventListener("change", async () => {
                el.style.display = "none";
             });
          }
-
-         // selectedValues.type_tab = "hsTab";
       }
-      const academicInfoData = await getAcademicInfoData(selectedValues);
-      academicInfoPage(academicInfoData, uiState.getState())
-      // getAcademicInfoData(selectedValues);
+
+      const academicInfoData = await getAcademicInfoData(state);
+      academicInfoPage(academicInfoData, state)
    }
    else if (selectedPage == "analysisTab") {
 
@@ -1024,7 +1021,7 @@ schoolSelection.addEventListener("change", async () => {
          }
          k8TypeTab.classList.add("active");
 
-         selectedValues.type_tab = "k8Tab";
+         // selectedValues.type_tab = "k8Tab";
       }
       else if (schoolType == "HS" ||
          (schoolType == "K12" && schoolSubtype == "HS")
@@ -1034,16 +1031,16 @@ schoolSelection.addEventListener("change", async () => {
          k8TypeTab.classList.remove("active");
          hsTypeTab.classList.add("active");
 
-         selectedValues.type_tab = "hsTab";
+         // selectedValues.type_tab = "hsTab";
       };
 
       // populates selectedValues dict with new list of comparison school ids
-      await getComparisonSchools(selectedValues);
+      await getComparisonSchools(state);
 
       // update comparison school list
-      selectedValues.comparison_schools = await getComparisonList();
+      state.comparison_schools = await getComparisonList();
 
-      getAcademicAnalysisData(selectedValues);
+      getAcademicAnalysisData(state);
    };
 });
 
@@ -1073,7 +1070,7 @@ navTabs.onclick = ({target}) => {
    })
 };
 
-// ILEARN/IREAD
+// ILEARN/IREAD (infotab only)
 k8navTabs.onclick = ({target}) => {
    if (!target.matches("button[data-k8tab]")) return
    k8nav_tab_elms.forEach(elTab => {
@@ -1082,7 +1079,7 @@ k8navTabs.onclick = ({target}) => {
    })
 };
 
-// Graduation Rate/SAT
+// Graduation Rate/SAT (infotab only)
 hsnavTabs.onclick = ({target}) => {
    if (!target.matches("button[data-hstab]")) return
    hsnav_tab_elms.forEach(elTab => {
@@ -1091,7 +1088,7 @@ hsnavTabs.onclick = ({target}) => {
    })
 };
 
-// School type
+// School type (k12 only)
 typenavTabs.onclick = ({target}) => {
    if (!target.matches("button[data-typetab]")) return
    typenav_tab_elms.forEach(elTab => {
@@ -1100,7 +1097,7 @@ typenavTabs.onclick = ({target}) => {
    })
 };
 
-// Analysis Year
+// Single Year / Multi-Year (analysis tab only)
 analysisnavTabs.onclick = ({target}) => {
    if (!target.matches("button[data-analysistab]")) return
    analysisnav_tab_elms.forEach(elTab => {
@@ -1108,7 +1105,6 @@ analysisnavTabs.onclick = ({target}) => {
       .toggle("active", (elTab.dataset.analysistab===target.dataset.analysistab))
    })
 };
-
 
 // Navigation Tabs //
 if (tabnavigation.addEventListener) {
@@ -1123,13 +1119,8 @@ async function navigateHandler(e) {
    e = e || window.event;
    const target = e.target || e.srcElement;
 
-   // refresh state after update
-   // TODO: can we limit to affected values only?
+   // refresh state of nav tabs after update
    uiState.setState({
-      school_id: document.getElementById("schoolSelect").value,
-      corp_id: document.getElementById("corpSelect").value,
-      year: document.getElementById("yearSelect").value,
-      comparison_schools: document.getElementById("comparisonSelect").value,
       page_tab: document.querySelector(".tab.main.active").id,
       k8_tab: document.querySelector(".tab.k8info.active").id,
       hs_tab: document.querySelector(".tab.hsinfo.active").id,
@@ -1142,7 +1133,7 @@ async function navigateHandler(e) {
    const selectedPage = state.page_tab;
    const k8Selection = state.k8_tab;
    const hsSelection = state.hs_tab;
-   const typeTab = state.type_tab;
+   // const typeTab = state.type_tab;
    const schoolType = state.school_type;
    const schoolSubtype = state.school_subtype;
    const strYear = state.year;
@@ -1154,10 +1145,8 @@ async function navigateHandler(e) {
    const typeCategories = document.querySelector(".typenav");
    const analysisPages = document.querySelector(".analysisnav");
 
-   console.log("Nav handler - uiState")
-   console.log(uiState.getState())
-   console.log("Target")
-   console.log(target.id)
+   console.log("STATE - Navigation Handler")
+   console.log(state)
 
    // iread/ilearn tabs should never be visible when school is hs or
    // hstab is selected and should always be available when school is
@@ -1178,11 +1167,11 @@ async function navigateHandler(e) {
       typeCategories.classList.remove("open");
       analysisPages.classList.remove("open");
 
-      // reset year value
-      yearSelection.value = strYear;
-      yearSelection.setAttribute("value", strYear);
+      // TODO: Need to do this? // reset year value
+      // yearSelection.value = strYear;
+      // yearSelection.setAttribute("value", strYear);
 
-      const demographicData = await getDemographicData(selectedValues);
+      const demographicData = await getDemographicData(state);
       demographicsPage(demographicData);
 
       // adjust chart size based on browser window size
@@ -1200,41 +1189,34 @@ async function navigateHandler(e) {
       )
    ) {
 
+      analysisPages.classList.remove("open");
+
+      if (schoolType == "K12") {
+         typeCategories.classList.add("open");
+      }
+      else {
+         typeCategories.classList.remove("open");
+      };
+
       // TODO: Width code - FIX not working properly
       let windowWidth = window.innerWidth/2 - 125;
 
+
+      // used to set visibility
       let infoIreadContainers = document.querySelectorAll(
          '[id^="info-container-iread"]'
       );
-
-      // find the indices of respective charts - used for the
-      // loops below to call chart width
-      let ireadChartEle = [...document.querySelectorAll(
-         '[id^="info-container-iread-chart"]')].map(item => item.id);
-      var ireadChartIndices = scrapeNumbers(ireadChartEle);
-
       let infoIlearnContainers = document.querySelectorAll(
          '[id^="info-container-ilearn"]'
       );
-      let ilearnChartEle = [...document.querySelectorAll(
-         '[id^="info-container-ilearn-chart"]')].map(item => item.id);
-      var ilearnChartIndices = scrapeNumbers(ilearnChartEle);
-
       let infoSatContainers = document.querySelectorAll(
          '[id^="info-container-sat"]'
       );
-      let satChartElem = [...document.querySelectorAll(
-         '[id^="info-container-gradrate-chart"]')].map(item => item.id);
-      var satChartIndices = scrapeNumbers(ilearnChartEle);
-
       let infoGradRateContainers = document.querySelectorAll(
          '[id^="info-container-gradrate"]'
       );
-      let gradChartElem = [...document.querySelectorAll(
-         '[id^="info-container-sat-chart"]')].map(item => item.id);
-      var gradChartIndices = scrapeNumbers(gradChartElem);
 
-      // defaults
+      // the default is to display nothing
       infoIreadContainers.forEach(el => {
          el.style.display = "none";
       });
@@ -1248,26 +1230,34 @@ async function navigateHandler(e) {
          el.style.display = "none";
       });
 
-      analysisPages.classList.remove("open");
 
-      if (schoolType == "K12") {
-         typeCategories.classList.add("open");
-      }
-      else {
-         typeCategories.classList.remove("open");
-      };
+      // find the indicies of respective charts - used for the
+      // loops below to call chart width
+      // let ireadChartEle = [...document.querySelectorAll(
+      //    '[id^="info-container-iread-chart"]')].map(item => item.id);
+      // var ireadChartIndicies = scrapeNumbers(ireadChartEle);
 
-      // if (
-      //    (schoolType == "K8" && schoolSubtype != "MS") ||
-      //    (schoolType == "K12" && schoolSubtype == "K8") ||
-      //    schoolSubtype == "K8"
-      // ) {
-         if (
-         schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")
+      // let ilearnChartEle = [...document.querySelectorAll(
+      //    '[id^="info-container-ilearn-chart"]')].map(item => item.id);
+      // var ilearnChartIndicies = scrapeNumbers(ilearnChartEle);
+
+      // let satChartElem = [...document.querySelectorAll(
+      //    '[id^="info-container-gradrate-chart"]')].map(item => item.id);
+      // var satChartIndicies = scrapeNumbers(satChartElem);
+
+      // let gradChartElem = [...document.querySelectorAll(
+      //    '[id^="info-container-sat-chart"]')].map(item => item.id);
+      // var gradChartIndicies = scrapeNumbers(gradChartElem);
+
+
+      if (
+         schoolType == "K8" ||
+         (schoolType == "K12" && schoolSubtype == "K8")
       ) {
 
          if (schoolSubtype == "MS") {  // MS only has Ilearn
             k8Categories.classList.remove("open");
+
             infoIlearnContainers.forEach(el => {
                el.style.display = "flex";
             });
@@ -1281,8 +1271,8 @@ async function navigateHandler(e) {
                });
 
                // adjust width for iread charts
-               // const ireadStart = ireadChartIndices[0]-1;
-               // const ireadEnd = ireadChartIndices.length-1;
+               // const ireadStart = ireadChartIndicies[0]-1;
+               // const ireadEnd = ireadChartIndicies.length-1;
                // for (let i = ireadStart; i < ireadEnd; i++) {
                //    infoCharts[i].width(windowWidth);
                // }
@@ -1293,19 +1283,17 @@ async function navigateHandler(e) {
                });
 
                /// TODO: REWORK WIDTH - CRASHING HERE BECAUSE CHARTS NOT YET CREATED ///
-               // for (const idx of ilearnChartIndices) {
+               // for (const idx of ilearnChartIndicies) {
                //    console.log(idx)
                //    console.log(infoCharts[idx])
                //    infoCharts[idx].width(windowWidth);
                // }
             }
          };
-
-
       }
       else if (
-         (schoolType == "K12" && schoolSubtype == "HS") ||
-         schoolType == "HS"
+         schoolType == "HS" ||
+         (schoolType == "K12" && schoolSubtype == "HS") 
       ) {
          k8Categories.classList.remove("open");
          hsCategories.classList.add("open");
@@ -1315,8 +1303,8 @@ async function navigateHandler(e) {
                el.style.display = "flex";
             });
 
-            // const gradStart = gradChartIndices[0]-1;
-            // const gradEnd = gradChartIndices.length-1;
+            // const gradStart = gradChartIndicies[0]-1;
+            // const gradEnd = gradChartIndicies.length-1;
             // for (let i = gradStart; i < gradEnd; i++) {
             //    infoCharts[i].width(windowWidth);
             // }
@@ -1327,28 +1315,29 @@ async function navigateHandler(e) {
                el.style.display = "flex";
             });
 
-            // const satStart = satChartIndices[0]-1;
-            // const satEnd = satChartIndices.length-1;
+            // const satStart = satChartIndicies[0]-1;
+            // const satEnd = satChartIndicies.length-1;
             // for (let i = satStart; i < satEnd; i++) {
             //    infoCharts[i].width(windowWidth);
             // }
          }
       };
 
-      if (intYear > curAcademicYear) {
-         yearValue = curAcademicYear.toString();
-      }
-      else {
-         yearValue = strYear;
-      };
+      // TODO: Testing removing this
+      // if (intYear > curAcademicYear) {
+      //    yearValue = curAcademicYear.toString();
+      // }
+      // else {
+      //    yearValue = strYear;
+      // };
 
-      yearSelection.value = yearValue;
-      yearSelection.setAttribute("value", yearValue);
+      // yearSelection.value = yearValue;
+      // yearSelection.setAttribute("value", yearValue);
 
-      selectedValues.year = yearValue;
+      // selectedValues.year = yearValue;
 
-      const academicInfoData = await getAcademicInfoData(selectedValues);
-      academicInfoPage(academicInfoData, uiState.getState())
+      const academicInfoData = await getAcademicInfoData(state);
+      academicInfoPage(academicInfoData, state)
     }
     else if (
 
@@ -1400,26 +1389,38 @@ async function navigateHandler(e) {
       }
 
       if (
-         (schoolType == "K8" && schoolSubtype != "MS") ||
-         (schoolType == "K12" && schoolSubtype == "K8") ||
-         schoolSubtype == "K8"
+         schoolType == "K8" ||
+         (schoolType == "K12" && schoolSubtype == "K8")
       ) {
-         k8Categories.classList.add("open");
 
-         if (k8Selection == "ireadTab") {
-            analysisIreadContainers.forEach(el => {
-               el.style.display = "flex";
-            });
-         }
-         else if (k8Selection == "ilearnTab") {
+         if (schoolSubtype == "MS") {  // MS only has Ilearn
+            k8Categories.classList.remove("open");
+            
             analysisIlearnContainers.forEach(el => {
                el.style.display = "flex";
             });
-         };
+         }
+         else {
+            k8Categories.classList.add("open");
+         
+            if (k8Selection == "ireadTab") {
+               analysisIreadContainers.forEach(el => {
+                  el.style.display = "flex";
+               });
+            }
+            else if (k8Selection == "ilearnTab") {
+               analysisIlearnContainers.forEach(el => {
+                  el.style.display = "flex";
+               });
+            };
+         }
 
-       } else if (
-         (schoolType == "K12" && schoolSubtype == "HS") ||
-         schoolType == "HS"
+
+
+
+      } else if (
+         schoolType == "HS" ||
+         (schoolType == "K12" && schoolSubtype == "HS")
       ) {
          k8Categories.classList.remove("open");
          hsCategories.classList.add("open");
@@ -1436,15 +1437,16 @@ async function navigateHandler(e) {
          }
       };
 
-      if (intYear > curAcademicYear) {
-         yearValue = curAcademicYear.toString();
-      }
-      else {
-         yearValue = strYear;
-      };
+// TODO: TEST REMOVE
+      // if (intYear > curAcademicYear) {
+      //    yearValue = curAcademicYear.toString();
+      // }
+      // else {
+      //    yearValue = strYear;
+      // };
 
-      yearSelection.value = yearValue;
-      yearSelection.setAttribute("value", yearValue);
+      // yearSelection.value = yearValue;
+      // yearSelection.setAttribute("value", yearValue);
 
       // load comparison schools based which type tab is selected
       // getComparisonSchools automatically repopulates the dropdown -
@@ -1459,11 +1461,18 @@ async function navigateHandler(e) {
       if (target.id.match("analysisTab") || target.id.match("hsTab") ||
          target.id.match("k8Tab")) {
 
-            await getComparisonSchools(selectedValues);
+            await getComparisonSchools(state);
       };
 
-      selectedValues.comparison_schools = comparisonSelect.getSelected();
-      getAcademicAnalysisData(selectedValues);
+      const comp_school_list = comparisonSelect.getSelected();
+      
+      uiState.setState({
+         comparison_schools: comp_school_list
+      });
+
+      // selectedValues.comparison_schools = comparisonSelect.getSelected();
+
+      getAcademicAnalysisData(state);
    };
 };
 
@@ -1567,38 +1576,54 @@ async function demographicsPage(data) {
       curYearCorpDemographics, statusCategories
    );
 
-   // inputs: entity data; array of categories; the value we are finding percentage of,
-   // and min percentage to include in final data
-   findPercentage(
-      ethnicityYearSchool, ethnicity, ethnicityYearSchool["Total Enrollment"], .005
-   );
-   findPercentage(
-      ethnicityYearCorp, ethnicity, ethnicityYearCorp["Total Enrollment"], 0
-   );
-   findPercentage(
+
+   let missingEthnicityString = "",
+       missingStatusString = "";
+
+   let ethnicityDemoChartData = [],
+       statusDemoChartData = [];
+
+   // if school data has two or less keys (name, enrollment) it is considered empty
+   if (Object.keys(ethnicityYearSchool).length > 2) {
+
+      // inputs: entity data; array of categories; the value we are finding percentage of,
+      // and min percentage to include in final data
+      findPercentage(
+         ethnicityYearSchool, ethnicity, ethnicityYearSchool["Total Enrollment"], .005
+      );
+      findPercentage(
+         ethnicityYearCorp, ethnicity, ethnicityYearCorp["Total Enrollment"], 0
+      );
+
+      // create a string with missing categories if such categories exist
+      // and then remove missing data keys
+      missingEthnicityString = findMissing(ethnicityYearSchool, ethnicityYearCorp);
+
+      // merge school and corp objects
+      let ethnicityArray = [ethnicityYearSchool];
+      ethnicityArray.push(ethnicityYearCorp);
+
+      let ethnicityTransposed = transposeData(ethnicityArray, "School Name");
+      ethnicityDemoChartData = processBarData(ethnicityTransposed);
+   }
+
+   if (Object.keys(statusYearSchool).length > 2) {
+
+      findPercentage(
       statusYearSchool, subgroup, statusYearSchool["Total Enrollment"], .005
-   );
-   findPercentage(
-      statusYearCorp, subgroup, statusYearCorp["Total Enrollment"], 0
-   );
+      );
+      findPercentage(
+         statusYearCorp, subgroup, statusYearCorp["Total Enrollment"], 0
+      );
 
-   // create a string with missing categories if such categories exist
-   // and then remove missing data keys
-   var missingEthnicityString = findMissing(ethnicityYearSchool, ethnicityYearCorp);
-   var missingStatusString = findMissing(statusYearSchool, statusYearCorp);
+      missingStatusString = findMissing(statusYearSchool, statusYearCorp);
 
-   // merge school and corp objects
-   let ethnicityArray = [ethnicityYearSchool];
-   ethnicityArray.push(ethnicityYearCorp);
+      let statusArray = [statusYearSchool];
+      statusArray.push(statusYearCorp);
 
-   let ethnicityTransposed = transposeData(ethnicityArray, "School Name");
-   var ethnicityDemoChartData = processBarData(ethnicityTransposed);
-
-   let statusArray = [statusYearSchool];
-   statusArray.push(statusYearCorp);
-
-   let statusTransposed = transposeData(statusArray, "School Name");
-   var statusDemoChartData = processBarData(statusTransposed);
+      let statusTransposed = transposeData(statusArray, "School Name");
+      statusDemoChartData = processBarData(statusTransposed);
+   }
 
    const attendanceTableGridDiv = document.querySelector("#attendanceTable");
    const enrollmentTableGridDiv = document.querySelector("#enrollmentTable");
@@ -1668,6 +1693,7 @@ async function demographicsPage(data) {
       ethnicityDemoChart.data(
          [ethnicityDemoChartData,missingEthnicityString]
       ).id("ethnicityDemoChart");
+
       statusDemoChart.data(
          [statusDemoChartData,missingStatusString]
       ).id("statusDemoChart");
@@ -1797,13 +1823,6 @@ async function academicInfoPage(data, state) {
       }
    };
 
-   console.log("Academic Info - State")
-   console.log(state)
-
-   console.log(data)
-   console.log(categories)
-   console.log(subjects)
-
    // create or update multi-lines charts
    for (let i = 0; i < chartIds.length; i++) {
       if (d3.select("#" + chartIds[i]).select("svg").empty()) {
@@ -1854,13 +1873,10 @@ async function academicInfoPage(data, state) {
          tabledata, categories[k], subjects[k], state
       );
 
-      console.log("infoTableData")
-      console.log(infoTableData)
       if (!infoTableData || !infoTableData.length) {
          infoTableOptions = emptyTableOptions;
          infoTableGridDiv.style.setProperty('--ag-borders-critical', 'none');
       } else {
-         console.log(tableIds[k])
          infoTableOptions = createInfoTable(infoTableData, tableIds[k]);
          infoTableGridDiv.style.setProperty('--ag-borders-critical', 'solid 1px');
       }
@@ -2766,6 +2782,8 @@ function waitForElementValue(id) {
 // Preload all charts on all tabs on first load
 if (document.readyState !== "loading") {
 
+   // TODO: Add blank loading screen!
+
    console.log("Initializing . . . ")
 
    // set state for all tabs
@@ -2793,7 +2811,7 @@ if (document.readyState !== "loading") {
       comparison_schools: document.getElementById("comparisonSelect").value,
    });
 
-   console.log("Initial - State")
+   console.log("STATE - INITIAL")
    console.log(uiState.getState())
 
    // await getComparisonSchools(selectedValues);

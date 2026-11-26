@@ -148,8 +148,6 @@ def load_demographic_data():
 
     data = request.get_json()
 
-    print(data)
-    
     all_demographic_data = get_demographic_data(data)
 
     all_demographic_data = all_demographic_data.sort_values(by="Year")

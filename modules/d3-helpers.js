@@ -112,16 +112,19 @@ function multiLine() {
         
         // NOTE: empty data includes: an empty array, an array where
         // all objects in the array include only 2 keys (School Name & Year),
-        // or an Absenteeism/Attendance Rate array with a single year with
-        // no data.
+        // or an Absenteeism/Attendance Rate array where all values, other than
+        // Year, are undefined
+        const testKeys = ["Chronic Absenteeism", "Attendance Rate"]
+
         if (
           data.length == 0 || 
           areAllObjectKeysLessThan(data, 3) ||
           (
-            data.some(obj => Object.hasOwn(obj, "Chronic Absenteeism")) && 
+            data.some(obj => Object.hasOwn(obj, testKeys[0])) && 
             (
-              data[0]["Chronic Absenteeism"] == undefined &&
-              data[0]["Attendance Rate"] == undefined
+              data.every(obj => 
+                testKeys.every(key => obj[key] === undefined)
+              )
             )
           )
         ) {
@@ -1433,11 +1436,10 @@ function singleLine() {
 
     function mouseMove() {
 
-      // "this" is the rect
-      // 'those' is the svg html element
+      // "that" is the svg; "those" is the transformed "g" element
       that = d3.select(this.parentNode);
-      // those = d3.select(this.parentNode)._groups[0][0];
-      those = d3.select("svg")._groups[0][0];
+      those = d3.select(this.parentNode)._groups[0][0];
+      // those = d3.select("svg")._groups[0][0];
 
       // get combined data from all path elements in the selection
       data = that.select(".linechart").data();
@@ -1447,8 +1449,6 @@ function singleLine() {
       data['columns'] = Object.keys(data);
 
       data = data[0];
-
-      // TODO: ADJUST The bisection to fit single chart (see multiline)
 
       // NOTE: See explanation in multiline mouseMove
       var inverseModeScale = d3.scaleQuantize()
@@ -1644,6 +1644,44 @@ function horizontalGroupBar() {
         .attr('class', 'title');
 
       updateData = function() {
+
+        console.log("Horiz Data")
+        console.log(data)
+        if (data.length == 0) {
+
+          svg.selectAll(".titletext").remove();
+          svg.selectAll(".titlerect").remove();
+          svg.selectAll(".groupedbar").remove();
+          svg.selectAll(".endtext").remove();
+          svg.selectAll(".legendcontainer").remove();
+          svg.selectAll("rect").remove();
+          svg.selectAll("text").remove();
+          svg.selectAll(".x.axis").remove();
+          svg.selectAll(".y.axis").remove();
+          
+          // svg.attr("transform", "translate(0,0)");
+          // dom.select("svg").attr("height", 200);
+          // dom.select("svg").attr("viewBox", "0 0 1000 200");
+          // dom.select("svg").attr("preserveAspectRatio", "none");
+
+          // svg.attr("viewBox", `0 0 ${width} ${height}`)
+          //   .style("width", "100%")
+          //   .style("height", "auto");
+
+          const adjustWidth = (width + margin.left + margin.right)
+          const adjustHeight =height + margin.top + margin.bottom;
+          svg.append("text")
+            .attr('class', 'nodatatext')
+            .attr("font-size","16px")
+            .attr("y", adjustHeight/2)
+            .attr("dx", -40)
+            .attr("x", adjustWidth/2)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "center")
+            .style("fill", "steelblue")
+            .text("Insufficient data.");
+        }
+        else {
 
         chartData = data[0]
         missingString = data[1]
@@ -1891,7 +1929,8 @@ function horizontalGroupBar() {
         .attr('dx', textShift)
         .attr('y', -55)
         .text(titleText);
-      }; // end update Function
+      }
+    }; // end update Function
 
       updateWidth = function() {
 
