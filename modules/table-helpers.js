@@ -23,7 +23,7 @@ function getTableData(data, category, subject, state) {
   
     if (
       schoolType == "K8" ||
-      (schoolType == "K12" && typeTab == "K8")
+      (schoolType == "K12" && typeTab == "k8Tab")
     ) {
 
       if (k8Tab == "ireadTab" && schoolSubtype != "MS") {
@@ -36,7 +36,7 @@ function getTableData(data, category, subject, state) {
     }
     else if (
       schoolType == "HS" ||
-      (schoolType == "K12" && typeTab == "HS")
+      (schoolType == "K12" && typeTab == "hsTab")
     )
     {
       if (hsTab == "gradTab") {

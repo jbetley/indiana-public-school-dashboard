@@ -378,17 +378,10 @@ allSchoolsObj.forEach(function (obj) {
 });
 // TODO: REMOVE ENTIRELY //
 
-
 const emptyTableOptions = {
-   // theme: 'legacy',
    columnDefs: [],
    rowData: [],
    suppressNoRowsOverlay: false,
-//    headerRowBorder: false,
-//    rowStyle: { borderBottom: 'none' },
-//    defaultColDef: {
-//     cellStyle: { borderBottom: 'none'},
-//   },
    overlayNoRowsTemplate: `
    <span class="empty-grid">Insufficient data.</span>
    `
@@ -408,63 +401,6 @@ const corpSelect = new SlimSelect({
   }
 });
 
-// corpSelect.setSelected('15');
-
-
-// TODO: MOVE TO API
-async function getAcademicAnalysisData(select) {
-// TODO: Sometimes "select.comparison_schools" is empty - presumably
-// because at the time the data is passed, the checked schools have
-// not been registered - resolve passed vs. global use
-
-   // TODO: TESTING REMOVING THIS
-   // only populated once set by get comparison lsit
-   // let directSelect = comparisonSelect.getSelected(); 
-
-   // if (Array.isArray(directSelect) || directSelect.length) {
-   //    select.comparison_schools = directSelect;
-   // };
-
-   const fetchedData = await fetch(`${window.origin}/academic`, {
-      method: "POST",
-      headers: {
-            "Content-type": "application/json",
-            "Accept": "application/json"
-      },
-      body:JSON.stringify(select)
-   })
-   .then(response=>{
-      if (response.ok) {
-         return response.json()
-      } else {
-         alert("Network Error: Could not load data.")
-      }
-   });
-   let analysisData = fetchedData[0];
-   academicAnalysisPage(analysisData);
-};
-
-
-// TODO: MOVE TO API
-async function getComparisonSchools(select) {
-   const comparisonSchoolList = await fetch(`${window.origin}/where`, {
-      method: "POST",
-      headers: {
-            "Content-type": "application/json",
-            "Accept": "application/json"
-      },
-      body:JSON.stringify(select)})
-      .then(response=>{
-         if (response.ok) {
-            return response.json()
-         } else {
-            alert("Network Error: Could not load data.")
-         }
-      });
-
-   await setComparisonList(comparisonSchoolList);
-};
-// TODO: MOVE TO API
 
 // NEW //
 async function setCorpList() {
@@ -622,69 +558,69 @@ var infoGridApi = [],
 
 // global function to gather all current/default selections
 // in a dict.
-var selectedValues = {};
+// var selectedValues = {};
 
-async function getSelectedValues() {
+// async function getSelectedValues() {
 
-   const year = yearSelection.value;
+//    const year = yearSelection.value;
 
-   let corpId;
-   let schoolId;
+//    let corpId;
+//    let schoolId;
 
-   if (corpSelection != null && corpSelection.value == "") {
-      // finds first element in array even if it is falsy (but not if undefined)
-      corpId = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
-   }
-   else {
-      corpId = corpSelection.value
-   };
+//    if (corpSelection != null && corpSelection.value == "") {
+//       // finds first element in array even if it is falsy (but not if undefined)
+//       corpId = allSchoolsObj.find(e => typeof e !== "undefined")["Corporation ID"]
+//    }
+//    else {
+//       corpId = corpSelection.value
+//    };
 
-   if (schoolSelection != null && schoolSelection.value == "") {
-      schoolId = allSchoolsObj.find(
-         e => typeof e !== "undefined")["School ID"].toString();
-   }
-   else {
-      schoolId = schoolSelection.value.toString();
-   };
+//    if (schoolSelection != null && schoolSelection.value == "") {
+//       schoolId = allSchoolsObj.find(
+//          e => typeof e !== "undefined")["School ID"].toString();
+//    }
+//    else {
+//       schoolId = schoolSelection.value.toString();
+//    };
 
-   const pageTab = document.querySelector(".tab.main.active").id;
-   const typeTab = document.querySelector(".tab.type.active").id;
-   const k8Tab = document.querySelector(".tab.k8info.active").id;
-   const hsTab = document.querySelector(".tab.hsinfo.active").id;
-   const analysisTab = document.querySelector(".tab.analysis.active").id;
+//    const pageTab = document.querySelector(".tab.main.active").id;
+//    const typeTab = document.querySelector(".tab.type.active").id;
+//    const k8Tab = document.querySelector(".tab.k8info.active").id;
+//    const hsTab = document.querySelector(".tab.hsinfo.active").id;
+//    const analysisTab = document.querySelector(".tab.analysis.active").id;
 
-   let schoolInfo = allSchoolsObj.filter(
-      o => o["School ID"] == schoolId && o.Year == year
-   );
+//    let schoolInfo = allSchoolsObj.filter(
+//       o => o["School ID"] == schoolId && o.Year == year
+//    );
 
-   let school_type = schoolInfo[0]["School Type"];
+//    let school_type = schoolInfo[0]["School Type"];
 
-   let school_subtype = schoolInfo[0]["Sub Type"];
+//    let school_subtype = schoolInfo[0]["Sub Type"];
 
-   if (pageTab != "demoTab" && school_type == "K12") {
-      if (typeTab == "hsTab") {
-         school_subtype = "HS"
-      }
-      else {
-         school_subtype = "K8"
-      }
-   };
+//    if (pageTab != "demoTab" && school_type == "K12") {
+//       if (typeTab == "hsTab") {
+//          school_subtype = "HS"
+//       }
+//       else {
+//          school_subtype = "K8"
+//       }
+//    };
 
-   // using snake case here because we will be passing
-   // this dict to python
-   selectedValues.school_id = schoolId;
-   selectedValues.year = year;
-   selectedValues.school_type = school_type;
-   selectedValues.school_subtype = school_subtype;
-   selectedValues.comparison_schools = [];
-   selectedValues.page_tab = pageTab;
-   selectedValues.k8_tab = k8Tab;
-   selectedValues.hs_tab = hsTab;
-   selectedValues.type_tab = typeTab;
-   selectedValues.analysis_tab = analysisTab;
+//    // using snake case here because we will be passing
+//    // this dict to python
+//    selectedValues.school_id = schoolId;
+//    selectedValues.year = year;
+//    selectedValues.school_type = school_type;
+//    selectedValues.school_subtype = school_subtype;
+//    selectedValues.comparison_schools = [];
+//    selectedValues.page_tab = pageTab;
+//    selectedValues.k8_tab = k8Tab;
+//    selectedValues.hs_tab = hsTab;
+//    selectedValues.type_tab = typeTab;
+//    selectedValues.analysis_tab = analysisTab;
 
-   return selectedValues
-};
+//    return selectedValues
+// };
 
 
 /** State Management **/
@@ -722,11 +658,13 @@ const uiState = createStore({
    analysis_tab: null
 });
 
-
 // This should be called: on init, on school change, and on
 // school type change
-async function setComparisonList(data) {
+async function setComparisonList(data, state) {
 
+   // let state = uiState.getState();
+
+   console.log(data)
    let subset = data.map((
       { ["School ID"]: value, ["School Name"]: text }) => ({ text, value }
    ));
@@ -745,25 +683,26 @@ async function setComparisonList(data) {
 
    defaultSelections = defaultSelections.slice(0, 4);
 
-   // set selectedValues
-   selectedValues.comparison_schools = defaultSelections;
+   uiState.setState({
+      comparison_schools: defaultSelections
+   });
+
+   console.log(uiState.getState())
+
    comparisonSelect.setSelected(defaultSelections);
 };
 
 
 async function getComparisonList() {
 
-selectedValues = await getSelectedValues();
-let schoolIDs = selectedValues.comparison_schools;
+   let state = uiState.getState();
+   const schoolIDs = state.comparison_schools;
 
-/// TEST ///
-// let schoolIDs = uiState.getState().school_id;
+   if (!Array.isArray(schoolIDs) || !schoolIDs.length || schoolIDs == undefined) {
+      schoolIDs = comparisonSelect.getSelected();
+      };
 
-if (!Array.isArray(schoolIDs) || !schoolIDs.length || schoolIDs == undefined) {
-   schoolIDs = comparisonSelect.getSelected();
-   };
-
-return schoolIDs
+   return schoolIDs
 };
 
 
@@ -815,13 +754,15 @@ yearSelection.addEventListener("change", async () => {
    // change year state
    uiState.setState({ year: yearSelection.value });
    
-   // selectedValues = await getSelectedValues();
-
    let state = uiState.getState();
 
    if (state.page_tab === "analysisTab") {
-      state.comparison_schools = await getComparisonList();
-      getAcademicAnalysisData(state);
+
+      const rawComparisonList = await loadComparisonSchools(uiState.getState());
+      await setComparisonList(rawComparisonList, uiState.getState());
+
+      const academicAnalysisData = await getAcademicAnalysisData(state);
+      academicAnalysisPage(academicAnalysisData, state)
    }
    else if (state.page_tab === "infoTab")  {
       
@@ -841,7 +782,7 @@ yearSelection.addEventListener("change", async () => {
    }
    else {
       const demographicData = await getDemographicData(state);
-      demographicsPage(demographicData);
+      demographicsPage(demographicData, state);
    }
 });
 
@@ -907,7 +848,7 @@ schoolSelection.addEventListener("change", async () => {
       analysisPages.classList.remove("open");
 
       const demographicData = await getDemographicData(state);
-      demographicsPage(demographicData);
+      demographicsPage(demographicData, state);
    }
    else if (selectedPage == "infoTab") {
 
@@ -1020,8 +961,6 @@ schoolSelection.addEventListener("change", async () => {
             k8Categories.classList.add("open");
          }
          k8TypeTab.classList.add("active");
-
-         // selectedValues.type_tab = "k8Tab";
       }
       else if (schoolType == "HS" ||
          (schoolType == "K12" && schoolSubtype == "HS")
@@ -1030,17 +969,14 @@ schoolSelection.addEventListener("change", async () => {
          hsCategories.classList.add("open");
          k8TypeTab.classList.remove("active");
          hsTypeTab.classList.add("active");
-
-         // selectedValues.type_tab = "hsTab";
       };
 
       // populates selectedValues dict with new list of comparison school ids
-      await getComparisonSchools(state);
+      const rawComparisonList = await loadComparisonSchools(uiState.getState());
+      await setComparisonList(rawComparisonList, uiState.getState());
 
-      // update comparison school list
-      state.comparison_schools = await getComparisonList();
-
-      getAcademicAnalysisData(state);
+      const academicAnalysisData = await getAcademicAnalysisData(state);
+      academicAnalysisPage(academicAnalysisData, state)
    };
 });
 
@@ -1133,7 +1069,7 @@ async function navigateHandler(e) {
    const selectedPage = state.page_tab;
    const k8Selection = state.k8_tab;
    const hsSelection = state.hs_tab;
-   // const typeTab = state.type_tab;
+   const typeTab = state.type_tab;
    const schoolType = state.school_type;
    const schoolSubtype = state.school_subtype;
    const strYear = state.year;
@@ -1147,6 +1083,7 @@ async function navigateHandler(e) {
 
    console.log("STATE - Navigation Handler")
    console.log(state)
+   console.log(target.id)
 
    // iread/ilearn tabs should never be visible when school is hs or
    // hstab is selected and should always be available when school is
@@ -1172,7 +1109,7 @@ async function navigateHandler(e) {
       // yearSelection.setAttribute("value", strYear);
 
       const demographicData = await getDemographicData(state);
-      demographicsPage(demographicData);
+      demographicsPage(demographicData, state);
 
       // adjust chart size based on browser window size
       let windowWidth = window.innerWidth/2 - 125;
@@ -1252,8 +1189,12 @@ async function navigateHandler(e) {
 
       if (
          schoolType == "K8" ||
-         (schoolType == "K12" && schoolSubtype == "K8")
-      ) {
+            (
+               schoolType == "K12" && (
+                  schoolSubtype == "K8" || typeTab == "k8Tab"
+               )
+            ) 
+         ) {
 
          if (schoolSubtype == "MS") {  // MS only has Ilearn
             k8Categories.classList.remove("open");
@@ -1293,8 +1234,12 @@ async function navigateHandler(e) {
       }
       else if (
          schoolType == "HS" ||
-         (schoolType == "K12" && schoolSubtype == "HS") 
-      ) {
+            (
+               schoolType == "K12" && (
+                  schoolSubtype == "HS" || typeTab == "hsTab"
+               ) 
+            ) 
+      ){
          k8Categories.classList.remove("open");
          hsCategories.classList.add("open");
 
@@ -1335,7 +1280,9 @@ async function navigateHandler(e) {
       // yearSelection.setAttribute("value", yearValue);
 
       // selectedValues.year = yearValue;
-
+      const rawComparisonList = await loadComparisonSchools(uiState.getState());
+      await setComparisonList(rawComparisonList, uiState.getState());
+      
       const academicInfoData = await getAcademicInfoData(state);
       academicInfoPage(academicInfoData, state)
     }
@@ -1472,17 +1419,18 @@ async function navigateHandler(e) {
 
       // selectedValues.comparison_schools = comparisonSelect.getSelected();
 
-      getAcademicAnalysisData(state);
+      const academicAnalysisData = await getAcademicAnalysisData(state);
+      academicAnalysisPage(academicAnalysisData, state)
    };
 };
 
 /* Pages */
-async function demographicsPage(data) {
+async function demographicsPage(data, state) {
 
-   selectedValues = await getSelectedValues();
+   // selectedValues = await getSelectedValues();
 
-   const schoolId = selectedValues.school_id;
-   const year = selectedValues.year;
+   const schoolId = state.school_id;
+   const year = state.year;
 
    let schoolData = data.filter((ele) => ele["School ID"] === schoolId);
    let corpData = data.filter((ele) => ele["School ID"] != schoolId);
@@ -1745,9 +1693,14 @@ async function academicInfoPage(data, state) {
    )].map(item => item.id);
 
    // set subject, type, and chart labels
-   if (schoolType == "K8" || (schoolType == "K12" && schoolSubtype == "K8")) {
+   if (
+         schoolType == "K8" || (
+            schoolType == "K12" && (
+               schoolSubtype == "K8" || typeTab == "k8Tab"
+            )
+         )
+      ) {
       if (k8Tab == "ireadTab") {
-
          subjects =  ["IREAD", "IREAD", "IREAD"];
          categories = [total, ethnicity, subgroup];
 
@@ -1784,9 +1737,12 @@ async function academicInfoPage(data, state) {
       }
    }
    else if (
-      schoolType == "HS" || schoolType == "AHS" || (schoolType == "K12" && schoolSubtype == "HS")
-   ) {
-
+         schoolType == "HS" || schoolType == "AHS" || (
+            schoolType == "K12" && (
+               schoolSubtype == "HS" || typeTab == "hsTab"
+            )
+         )
+      ) {
       if (hsTab == "gradTab") {
          subjects = ["Graduation", "Graduation", "Graduation"];
          categories = [gradTotal, ethnicity, subgroup];
@@ -1805,7 +1761,6 @@ async function academicInfoPage(data, state) {
          )].map(item => item.id);
       }
       else {
-
          subjects = ["EBRW", "EBRW", "EBRW", "Math", "Math", "Math"];
          categories = [total, ethnicity, subgroup, total, ethnicity, subgroup];
 
@@ -1868,7 +1823,7 @@ async function academicInfoPage(data, state) {
 
       let infoTableID = "#" + tableIds[k];
       const infoTableGridDiv = document.querySelector(infoTableID);
-
+      
       let infoTableData = getTableData(
          tabledata, categories[k], subjects[k], state
       );
@@ -1888,23 +1843,24 @@ async function academicInfoPage(data, state) {
          Boolean(infoGridApi[k] && !infoGridApi[k].isDestroyed())
       ) {
          if (tableIds[k] == infoGridApi[k].getGridId()) {
+
             infoGridApi[k].setGridOption(
                "columnDefs", infoTableOptions.columnDefs
             );
             infoGridApi[k].setGridOption("rowData", infoTableData);
          } else {
             infoGridApi[k].destroy();
-            infoGridApi[k] = agGrid.createGrid(infoTableGridDiv, infoTableOptions);
+            infoGridApi[k] = agGrid.createGrid(infoTableGridDiv, infoTableOptions); // create
          }
       } else {
-         infoGridApi[k] = agGrid.createGrid(infoTableGridDiv, infoTableOptions);
+         infoGridApi[k] = agGrid.createGrid(infoTableGridDiv, infoTableOptions); // create
       }
    }
 };
 
 
 // Chart Academic Information
-async function academicAnalysisPage(data) {
+async function academicAnalysisPage(data, state) {
 
    selectedValues = await getSelectedValues();
 
@@ -1924,9 +1880,9 @@ async function academicAnalysisPage(data) {
 
    // set subject based on selected tab
    if (
-      schoolType == "K8" ||
-      (schoolType == "K12" && (schoolSubtype == "K8" || schoolSubtype == "K12")) ||
-      (typeof schoolType === "undefined" && typeof schoolSubtype === "undefined")
+         schoolType == "K8" || 
+         (schoolType == "K12" && (schoolSubtype == "K8" || typeTab == "k8Tab" )) ||
+         (typeof schoolType === "undefined" && typeof schoolSubtype === "undefined")
       ) {
       if (k8Tab == "ireadTab") {
          subject =  subjectIread;
@@ -1936,9 +1892,9 @@ async function academicAnalysisPage(data) {
       }
    }
    else if (
-      schoolType == "HS" || schoolType == "AHS" ||
-      (schoolType == "K12" && schoolSubtype == "HS")
-   ) {
+         schoolType == "HS" || schoolType == "AHS" ||
+         (schoolType == "K12" && (schoolSubtype == "HS" || typeTab == "hsTab"))
+      ) {
       if (hsTab == "gradTab") {
          subject = subjectGrad;
       }
@@ -1974,6 +1930,7 @@ async function academicAnalysisPage(data) {
    // by "pantaflex44")
    const addSchool = newColors.filter(({ school: id1 }) =>
       !colorState.some(({ school: id2 }) => id2 === id1));
+
    const removeSchool = colorState.filter(({ school: id1 }) =>
       !newColors.some(({ school: id2 }) => id2 === id1));
 
@@ -2125,71 +2082,91 @@ async function academicAnalysisPage(data) {
          ]
       ];
 
-      ireadComparisonTotal = verticalGroupBar().data(defaultData)
+      /// TODO: Use Loop? This is a lot of repetitive words ///
+      
+      ireadComparisonTotal = verticalGroupBar()
+         .data(defaultData)
          .id("ireadComparisonTotal");
+
       d3.select("#ireadComparisonTotal").call(ireadComparisonTotal);
 
-      ireadComparisonEthnicity = verticalGroupBar().data(defaultData)
+      ireadComparisonEthnicity = verticalGroupBar()
+         .data(defaultData)
          .id("ireadComparisonEthnicity");
       d3.select("#ireadComparisonEthnicity").call(ireadComparisonEthnicity);
 
-      ireadComparisonSubgroup = verticalGroupBar().data(defaultData)
+      ireadComparisonSubgroup = verticalGroupBar()
+         .data(defaultData)
          .id("ireadComparisonSubgroup");
       d3.select("#ireadComparisonSubgroup").call(ireadComparisonSubgroup);
 
-      elaILEARNComparisonTotal = verticalGroupBar().data(defaultData)
+      elaILEARNComparisonTotal = verticalGroupBar()
+         .data(defaultData)
          .id("elaILEARNComparisonTotal");
       d3.select("#elaILEARNComparisonTotal").call(elaILEARNComparisonTotal);
 
-      elaILEARNComparisonGrade = verticalGroupBar().data(defaultData)
+      elaILEARNComparisonGrade = verticalGroupBar()
+         .data(defaultData)
          .id("elaILEARNComparisonGrade");
       d3.select("#elaILEARNComparisonGrade").call(elaILEARNComparisonGrade);
 
-      elaILEARNComparisonEthnicity = verticalGroupBar().data(defaultData)
+      elaILEARNComparisonEthnicity = verticalGroupBar()
+         .data(defaultData)
          .id("elaILEARNComparisonEthnicity");
       d3.select("#elaILEARNComparisonEthnicity").call(elaILEARNComparisonEthnicity);
 
-      elaILEARNComparisonSubgroup = verticalGroupBar().data(defaultData)
+      elaILEARNComparisonSubgroup = verticalGroupBar()
+         .data(defaultData)
          .id("elaILEARNComparisonSubgroup");
       d3.select("#elaILEARNComparisonSubgroup").call(elaILEARNComparisonSubgroup);
 
-      mathILEARNComparisonTotal = verticalGroupBar().data(defaultData)
+      mathILEARNComparisonTotal = verticalGroupBar()
+         .data(defaultData)
          .id("mathILEARNComparisonTotal");
       d3.select("#mathILEARNComparisonTotal").call(mathILEARNComparisonTotal);
 
-      mathILEARNComparisonGrade = verticalGroupBar().data(defaultData)
+      mathILEARNComparisonGrade = verticalGroupBar()
+         .data(defaultData)
          .id("mathILEARNComparisonGrade");
       d3.select("#mathILEARNComparisonGrade").call(mathILEARNComparisonGrade);
 
-      mathILEARNComparisonEthnicity = verticalGroupBar().data(defaultData)
+      mathILEARNComparisonEthnicity = verticalGroupBar()
+         .data(defaultData)
          .id("mathILEARNComparisonEthnicity");
       d3.select("#mathILEARNComparisonEthnicity").call(mathILEARNComparisonEthnicity);
 
-      mathILEARNComparisonSubgroup = verticalGroupBar().data(defaultData)
+      mathILEARNComparisonSubgroup = verticalGroupBar()
+         .data(defaultData)
          .id("mathILEARNComparisonSubgroup");
       d3.select("#mathILEARNComparisonSubgroup").call(mathILEARNComparisonSubgroup);
 
-      gradRateComparisonTotal = verticalGroupBar().data(defaultData)
+      gradRateComparisonTotal = verticalGroupBar()
+         .data(defaultData)
          .id("gradRateComparisonTotal");
       d3.select("#gradRateComparisonTotal").call(gradRateComparisonTotal);
 
-      gradRateComparisonEthnicity = verticalGroupBar().data(defaultData)
+      gradRateComparisonEthnicity = verticalGroupBar()
+         .data(defaultData)
          .id("gradRateComparisonEthnicity");
       d3.select("#gradRateComparisonEthnicity").call(gradRateComparisonEthnicity);
 
-      gradRateComparisonSubgroup = verticalGroupBar().data(defaultData)
+      gradRateComparisonSubgroup = verticalGroupBar()
+         .data(defaultData)
          .id("gradRateComparisonSubgroup");
       d3.select("#gradRateComparisonSubgroup").call(gradRateComparisonSubgroup);
 
-      satComparisonTotal = verticalGroupBar().data(defaultData)
+      satComparisonTotal = verticalGroupBar()
+         .data(defaultData)
          .id("satComparisonTotal");
       d3.select("#satComparisonTotal").call(satComparisonTotal);
 
-      satComparisonEthnicity = verticalGroupBar().data(defaultData)
+      satComparisonEthnicity = verticalGroupBar()
+         .data(defaultData)
          .id("satComparisonEthnicity");
       d3.select("#satComparisonEthnicity").call(satComparisonEthnicity);
 
-      satComparisonSubgroup = verticalGroupBar().data(defaultData)
+      satComparisonSubgroup = verticalGroupBar()
+         .data(defaultData)
          .id("satComparisonSubgroup");
       d3.select("#satComparisonSubgroup").call(satComparisonSubgroup);
 
@@ -2811,11 +2788,12 @@ if (document.readyState !== "loading") {
       comparison_schools: document.getElementById("comparisonSelect").value,
    });
 
-   console.log("STATE - INITIAL")
+   const rawComparisonList = await loadComparisonSchools(uiState.getState());
+   await setComparisonList(rawComparisonList, uiState.getState());
+
+   console.log("STATE - INITIALIZE")
    console.log(uiState.getState())
 
-   // await getComparisonSchools(selectedValues);
-   // selectedValues.comparison_schools = await getComparisonList();
    document.querySelector(".k8nav").classList.remove("open");
    document.querySelector(".hsnav").classList.remove("open");
    document.querySelector(".typenav").classList.remove("open");
@@ -2823,7 +2801,7 @@ if (document.readyState !== "loading") {
 
    const demographicData = await getDemographicData(uiState.getState());
 
-   demographicsPage(demographicData);
+   demographicsPage(demographicData, uiState.getState());
 };
 
 d3.select(window).on("resize", resize);

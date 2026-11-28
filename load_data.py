@@ -18,6 +18,28 @@ engine = create_engine("sqlite:///data/indiana_schools_public.db")
 
 print("Database Engine Created . . .")  # noqa: T201
 
+def clean_result(df):
+    
+    # sqlite column headers do not have spaces between words. But we need to
+    # display the column names, so we have to do a bunch of str.replace to
+    # account for all conditions. May be a better way, but this is pretty fast.
+    # Adding a space between any lowercase character and any uppercase/number
+    # character takes care of most of it. The other replace functions catch
+    # edge cases.
+    df.columns = df.columns.str.replace(r"([a-z])([A-Z1-9%])", r"\1 \2", regex=True)
+    df.columns = df.columns.str.replace(
+        r"([WADTO])([CATPB&])", r"\1 \2", regex=True,
+    )
+    df.columns = df.columns.str.replace(
+        "EBRWand", "EBRW and",
+    )  # better way to do this?
+    df.columns = df.columns.str.replace(r"([A])([a])", r"\1 \2", regex=True)
+    df.columns = df.columns.str.replace(r"([1-9])([(])", r"\1 \2", regex=True)
+    df.columns = df.columns.str.replace("or ", " or ")
+    df.columns = df.columns.astype(str)
+
+    return df
+    
 
 def run_query(q, *args):
     """
@@ -629,19 +651,39 @@ def get_academic_data(*args):
 
     else:
         school_str = params["schools"][0]
-
+    
     # Get data for academic_information and academic_metrics
     # all data / all years for school(s) and school corporation
     school_table = "academic_data_k8" if params["type"] == "K8" else "academic_data_hs"
 
-    query_string = f"""
-        SELECT *
-            FROM {school_table}
-            WHERE SchoolID IN ({school_str})"""  # noqa: S608
+    db = engine.raw_connection()
+    cur = db.cursor()
 
-    q = text(query_string)
+    query = f'SELECT * FROM "{school_table}" WHERE SchoolID = ?'
+    cur.execute(query, (school_str,))
 
-    return run_query(q, params)
+    rows = cur.fetchall()
+    columns = [description[0] for description in cur.description]
+
+    # Create and clean DataFrame
+    raw_df = pd.DataFrame(rows, columns=columns)
+
+    cleaned_df = clean_result(raw_df)
+
+    db.close()
+    
+    return cleaned_df    
+    
+    # query_string = f"""
+    #     SELECT *
+    #         FROM {school_table}
+    #         WHERE SchoolID == {school_str}"""  # noqa: S608 - IN ({school_str})
+           
+    # q = text(query_string)
+
+    # run = run_query(q, params)
+
+    # return run
 
 
 def get_available_years(*args):

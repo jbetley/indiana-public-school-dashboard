@@ -251,7 +251,7 @@ function multiLine() {
           let rectOffset = 10;
           let fontSize = 8;
           var svgWidth = d3.select("svg")._groups[0][0].attributes[0].value
-          
+
           // Sorting the legend items into a specific order makes things look cleaner
           // start with array in sorted order and then filter by the categories
           // actually present- gives properly sorted categories
@@ -417,6 +417,7 @@ function multiLine() {
 
               // array of lengths
               const intArray = lengths.map(float => Math.floor(float))
+              console.log("LOOGEND")
 
               // number of legend items
               const numItems = intArray.length
@@ -429,7 +430,7 @@ function multiLine() {
               // yet been added to the DOM. So we approximate.
               const actualStrLength = intArray[i] * 1.4;
 
-              // legendItemLength is uses to store either maxStrLength or the estimated
+              // legendItemLength is used to store either maxStrLength or the estimated
               // final length depending on which is longer
               let legendItemLength = maxStrLength;
 
@@ -437,9 +438,10 @@ function multiLine() {
               const actualIntArray = intArray.map(element => element * 1.4);
               const maxLength = actualIntArray.reduce((sum, num) => sum + num) + (numItems * 10);
 
-              // legend should exist in SVG with padding of 37.5 on either side
-              boundingArea = svgWidth - 50;
-// TODO: HERE - TWEAKING LEGENDS
+
+              // legend should be placed in SVG with padding of 25 on either side
+              boundingArea = dom.select("svg").attr("width") - 50;
+
               // we are arbitrarily declaring that 4 is the most # of items that
               // we want on a single line. 
               if ((numItems <= 4) && (maxLength < boundingArea)) {
@@ -551,16 +553,31 @@ function multiLine() {
             });
 
             // shift legendcontainer to center
-            
             let divElement = document.getElementById(id);
             let padding = parseInt(getComputedStyle(divElement.parentElement).padding); // take padding into acount
-            const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
+            
+            const legendContainerNode = svg.select(".legendcontainer").node();
+            let legendContainerWidth;
+
+            if (legendContainerNode != null) {
+              legendContainerWidth = legendContainerNode.getBoundingClientRect().width;
+            } else {
+              legendContainerWidth = 0; //dom.select("svg").attr("width") - (margin.left + margin.right);
+            }
+            
+            // console.log("WEEDTH")
+            // console.log("legendContainerWidth")
+            // console.log(legendContainerWidth)
+
+            // console.log("dom width")
+            // console.log(dom.select("svg").attr("width"))
+
+
+            // const legendContainerWidth = svg.select(".legendcontainer").node().getBoundingClientRect().width;
             // TODO: Test all of the different calculations used to determine width ->
             // d3.select("g")._groups[0][0].parentNode.attributes.getNamedItem("width").value;
             // dom.select("svg").attr("width");
             // AND
-            // d3.select("svg")._groups[0][0].attributes[0].value
-            // which somehow broke recently.
 
             const tstSvgWidth = dom.select("svg").attr("width");
             const shiftToCenter = ((tstSvgWidth - legendContainerWidth) / 2) - padding;
@@ -1644,8 +1661,6 @@ function horizontalGroupBar() {
 
       updateData = function() {
 
-        console.log("Horiz Data")
-        console.log(data)
         if (data[0].length == 0) {
 
           svg.selectAll(".titletext").remove();

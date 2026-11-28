@@ -70,7 +70,9 @@ def check_total_tested(
     data = df.copy()
 
     # School ID and school_id should both be type str
-    data["School ID"] = data["School ID"].astype("Int64").astype("str")
+    
+    # data["School ID"] = data["School ID"].astype("Int64").astype("str")
+    
     data["Corporation ID"] = data["Corporation ID"].astype("Int64").astype("str")
 
     if school_type == "K8":
@@ -362,9 +364,6 @@ def clean_academic_data(
     raw_data = df.copy()
 
     school_id = school_list[0]
-    
-    print("CLEANING")
-    print(raw_data)
     
     # note: corp_id needs to be a str
     corp_id = raw_data[raw_data["School ID"] ==

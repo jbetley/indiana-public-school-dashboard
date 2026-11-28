@@ -306,13 +306,19 @@ function getInfoChartData(data, category, subject, state) {
 
   const type = state.school_type;
   const subtype = state.school_subtype;
+  const typeTab = state.type_tab;
 
   if (
-      type == "K8" ||
-      (type == "K12" && (subtype == "K8" || subtype == "K12")) ||
-      (typeof type === "undefined" && typeof subtype === "undefined")
-  ) {
-
+        type == "K8" ||
+        (
+          type == "K12" && (
+            subtype == "K8" || typeTab == "k8Tab"
+          )
+        ) ||
+        (
+          typeof type === "undefined" && typeof subtype === "undefined"
+        )
+    ) {
     if (['ELA', 'Math'].includes(subject)) {
         search_str = "|" + subject + " Proficient %"
     }
@@ -321,8 +327,14 @@ function getInfoChartData(data, category, subject, state) {
     }
 
   }
-  else if (type == "HS" || type == "AHS" ||
-    (type == "K12" && subtype == "HS")) {
+  else if (
+    type == "HS" || type == "AHS" ||
+    (
+      type == "K12" && (
+        subtype == "HS" || typeTab == "hsTab"
+      )
+    )
+  ){
     if (['EBRW', 'Math'].includes(subject)) {
       search_str = "|" + subject + " Benchmark %"
     }
