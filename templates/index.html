@@ -1653,15 +1653,15 @@ async function demographicsPage(data, state) {
 async function academicInfoPage(data, state) {
 
    // TODO: selectedValues is reset each time it is called, so values do not necessarily
-   // persist - switch to Store
-   selectedValues = await getSelectedValues();
+   // // persist - switch to Store
+   // selectedValues = await getSelectedValues();
 
    const year = state.year;
    const schoolType = state.school_type
    let schoolSubtype;
 
    // if first school in list is K12, we need to manually set sub_type on initial load
-   if (schoolType == "K12" && selectedValues.school_subtype == "K12") {
+   if (schoolType == "K12" && state.school_subtype == "K12") {
       schoolSubtype = "K8";
    } else {
       schoolSubtype = state.school_subtype;
@@ -1862,16 +1862,16 @@ async function academicInfoPage(data, state) {
 // Chart Academic Information
 async function academicAnalysisPage(data, state) {
 
-   selectedValues = await getSelectedValues();
+   // selectedValues = await getSelectedValues();
 
-   const year = selectedValues.year;
-   const schoolType = selectedValues.school_type;
-   const schoolSubtype = selectedValues.school_subtype;
-   const schoolID = selectedValues.school_id;
-   const pageTab = selectedValues.page_tab;
-   const typeTab = selectedValues.type_tab;
-   const k8Tab = selectedValues.k8_tab;
-   const hsTab = selectedValues.hs_tab;
+   const year = state.year;
+   const schoolType = state.school_type;
+   const schoolSubtype = state.school_subtype;
+   const schoolID = state.school_id;
+   const pageTab = state.page_tab;
+   const typeTab = state.type_tab;
+   const k8Tab = state.k8_tab;
+   const hsTab = state.hs_tab;
 
    let subject;
    let newColors = [];
@@ -2083,7 +2083,7 @@ async function academicAnalysisPage(data, state) {
       ];
 
       /// TODO: Use Loop? This is a lot of repetitive words ///
-      
+
       ireadComparisonTotal = verticalGroupBar()
          .data(defaultData)
          .id("ireadComparisonTotal");
@@ -2189,7 +2189,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: IREAD Proficiency by Total
             let ireadTotalData = getAnalysisChartData(
-               yearData, total, "IREAD", selectedValues
+               yearData, total, "IREAD", state
             );
 
             if (!ireadTotalData || !ireadTotalData.length) {
@@ -2212,7 +2212,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: IREAD Proficiency by Ethnicity
             let ireadEthnicityData = getAnalysisChartData(
-               yearData, ethnicity, "IREAD", selectedValues
+               yearData, ethnicity, "IREAD", state
             );
 
             if (!ireadEthnicityData || !ireadEthnicityData.length) {
@@ -2238,7 +2238,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: IREAD Proficiency by Subgroup
             let ireadSubgroupData = getAnalysisChartData(
-               yearData, subgroup, "IREAD", selectedValues
+               yearData, subgroup, "IREAD", state
             );
 
             if (!ireadSubgroupData || !ireadSubgroupData.length) {
@@ -2265,7 +2265,7 @@ async function academicAnalysisPage(data, state) {
          else {
             // Single Year Comparison: ELA Proficiency by Total
             let elaILEARNTotalData = getAnalysisChartData(
-               yearData, total, subject[0], selectedValues
+               yearData, total, subject[0], state
             );
 
             if (!elaILEARNTotalData || !elaILEARNTotalData.length) {
@@ -2291,7 +2291,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: ELA Proficiency by Grade
             let elaILEARNGradeData = getAnalysisChartData(
-               yearData, grade, subject[0], selectedValues
+               yearData, grade, subject[0], state
             );
 
             if (!elaILEARNGradeData || !elaILEARNGradeData.length) {
@@ -2317,7 +2317,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: ELA Proficiency by Ethnicity
             let elaILEARNGradethnicityData = getAnalysisChartData(
-               yearData, ethnicity, subject[0], selectedValues
+               yearData, ethnicity, subject[0], state
             );
 
             if (!elaILEARNGradethnicityData || !elaILEARNGradethnicityData.length) {
@@ -2343,7 +2343,7 @@ async function academicAnalysisPage(data, state) {
 
             //Single Year Comparison: ELA Proficiency by Subgroup
             let elaILEARNSubgroupData = getAnalysisChartData(
-               yearData, subgroup, subject[0], selectedValues
+               yearData, subgroup, subject[0], state
             );
 
             if (!elaILEARNSubgroupData || !elaILEARNSubgroupData.length) {
@@ -2369,7 +2369,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: Math Proficiency by Total
             let mathILEARNTotalData = getAnalysisChartData(
-               yearData, total, subject[1], selectedValues
+               yearData, total, subject[1], state
             );
 
             if (!mathILEARNTotalData || !mathILEARNTotalData.length) {
@@ -2395,7 +2395,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: Math Proficiency by Grade
             let mathILEARNGradeData = getAnalysisChartData(
-               yearData, grade, subject[0], selectedValues
+               yearData, grade, subject[0], state
             );
 
             if (!mathILEARNTotalData || !mathILEARNTotalData.length) {
@@ -2421,7 +2421,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: ELA Proficiency by Ethnicity
             let mathILEARNEthnicityData = getAnalysisChartData(
-               yearData, ethnicity, subject[0], selectedValues
+               yearData, ethnicity, subject[0], state
             );
 
             if (!mathILEARNEthnicityData || !mathILEARNEthnicityData.length) {
@@ -2447,7 +2447,7 @@ async function academicAnalysisPage(data, state) {
 
             //Single Year Comparison: ELA Proficiency by Subgroup
             let mathILEARNSubgroupData = getAnalysisChartData(
-               yearData, subgroup, subject[0], selectedValues
+               yearData, subgroup, subject[0], state
             );
 
             if (!mathILEARNSubgroupData || !mathILEARNSubgroupData.length) {
@@ -2478,7 +2478,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: Grad Rate Total
             let gradRateTotalData = getAnalysisChartData(
-               yearData, gradTotal, subject[0], selectedValues
+               yearData, gradTotal, subject[0], state
             );
 
             if (!gradRateTotalData || !gradRateTotalData.length) {
@@ -2504,7 +2504,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: Grad Rate by Ethnicity
             let gradRateEthnicityData = getAnalysisChartData(
-               yearData, ethnicity, subject[0], selectedValues
+               yearData, ethnicity, subject[0], state
             );
 
             if (!gradRateEthnicityData || !gradRateEthnicityData.length) {
@@ -2530,7 +2530,7 @@ async function academicAnalysisPage(data, state) {
 
             //Single Year Comparison: Grad Rate by Subgroup
             let gradRateSubgroupData = getAnalysisChartData(
-               yearData, subgroup, subject[0], selectedValues
+               yearData, subgroup, subject[0], state
             );
 
             if (!gradRateSubgroupData || !gradRateSubgroupData.length) {
@@ -2557,7 +2557,7 @@ async function academicAnalysisPage(data, state) {
          else {
             // Single Year Comparison: SAT Total
             let satTotalData = getAnalysisChartData(
-               yearData, total, subject[0], selectedValues
+               yearData, total, subject[0], state
             );
 
             if (!satTotalData || !satTotalData.length) {
@@ -2582,7 +2582,7 @@ async function academicAnalysisPage(data, state) {
 
             // Single Year Comparison: SAT by Ethnicity
             let satEthnicityData = getAnalysisChartData(
-               yearData, ethnicity, subject[0], selectedValues
+               yearData, ethnicity, subject[0], state
             );
 
             if (!satEthnicityData || !satEthnicityData.length) {
@@ -2608,7 +2608,7 @@ async function academicAnalysisPage(data, state) {
 
             //Single Year Comparison: SAT by Subgroup
             let satSubgroupData = getAnalysisChartData(
-               yearData, subgroup, subject[0], selectedValues
+               yearData, subgroup, subject[0], state
             );
 
             if (!satSubgroupData || !satSubgroupData.length) {
@@ -2635,11 +2635,15 @@ async function academicAnalysisPage(data, state) {
       };
 
       /* Update Tables */
-      let analysisTableData, analysisTableID, analysisCatList;
+      let analysisTableData,
+          analysisTableID,
+          analysisCatList,
+          analysisTableSubjects,
+          analysisTableStartingIndex,
+          analysisTableCategories;
 
       // Remove objects with years > the selected year
       const tabledata = yearData.filter((obj, index) => !(obj.Year > Number(year)));
-      let analysisTableSubjects, analysisTableStartingIndex, analysisTableCategories;
 
       if (typeTab == "k8Tab") {
          if (k8Tab == "ireadTab") {
@@ -2673,7 +2677,7 @@ async function academicAnalysisPage(data, state) {
          analysisTableID = analysisGridApi[analysisTableNum].getGridId()
          analysisTableData = getAnalysisTableData(
             tabledata, analysisTableCategories[i], analysisTableSubjects[i],
-            selectedValues, colorState
+            state, colorState
          );
 
 // TODO: Determine if we even need to create a table if no data exists
@@ -2813,13 +2817,15 @@ async function resize() {
 // TODO: create function for width calls
 // TODO: Add call to fix chart legends
 
-   selectedValues = await getSelectedValues();
+   let state = uiState.getState();
+
+   // selectedValues = await getSelectedValues();
 
    let windowWidth = window.innerWidth/2 - 125;
 
    if (windowWidth >= 290) {
 
-      if (selectedValues.page_tab === "analysisTab") {
+      if (state.page_tab === "analysisTab") {
 
          // TODO: This isn't working for some reason //
 
@@ -2836,7 +2842,7 @@ async function resize() {
          // mathILEARNComparisonSubgroup.width(windowWidth);
 
       }
-      else if (selectedValues.page_tab === "infoTab") {
+      else if (state.page_tab === "infoTab") {
          for (let i = 0; i < 18; i++) {
             infoCharts[i].width(windowWidth);
          }
